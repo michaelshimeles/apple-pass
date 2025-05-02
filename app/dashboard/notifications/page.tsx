@@ -7,7 +7,7 @@ export default async function NotificationsPage() {
 
   return (
     <div className="p-6 max-w-xl space-y-4">
-      <h1 className="text-2xl font-semibold">Send Notification</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Send Notification</h1>
       <NotificationsForm passes={allPasses} />
     </div>
   );
