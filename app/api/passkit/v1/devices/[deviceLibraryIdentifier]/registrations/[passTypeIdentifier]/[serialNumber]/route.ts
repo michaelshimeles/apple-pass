@@ -5,12 +5,14 @@ import { passRegistrations, passes } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { deviceLibraryIdentifier: string; passTypeIdentifier: string; serialNumber: string } }
-) {
-  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } = params;
-
+export async function POST(req: NextRequest, context: {
+  params: Promise<{
+    deviceLibraryIdentifier: string;
+    passTypeIdentifier: string;
+    serialNumber: string;
+  }>
+}) {
+  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } = await context.params;
   const authToken = req.headers.get("authorization")?.replace("ApplePass ", "").trim();
 
   if (!authToken) {
