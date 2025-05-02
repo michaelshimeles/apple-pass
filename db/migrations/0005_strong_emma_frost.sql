@@ -1,0 +1,1 @@
+ALTER TABLE "passes" ADD COLUMN "authentication_token" text NOT NULL;
