@@ -2,6 +2,7 @@
 
 import clsx from 'clsx'
 import {
+  GitGraph,
   HomeIcon,
   LucideIcon,
   MonitorSmartphone,
@@ -26,6 +27,11 @@ const navItems: NavItem[] = [
     label: "Notifications",
     href: "/dashboard/notifications",
     icon: MonitorSmartphone
+  },
+  {
+    label: "Analytics",
+    href: "/dashboard/analytics",
+    icon: GitGraph
   },
   {
     label: "Settings",
