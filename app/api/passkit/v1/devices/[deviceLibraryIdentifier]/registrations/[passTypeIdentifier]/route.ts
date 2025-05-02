@@ -1,28 +1,28 @@
 import { db } from "@/db/drizzle";
 import { passRegistrations, passes } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
   context: {
-    params: Promise<{
+    params: {
       deviceLibraryIdentifier: string;
       passTypeIdentifier: string;
-    }>;
+    };
   }
 ): Promise<NextResponse> {
-  console.log('📲 req.headers', req.headers);
-  const authToken = req.headers.get("authorization")?.replace("ApplePass ", "").trim();
-  console.log("📥 Auth header456:", authToken);
-
-  if (!authToken) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
   const { deviceLibraryIdentifier, passTypeIdentifier } = await context.params;
 
-  // Get all passes registered to this device
+  const authToken = req.headers
+    .get("authorization")
+    ?.replace("ApplePass ", "")
+    .trim();
+
+  console.log("📥 Authorization header:", authToken);
+  console.log("📥 passesUpdatedSince param:", req.nextUrl.searchParams.get("passesUpdatedSince"));
+
+  // Find all passes registered to this device
   const matches = await db
     .select({
       serialNumber: passes.serialNumber,
@@ -39,12 +39,9 @@ export async function GET(
 
   const valid = matches.filter((p) => p.auth === authToken);
 
-  if (valid.length === 0) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  return Response.json({
+  // ✅ Always return a 200 even if no passes are valid
+  return NextResponse.json({
     serialNumbers: valid.map((p) => p.serialNumber),
-    lastUpdated: new Date().toISOString(), // Optional
+    lastUpdated: new Date().toISOString(),
   });
 }
