@@ -60,6 +60,7 @@ export async function POST(req: Request) {
     key: "msg",
     label: "Message",
     value: message,
+    changeMessage: "New message: %@"
   });
 
   passInstance.relevantDate = new Date().toISOString();

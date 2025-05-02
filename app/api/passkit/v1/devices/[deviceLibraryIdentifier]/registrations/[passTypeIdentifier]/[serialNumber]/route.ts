@@ -1,84 +1,62 @@
-// app/api/passkit/v1/passes/[passTypeIdentifier]/[serialNumber]/route.ts
+// app/api/passkit/v1/devices/[deviceLibraryIdentifier]/registrations/[passTypeIdentifier]/[serialNumber]/route.ts
 
 import { db } from "@/db/drizzle";
-import { passMessages, passes } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { Template } from "@walletpass/pass-js";
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import { Buffer } from "buffer";
+import { passRegistrations, passes } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+import { NextRequest } from "next/server";
 
-export async function GET(
+export async function POST(
   req: NextRequest,
-  context: {
-    params: {
-      passTypeIdentifier: string;
-      serialNumber: string;
-    };
-  }
+  { params }: { params: { deviceLibraryIdentifier: string; passTypeIdentifier: string; serialNumber: string } }
 ) {
-  const { passTypeIdentifier, serialNumber } = context.params;
+  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } = params;
 
-  // 🧠 Step 1: Get pass by serial
+  const authToken = req.headers.get("authorization")?.replace("ApplePass ", "").trim();
+
+  if (!authToken) {
+    return new Response("Missing auth token", { status: 401 });
+  }
+
+  const body = await req.json();
+  const pushToken = body.pushToken;
+
+  if (!pushToken) {
+    return new Response("Missing pushToken", { status: 400 });
+  }
+
   const pass = await db
     .select()
     .from(passes)
     .where(eq(passes.serialNumber, serialNumber))
-    .limit(1)
     .then((rows) => rows[0]);
 
-  if (!pass) {
-    return new NextResponse("Pass not found", { status: 404 });
+  if (!pass || pass.authenticationToken !== authToken) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
-  // 📩 Step 2: Get the latest message
-  const latestMessage = await db
+  const existing = await db
     .select()
-    .from(passMessages)
-    .where(eq(passMessages.passId, pass.id))
-    .orderBy(passMessages.createdAt)
-    .then((rows) => rows.at(-1)?.message ?? "No messages yet");
+    .from(passRegistrations)
+    .where(
+      and(
+        eq(passRegistrations.deviceLibraryIdentifier, deviceLibraryIdentifier),
+        eq(passRegistrations.serialNumber, serialNumber)
+      )
+    )
+    .then((rows) => rows[0]);
 
-  // 🧱 Step 3: Load & build the updated pass
-  const template = new Template();
-  await template.images.add("logo", path.join(process.cwd(), "public/logo.png"), "1x");
+  if (!existing) {
+    await db.insert(passRegistrations).values({
+      deviceLibraryIdentifier,
+      pushToken,
+      passTypeIdentifier,
+      serialNumber,
+      passId: pass.id,
+      authenticationToken: authToken,
+    });
 
-  const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
-  const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
+    return new Response(null, { status: 201 }); // Created
+  }
 
-  template.setCertificate(cert);
-  template.setPrivateKey(key, process.env.PASS_CERT_PASSPHRASE || "");
-
-  const instance = template.createPass({
-    serialNumber: pass.serialNumber,
-    description: pass.description,
-    webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
-    authenticationToken: pass.authenticationToken,
-    organizationName: "Fabrika",
-    teamIdentifier: "5S3KCRYBD2",
-    passTypeIdentifier: passTypeIdentifier,
-    style: "generic",
-  });
-
-  instance.primaryFields.add({
-    key: "name",
-    label: "Name",
-    value: pass.name,
-  });
-
-  instance.secondaryFields.add({
-    key: "msg",
-    label: "Message",
-    value: latestMessage,
-  });
-
-  const buffer = await instance.asBuffer();
-
-  return new NextResponse(buffer, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/vnd.apple.pkpass",
-      "Content-Disposition": `attachment; filename=${pass.serialNumber}.pkpass`,
-    },
-  });
+  return new Response(null, { status: 200 }); // Already registered
 }
