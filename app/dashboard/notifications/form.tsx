@@ -13,7 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export default function NotificationsForm({ passes }: { passes: any[] }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function NotificationsForm({ passes }: any) {
     const [passId, setPassId] = useState<string>("");
     const [message, setMessage] = useState<string>("");
 
