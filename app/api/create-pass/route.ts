@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db/drizzle";
+import { passes } from "@/db/schema";
+import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Template } from "@walletpass/pass-js";
-import path from "path";
 import { nanoid } from "nanoid";
-import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
-import { passes } from "@/db/schema";
-import { db } from "@/db/drizzle";
+import { NextRequest, NextResponse } from "next/server";
+import path from "path";
 
 export async function POST(req: NextRequest) {
     await auth.protect();
