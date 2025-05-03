@@ -17,9 +17,11 @@ import { toast } from "sonner";
 export default function NotificationsForm({ passes }: any) {
     const [passId, setPassId] = useState<string>("");
     const [message, setMessage] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
 
         if (!passId || !message) {
             toast.error("Please fill out both fields.");
@@ -35,8 +37,11 @@ export default function NotificationsForm({ passes }: any) {
         const data = await res.json();
         if (res.ok) {
             toast.success("✅ Notification sent!");
+            setLoading(false)
+            setMessage("");
         } else {
             toast.error("❌ Failed to send. " + data?.message || res.status);
+            setLoading(false)
         }
     };
 
@@ -65,8 +70,8 @@ export default function NotificationsForm({ passes }: any) {
                 required
             />
 
-            <Button type="submit" variant="outline">
-                Send Notification
+            <Button type="submit" variant="outline" disabled={loading}>
+                {!loading ? "Send Notification" : "Sending..."}
             </Button>
         </form>
     );

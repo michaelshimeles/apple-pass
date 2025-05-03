@@ -5,33 +5,25 @@ import { listAllPasses } from "@/db/functions/listAllPasses";
 import { passInstalls, passMessages, passRegistrations, passes } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { count, eq } from "drizzle-orm";
+import PassSelector from "../notifications/pass-selector";
 
-export default async function Analytics() {
+export default async function Analytics({ searchParams }: { searchParams: { passId?: string } }) {
+    // Get the passId from the URL query parameters
+    const params = await searchParams;
+
     const { userId } = await auth();
     if (!userId) return null;
 
     const userPasses = await listAllPasses(userId);
 
     // Get metrics for the first pass by default
-    const defaultPassId = userPasses[0]?.id;
-    const metrics = defaultPassId ? await getPassMetrics(defaultPassId) : null;
+    const metrics = params?.passId ? await getPassMetrics(Number(params?.passId)) : null;
 
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-semibold tracking-tight">Analytics</h1>
-                <Select defaultValue={defaultPassId?.toString()}>
-                    <SelectTrigger className="w-[280px]">
-                        <SelectValue placeholder="Select a pass" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {userPasses.map((pass) => (
-                            <SelectItem key={pass.id} value={pass.id.toString()}>
-                                {pass.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <PassSelector defaultPassId={Number(params?.passId)} userPasses={userPasses} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <Card>
@@ -39,7 +31,7 @@ export default async function Analytics() {
                         <CardTitle>Total Install(s)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-semibold">{metrics?.installs ?? 0}</p>
+                        <p className="text-xl font-medium">{metrics?.installs ?? 0}</p>
                     </CardContent>
                 </Card>
 
@@ -48,7 +40,7 @@ export default async function Analytics() {
                         <CardTitle>Active Devices</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-semibold">{metrics?.registrations ?? 0}</p>
+                        <p className="text-xl font-medium">{metrics?.registrations ?? 0}</p>
                     </CardContent>
                 </Card>
 
@@ -57,7 +49,7 @@ export default async function Analytics() {
                         <CardTitle>Messages Sent</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-semibold">{metrics?.messages ?? 0}</p>
+                        <p className="text-xl font-medium">{metrics?.messages ?? 0}</p>
                     </CardContent>
                 </Card>
 
@@ -66,7 +58,7 @@ export default async function Analytics() {
                         <CardTitle>Created On</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-xl font-semibold">{metrics?.createdAt ? new Date(metrics.createdAt).toLocaleDateString() : '-'}</p>
+                        <p className="text-xl font-medium">{metrics?.createdAt ? new Date(metrics.createdAt).toLocaleDateString() : '-'}</p>
                     </CardContent>
                 </Card>
             </div>
