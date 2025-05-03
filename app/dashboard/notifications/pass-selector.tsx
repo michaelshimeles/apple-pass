@@ -14,13 +14,11 @@ export default function PassSelector({ defaultPassId, userPasses }: { defaultPas
     }
 
     useEffect(() => {
-        // Update the URL with the selected pass ID
         if (selectedPassId) {
             router.push(path + `?passId=${selectedPassId}`)
-
         } 
 
-    }, [selectedPassId])
+    }, [selectedPassId, path])
 
 
     return (

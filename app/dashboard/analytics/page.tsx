@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { db } from "@/db/drizzle";
 import { listAllPasses } from "@/db/functions/listAllPasses";
 import { passInstalls, passMessages, passRegistrations, passes } from "@/db/schema";
@@ -16,14 +15,16 @@ export default async function Analytics({ searchParams }: { searchParams: { pass
 
     const userPasses = await listAllPasses(userId);
 
+    const intialPassId = userPasses?.[0]?.id;
+
     // Get metrics for the first pass by default
-    const metrics = params?.passId ? await getPassMetrics(Number(params?.passId)) : null;
+    const metrics = params?.passId && Number(params?.passId) ? await getPassMetrics(Number(params?.passId)) : intialPassId ? await getPassMetrics(intialPassId) : null;
 
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-semibold tracking-tight">Analytics</h1>
-                <PassSelector defaultPassId={Number(params?.passId)} userPasses={userPasses} />
+                <PassSelector defaultPassId={intialPassId ? intialPassId : Number(params?.passId)} userPasses={userPasses} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <Card>

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, description } = await req.json();
+    const { name, description, logoText, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, thumbnailUrl, backgroundUrl, primaryFieldLabel, primaryFieldValue, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat, url } = await req.json();
 
     if (!name || !description) {
         return NextResponse.json({ message: "Missing fields" }, { status: 400 });
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
             key: "message",
             label: "Message",
             value: "Welcome to your pass!", // This will later be dynamic
-          });
+        });
 
         const buffer = await pass.asBuffer();
 
@@ -82,7 +82,23 @@ export async function POST(req: NextRequest) {
             serialNumber: serial,
             fileUrl,
             userId: user.id,
-            authenticationToken
+            authenticationToken,
+            logoText,
+            backgroundColor,
+            logoUrl,
+            stripImageFrontUrl,
+            stripImageBackUrl,
+            thumbnailUrl,
+            backgroundUrl,
+            primaryFieldLabel,
+            primaryFieldValue,
+            secondaryFieldLabel,
+            secondaryFieldValue,
+            auxiliaryFieldLabel,
+            auxiliaryFieldValue,
+            barcodeValue,
+            barcodeFormat,
+            url,
         });
 
         return new NextResponse(JSON.stringify({ url: fileUrl }), {

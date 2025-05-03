@@ -2,13 +2,41 @@ import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const passes = pgTable("passes", {
   id: serial("id").primaryKey(),
+
   name: text("name").notNull(),
   description: text("description").notNull(),
+
   fileUrl: text("file_url").notNull(),
   authenticationToken: text("authentication_token").notNull(),
-  slug: text("slug").notNull(), // short user-friendly ID for URLs
-  serialNumber: text("serialNumber").notNull().unique(), // used in QR code
-  userId: text("created_by").notNull(), // user who created it
+  slug: text("slug").notNull(),
+  serialNumber: text("serialNumber").notNull().unique(),
+
+  userId: text("created_by").notNull(),
+
+  // Custom visual fields
+  logoText: text("logo_text"),
+  backgroundColor: text("background_color"),
+
+  // Images
+  logoUrl: text("logo_url"),
+  stripImageFrontUrl: text("strip_image_front_url"),
+  stripImageBackUrl: text("strip_image_back_url"),
+  thumbnailUrl: text("thumbnail_url"),
+  backgroundUrl: text("background_url"),
+
+  // Pass fields
+  primaryFieldLabel: text("primary_field_label"),
+  primaryFieldValue: text("primary_field_value"),
+  secondaryFieldLabel: text("secondary_field_label"),
+  secondaryFieldValue: text("secondary_field_value"),
+  auxiliaryFieldLabel: text("auxiliary_field_label"),
+  auxiliaryFieldValue: text("auxiliary_field_value"),
+
+  // Barcode and links
+  barcodeValue: text("barcode_value"),
+  barcodeFormat: text("barcode_format"),
+  url: text("url"),
+
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
