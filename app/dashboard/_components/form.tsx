@@ -53,7 +53,7 @@ export function CreatePassForm() {
             name: "",
             description: "",
             logoText: "",
-            backgroundColor: "#b76d6d", // Default to same color as preview
+            backgroundColor: "#000", // Default to same color as preview
             logoUrl: "",
             stripImageFrontUrl: "",
             stripImageBackUrl: "",
