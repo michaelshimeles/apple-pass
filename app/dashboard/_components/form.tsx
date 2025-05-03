@@ -180,31 +180,36 @@ export function CreatePassForm() {
                                                         <Input
                                                             type="file"
                                                             accept="image/*"
+                                                            ref={field.ref}
                                                             onChange={async (e) => {
                                                                 const file = e.target.files?.[0];
                                                                 if (!file) return;
-                                                                // read raw bytes
-                                                                const buf = await file.arrayBuffer();
-                                                                // send to your endpoint
-                                                                const res = await fetch("/api/upload-image", {
-                                                                    method: "POST",
-                                                                    headers: {
-                                                                        "Content-Type": "application/octet-stream",
-                                                                        "x-file-name": file.name,
-                                                                    },
-                                                                    body: buf,
-                                                                });
-                                                                if (!res.ok) {
-                                                                    console.error("Upload failed", await res.text());
-                                                                    toast.error("Upload failed");
-                                                                    return;
+                                                                try {
+                                                                    // read raw bytes
+                                                                    const buf = await file.arrayBuffer();
+                                                                    // send to your endpoint
+                                                                    const res = await fetch("/api/upload-image", {
+                                                                        method: "POST",
+                                                                        headers: {
+                                                                            "Content-Type": "application/octet-stream",
+                                                                            "x-file-name": file.name,
+                                                                        },
+                                                                        body: buf,
+                                                                    });
+                                                                    if (!res.ok) {
+                                                                        console.error("Upload failed", await res.text());
+                                                                        toast.error("Upload failed");
+                                                                        return;
+                                                                    }
+                                                                    const { url } = await res.json();
+                                                                    toast.success("Upload successful");
+                                                                    onChange(url);
+                                                                } catch (error) {
+                                                                    console.error("Upload error:", error);
+                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
                                                                 }
-                                                                const { url } = await res.json();
-                                                                toast.success("Upload successful");
-                                                                onChange(url);
                                                             }}
                                                             className="w-full border p-2 rounded-md"
-                                                            {...field}
                                                         />
                                                     </FormControl>
                                                     <FormDescription>Upload logo image</FormDescription>
@@ -215,38 +220,43 @@ export function CreatePassForm() {
                                         <FormField
                                             control={form.control}
                                             name="thumbnailUrl"
-                                            render={({ field: { onChange, ...field } }) => (
+                                            render={({ field: { value, onChange, ...field } }) => (
                                                 <FormItem className="mt-4">
                                                     <FormLabel>Thumbnail</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             type="file"
                                                             accept="image/*"
+                                                            ref={field.ref}
                                                             onChange={async (e) => {
                                                                 const file = e.target.files?.[0];
                                                                 if (!file) return;
-                                                                // read raw bytes
-                                                                const buf = await file.arrayBuffer();
-                                                                // send to your endpoint
-                                                                const res = await fetch("/api/upload-image", {
-                                                                    method: "POST",
-                                                                    headers: {
-                                                                        "Content-Type": "application/octet-stream",
-                                                                        "x-file-name": file.name,
-                                                                    },
-                                                                    body: buf,
-                                                                });
-                                                                if (!res.ok) {
-                                                                    console.error("Upload failed", await res.text());
-                                                                    toast.error("Upload failed");
-                                                                    return;
+                                                                try {
+                                                                    // read raw bytes
+                                                                    const buf = await file.arrayBuffer();
+                                                                    // send to your endpoint
+                                                                    const res = await fetch("/api/upload-image", {
+                                                                        method: "POST",
+                                                                        headers: {
+                                                                            "Content-Type": "application/octet-stream",
+                                                                            "x-file-name": file.name,
+                                                                        },
+                                                                        body: buf,
+                                                                    });
+                                                                    if (!res.ok) {
+                                                                        console.error("Upload failed", await res.text());
+                                                                        toast.error("Upload failed");
+                                                                        return;
+                                                                    }
+                                                                    const { url } = await res.json();
+                                                                    toast.success("Upload successful");
+                                                                    onChange(url);
+                                                                } catch (error) {
+                                                                    console.error("Upload error:", error);
+                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
                                                                 }
-                                                                const { url } = await res.json();
-                                                                toast.success("Upload successful");
-                                                                onChange(url);
                                                             }}
                                                             className="w-full border p-2 rounded-md"
-                                                            {...field}
                                                         />
                                                     </FormControl>
                                                     <FormDescription>Upload thumbnail image</FormDescription>
@@ -259,38 +269,43 @@ export function CreatePassForm() {
                                         <FormField
                                             control={form.control}
                                             name="stripImageFrontUrl"
-                                            render={({ field: {  onChange, ...field } }) => (
+                                            render={({ field: { value, onChange, ...field } }) => (
                                                 <FormItem className="mt-4">
                                                     <FormLabel>Strip Image (Front)</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             type="file"
                                                             accept="image/*"
+                                                            ref={field.ref}
                                                             onChange={async (e) => {
                                                                 const file = e.target.files?.[0];
                                                                 if (!file) return;
-                                                                // read raw bytes
-                                                                const buf = await file.arrayBuffer();
-                                                                // send to your endpoint
-                                                                const res = await fetch("/api/upload-image", {
-                                                                    method: "POST",
-                                                                    headers: {
-                                                                        "Content-Type": "application/octet-stream",
-                                                                        "x-file-name": file.name,
-                                                                    },
-                                                                    body: buf,
-                                                                });
-                                                                if (!res.ok) {
-                                                                    console.error("Upload failed", await res.text());
-                                                                    toast.error("Upload failed");
-                                                                    return;
+                                                                try {
+                                                                    // read raw bytes
+                                                                    const buf = await file.arrayBuffer();
+                                                                    // send to your endpoint
+                                                                    const res = await fetch("/api/upload-image", {
+                                                                        method: "POST",
+                                                                        headers: {
+                                                                            "Content-Type": "application/octet-stream",
+                                                                            "x-file-name": file.name,
+                                                                        },
+                                                                        body: buf,
+                                                                    });
+                                                                    if (!res.ok) {
+                                                                        console.error("Upload failed", await res.text());
+                                                                        toast.error("Upload failed");
+                                                                        return;
+                                                                    }
+                                                                    const { url } = await res.json();
+                                                                    toast.success("Upload successful");
+                                                                    onChange(url);
+                                                                } catch (error) {
+                                                                    console.error("Upload error:", error);
+                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
                                                                 }
-                                                                const { url } = await res.json();
-                                                                toast.success("Upload successful");
-                                                                onChange(url);
                                                             }}
                                                             className="w-full border p-2 rounded-md"
-                                                            {...field}
                                                         />
                                                     </FormControl>
                                                     <FormDescription>Upload front strip image</FormDescription>
@@ -301,38 +316,43 @@ export function CreatePassForm() {
                                         <FormField
                                             control={form.control}
                                             name="stripImageBackUrl"
-                                            render={({ field: {  onChange, ...field } }) => (
+                                            render={({ field: { value, onChange, ...field } }) => (
                                                 <FormItem className="mt-4">
                                                     <FormLabel>Strip Image (Back)</FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             type="file"
                                                             accept="image/*"
+                                                            ref={field.ref}
                                                             onChange={async (e) => {
                                                                 const file = e.target.files?.[0];
                                                                 if (!file) return;
-                                                                // read raw bytes
-                                                                const buf = await file.arrayBuffer();
-                                                                // send to your endpoint
-                                                                const res = await fetch("/api/upload-image", {
-                                                                    method: "POST",
-                                                                    headers: {
-                                                                        "Content-Type": "application/octet-stream",
-                                                                        "x-file-name": file.name,
-                                                                    },
-                                                                    body: buf,
-                                                                });
-                                                                if (!res.ok) {
-                                                                    console.error("Upload failed", await res.text());
-                                                                    toast.error("Upload failed");
-                                                                    return;
+                                                                try {
+                                                                    // read raw bytes
+                                                                    const buf = await file.arrayBuffer();
+                                                                    // send to your endpoint
+                                                                    const res = await fetch("/api/upload-image", {
+                                                                        method: "POST",
+                                                                        headers: {
+                                                                            "Content-Type": "application/octet-stream",
+                                                                            "x-file-name": file.name,
+                                                                        },
+                                                                        body: buf,
+                                                                    });
+                                                                    if (!res.ok) {
+                                                                        console.error("Upload failed", await res.text());
+                                                                        toast.error("Upload failed");
+                                                                        return;
+                                                                    }
+                                                                    const { url } = await res.json();
+                                                                    toast.success("Upload successful");
+                                                                    onChange(url);
+                                                                } catch (error) {
+                                                                    console.error("Upload error:", error);
+                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
                                                                 }
-                                                                const { url } = await res.json();
-                                                                toast.success("Upload successful");
-                                                                onChange(url);
                                                             }}
                                                             className="w-full border p-2 rounded-md"
-                                                            {...field}
                                                         />
                                                     </FormControl>
                                                     <FormDescription>Upload back strip image</FormDescription>
@@ -476,39 +496,44 @@ export function CreatePassForm() {
                                     <FormField
                                         control={form.control}
                                         name="backgroundUrl"
-                                        render={({ field: {  onChange, ...field } }) => (
+                                        render={({ field: { value, onChange, ...field } }) => (
                                             <FormItem className="mt-4">
                                                 <FormLabel>Background Image</FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={async (e) => {
-                                                            const file = e.target.files?.[0];
-                                                            if (!file) return;
-                                                            // read raw bytes
-                                                            const buf = await file.arrayBuffer();
-                                                            // send to your endpoint
-                                                            const res = await fetch("/api/upload-image", {
-                                                                method: "POST",
-                                                                headers: {
-                                                                    "Content-Type": "application/octet-stream",
-                                                                    "x-file-name": file.name,
-                                                                },
-                                                                body: buf,
-                                                            });
-                                                            if (!res.ok) {
-                                                                console.error("Upload failed", await res.text());
-                                                                toast.error("Upload failed");
-                                                                return;
-                                                            }
-                                                            const { url } = await res.json();
-                                                            toast.success("Upload successful");
-                                                            onChange(url);
-                                                        }}
-                                                        className="w-full border p-2 rounded-md"
-                                                        {...field}
-                                                    />
+                                                        <Input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            ref={field.ref}
+                                                            onChange={async (e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (!file) return;
+                                                                try {
+                                                                    // read raw bytes
+                                                                    const buf = await file.arrayBuffer();
+                                                                    // send to your endpoint
+                                                                    const res = await fetch("/api/upload-image", {
+                                                                        method: "POST",
+                                                                        headers: {
+                                                                            "Content-Type": "application/octet-stream",
+                                                                            "x-file-name": file.name,
+                                                                        },
+                                                                        body: buf,
+                                                                    });
+                                                                    if (!res.ok) {
+                                                                        console.error("Upload failed", await res.text());
+                                                                        toast.error("Upload failed");
+                                                                        return;
+                                                                    }
+                                                                    const { url } = await res.json();
+                                                                    toast.success("Upload successful");
+                                                                    onChange(url);
+                                                                } catch (error) {
+                                                                    console.error("Upload error:", error);
+                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
+                                                                }
+                                                            }}
+                                                            className="w-full border p-2 rounded-md"
+                                                        />
                                                 </FormControl>
                                                 <FormDescription>Upload background image</FormDescription>
                                                 <FormMessage />

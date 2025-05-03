@@ -50,6 +50,9 @@ export async function POST(req: NextRequest) {
             webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
             authenticationToken
         });
+        
+        pass.logoText = logoText;
+        pass.backgroundColor = backgroundColor;
 
         pass.primaryFields.add({
             key: "name",
