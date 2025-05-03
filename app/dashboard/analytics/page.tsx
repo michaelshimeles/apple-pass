@@ -5,6 +5,8 @@ import { passInstalls, passMessages, passRegistrations, passes } from "@/db/sche
 import { auth } from "@clerk/nextjs/server";
 import { count, eq } from "drizzle-orm";
 import PassSelector from "../notifications/pass-selector";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function Analytics({ searchParams }: { searchParams: { passId?: string } }) {
     // Get the passId from the URL query parameters
@@ -24,9 +26,9 @@ export default async function Analytics({ searchParams }: { searchParams: { pass
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-semibold tracking-tight">Analytics</h1>
-                <PassSelector defaultPassId={intialPassId ? intialPassId : Number(params?.passId)} userPasses={userPasses} />
+                {userPasses?.length ? <PassSelector defaultPassId={intialPassId ? intialPassId : Number(params?.passId)} userPasses={userPasses} /> : null}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            {userPasses?.length ? <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Total Install(s)</CardTitle>
@@ -62,7 +64,16 @@ export default async function Analytics({ searchParams }: { searchParams: { pass
                         <p className="text-xl font-medium">{metrics?.createdAt ? new Date(metrics.createdAt).toLocaleDateString() : '-'}</p>
                     </CardContent>
                 </Card>
+            </div> : <div className="flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30">
+                <h3 className="text-lg font-semibold mb-2">No passes found</h3>
+                <p className="text-sm text-muted-foreground mb-4">Create your first Apple Pass to get started</p>
+                <Link href="/create">
+                    <Button>
+                        Create New Pass
+                    </Button>
+                </Link>
             </div>
+            }
 
         </div>
     );

@@ -32,11 +32,6 @@ const navItems: NavItem[] = [
     label: "Analytics",
     href: "/dashboard/analytics",
     icon: GitGraph
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings
   }
 ]
 

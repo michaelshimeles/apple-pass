@@ -11,13 +11,13 @@ export default async function Dashboard() {
 
   return (
     <section className="flex flex-col items-start justify-start p-6 w-full">
-      <div>
+      <div className="w-full">
         <h1 className="text-3xl font-semibold tracking-tight">Apple Passes</h1>
         <p className="mt-2">View and manage all your generated passes.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {response?.map((pass: any) => (
+          {response?.length > 0 ? response?.map((pass: any) => (
             <Fragment key={pass?.id}>
               <div className="group flex flex-col items-start rounded border bg-card hover:shadow-lg transition-all duration-300 w-full px-4 py-3 space-y-4">
                 <div className="space-y-2 w-full">
@@ -36,7 +36,17 @@ export default async function Dashboard() {
                 </div>
               </div>
             </Fragment>
-          ))}
+          )) : (
+            <div className="col-span-full flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30">
+              <h3 className="text-lg font-semibold mb-2">No passes found</h3>
+              <p className="text-sm text-muted-foreground mb-4">Create your first Apple Pass to get started</p>
+              <Link href="/create">
+                <Button>
+                  Create New Pass
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </section>
