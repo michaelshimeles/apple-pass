@@ -23,7 +23,7 @@ export default async function Analytics({ searchParams }: { searchParams: { pass
     const metrics = params?.passId && Number(params?.passId) ? await getPassMetrics(Number(params?.passId)) : intialPassId ? await getPassMetrics(intialPassId) : null;
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-4">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-semibold tracking-tight">Analytics</h1>
                 {userPasses?.length ? <PassSelector defaultPassId={intialPassId ? intialPassId : Number(params?.passId)} userPasses={userPasses} /> : null}
