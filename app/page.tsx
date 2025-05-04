@@ -12,13 +12,13 @@ export default function Home() {
 
                     <div className="mt-6 flex flex-wrap justify-center gap-4">
                         <Button asChild>
-                            <Link href="/dashboard">
+                            <Link href="/dashboard" prefetch={true}>
                                 <span>Dashboard</span>
                             </Link>
                         </Button>
 
                         <Button asChild variant="outline">
-                            <Link href="/create">
+                            <Link href="/create" prefetch={true}>
                                 <span>Create Pass</span>
                             </Link>
                         </Button>
