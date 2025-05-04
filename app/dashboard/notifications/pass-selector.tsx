@@ -18,7 +18,7 @@ export default function PassSelector({ defaultPassId, userPasses }: { defaultPas
             router.push(path + `?passId=${selectedPassId}`)
         } 
 
-    }, [selectedPassId, path])
+    }, [selectedPassId, path, router])
 
 
     return (

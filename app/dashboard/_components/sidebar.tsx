@@ -5,8 +5,7 @@ import {
   GitGraph,
   HomeIcon,
   LucideIcon,
-  MonitorSmartphone,
-  Settings
+  MonitorSmartphone
 } from "lucide-react"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'

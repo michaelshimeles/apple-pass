@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import ModeToggle from "./mode-toggle";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -221,7 +220,7 @@ export function CreatePassForm() {
                                         <FormField
                                             control={form.control}
                                             name="thumbnailUrl"
-                                            render={({ field: { value, onChange, ...field } }) => (
+                                            render={({ field: { onChange, ...field } }) => (
                                                 <FormItem className="mt-4">
                                                     <FormLabel>Thumbnail</FormLabel>
                                                     <FormControl>
@@ -270,7 +269,7 @@ export function CreatePassForm() {
                                         <FormField
                                             control={form.control}
                                             name="stripImageFrontUrl"
-                                            render={({ field: { value, onChange, ...field } }) => (
+                                            render={({ field: { onChange, ...field } }) => (
                                                 <FormItem className="mt-4">
                                                     <FormLabel>Strip Image (Front)</FormLabel>
                                                     <FormControl>
@@ -317,7 +316,7 @@ export function CreatePassForm() {
                                         <FormField
                                             control={form.control}
                                             name="stripImageBackUrl"
-                                            render={({ field: { value, onChange, ...field } }) => (
+                                            render={({ field: { onChange, ...field } }) => (
                                                 <FormItem className="mt-4">
                                                     <FormLabel>Strip Image (Back)</FormLabel>
                                                     <FormControl>
@@ -497,7 +496,7 @@ export function CreatePassForm() {
                                     <FormField
                                         control={form.control}
                                         name="backgroundUrl"
-                                        render={({ field: { value, onChange, ...field } }) => (
+                                        render={({ field: { onChange, ...field } }) => (
                                             <FormItem className="mt-4">
                                                 <FormLabel>Background Image</FormLabel>
                                                 <FormControl>
