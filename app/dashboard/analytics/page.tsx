@@ -25,7 +25,10 @@ export default async function Analytics({ searchParams }: { searchParams: { pass
     return (
         <div className="p-6 space-y-4">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-semibold tracking-tight">Analytics</h1>
+                <div className="flex flex-col items-start justify-center gap-2">
+                    <h1 className="text-3xl font-semibold tracking-tight">Analytics</h1>
+                    <p className="text-muted-foreground">View analytics for your passes.</p>
+                </div>
                 {userPasses?.length ? <PassSelector defaultPassId={intialPassId ? intialPassId : Number(params?.passId)} userPasses={userPasses} /> : null}
             </div>
             {userPasses?.length ? <div className="grid grid-cols-1 md:grid-cols-4 gap-2">

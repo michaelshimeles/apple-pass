@@ -12,7 +12,10 @@ export default async function NotificationsPage() {
 
   return (
     <div className="p-6 w-full space-y-4">
-      <h1 className="text-3xl font-semibold tracking-tight">Send Notification</h1>
+      <div className="flex flex-col items-start justify-center gap-2">
+        <h1 className="text-3xl font-semibold tracking-tight">Send Notification</h1>
+        <p className="text-muted-foreground">Send a notification to your users.</p>
+      </div>
       {allPasses?.length ? <NotificationsForm passes={allPasses} />
         :
         <div className="flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30">

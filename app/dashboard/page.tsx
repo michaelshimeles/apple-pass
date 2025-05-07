@@ -12,10 +12,12 @@ export default async function Dashboard() {
   return (
     <section className="flex flex-col items-start justify-start p-6 w-full">
       <div className="w-full">
-        <h1 className="text-3xl font-semibold tracking-tight">Apple Passes</h1>
-        <p className="mt-2">View and manage all your generated passes.</p>
+        <div className="flex flex-col items-start justify-center gap-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Apple Passes</h1>
+          <p className="text-muted-foreground">View and manage all your generated passes.</p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {response?.length > 0 ? response?.map((pass: any) => (
             <Fragment key={pass?.id}>

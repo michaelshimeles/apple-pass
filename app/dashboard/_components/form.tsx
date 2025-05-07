@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -122,36 +123,20 @@ export function CreatePassForm() {
                             {step === 1 ? (
                                 <>
                                     {/* Basic Info */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Name</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                    </FormControl>
-                                                    <FormDescription>Enter your name</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="logoText"
-                                            render={({ field }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Logo Text</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                    </FormControl>
-                                                    <FormDescription>Text that appears next to the logo</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Name</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>Enter your name</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     <FormField
                                         control={form.control}
@@ -160,7 +145,7 @@ export function CreatePassForm() {
                                             <FormItem className="mt-4">
                                                 <FormLabel>Description</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Textarea {...field} className="w-full border p-2 rounded-md" />
                                                 </FormControl>
                                                 <FormDescription>Enter your description</FormDescription>
                                                 <FormMessage />
@@ -168,7 +153,6 @@ export function CreatePassForm() {
                                         )}
                                     />
 
-                                    {/* Images */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <FormField
                                             control={form.control}
@@ -217,6 +201,23 @@ export function CreatePassForm() {
                                                 </FormItem>
                                             )}
                                         />
+                                        <FormField
+                                            control={form.control}
+                                            name="logoText"
+                                            render={({ field }) => (
+                                                <FormItem className="mt-4">
+                                                    <FormLabel>Logo Text</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    </FormControl>
+                                                    <FormDescription>Text that appears next to the logo</FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    {/* Images */}
+                                    <div className="grid grid-cols-2 gap-4">
                                         <FormField
                                             control={form.control}
                                             name="thumbnailUrl"
@@ -578,7 +579,7 @@ export function CreatePassForm() {
             {/* 🔍 Live Preview */}
             <div className="flex items-center justify-center sticky top-4">
                 <div
-                    className="rounded-xl shadow-lg overflow-hidden text-white font-sans"
+                    className="rounded shadow-lg overflow-hidden text-white font-sans"
                     style={{
                         backgroundColor: watched.backgroundColor || "#b76d6d",
                         width: 320,
@@ -606,26 +607,26 @@ export function CreatePassForm() {
                             <span className="text-black text-xs">[strip image]</span>
                         )}
                     </div>
-                    <div className="flex justify-between items-center text-sm font-semibold bg-black/10 px-2 py-2 rounded-md">
+                    <div className="flex justify-between items-center text-sm font-semibold bg-black/10 py-2 rounded-md">
                         <div>
                             <div className="text-xs opacity-80">
-                                {watched.primaryFieldLabel || "NAME"}
+                                {watched.primaryFieldLabel || "Primary Field Label"}
                             </div>
-                            <div>{watched.primaryFieldValue || watched.name || "[displayName]"}</div>
+                            <div>{watched.primaryFieldValue || "primaryFieldValue"}</div>
                         </div>
                         <div>
                             <div className="text-xs opacity-80">
-                                {watched.secondaryFieldLabel || "TIER"}
+                                {watched.secondaryFieldLabel || "Secondary Field Label"}
                             </div>
-                            <div>{watched.secondaryFieldValue || "[tier]"}</div>
+                            <div>{watched.secondaryFieldValue || "secondaryFieldValue"}</div>
                         </div>
                     </div>
                     {watched.auxiliaryFieldLabel || watched.auxiliaryFieldValue ? (
                         <div className="mt-2 text-sm">
                             <div className="text-xs opacity-80">
-                                {watched.auxiliaryFieldLabel}
+                                {watched.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
                             </div>
-                            <div>{watched.auxiliaryFieldValue}</div>
+                            <div>{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
                         </div>
                     ) : null}
                     {watched.url && (
