@@ -17,6 +17,7 @@ export async function GET(req: Request) {
         .limit(1)
         .then((data) => data[0]);
 
+
     if (!pass) {
         return new Response("Not found", { status: 404 });
     }
@@ -31,5 +32,11 @@ export async function GET(req: Request) {
         console.error("Failed to record install:", e);
     }
 
-    return Response.redirect(pass.fileUrl);
+    return new Response(null, {
+        status: 302,
+        headers: {
+            Location: pass.fileUrl,
+            "Content-Disposition": `attachment; filename="${pass.slug}.pkpass"`,
+        },
+    });
 }

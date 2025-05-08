@@ -58,15 +58,6 @@ export default async function Analytics({ searchParams }: { searchParams: { pass
                         <p className="text-xl font-medium">{metrics?.messages ?? 0}</p>
                     </CardContent>
                 </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Created On</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-xl font-medium">{metrics?.createdAt ? new Date(metrics.createdAt).toLocaleDateString() : '-'}</p>
-                    </CardContent>
-                </Card>
             </div> : <div className="flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30">
                 <h3 className="text-lg font-semibold mb-2">No passes found</h3>
                 <p className="text-sm text-muted-foreground mb-4">Create your first Apple Pass to get started</p>

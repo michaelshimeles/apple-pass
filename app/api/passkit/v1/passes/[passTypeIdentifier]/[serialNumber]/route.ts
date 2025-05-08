@@ -79,7 +79,7 @@ export async function GET(
         organizationName: "Fabrika",
         teamIdentifier: "5S3KCRYBD2",
         passTypeIdentifier,
-        style: "generic",
+        style: "storeCard",
     });
 
     instance.primaryFields.add({

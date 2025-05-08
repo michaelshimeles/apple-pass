@@ -17,11 +17,13 @@ export default async function Dashboard() {
           <p className="text-muted-foreground">View and manage all your generated passes.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+        <div className="flex gap-4 flex-wrap justify-start items-center mt-4">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {response?.length > 0 ? response?.map((pass: any) => (
+          {response?.length > 0 ? response?.sort((a, b) => {
+            return new Date(b?.createdAt!).getTime() - new Date(a?.createdAt!).getTime();
+          })?.map((pass: any) => (
             <Fragment key={pass?.id}>
-              <div className="group flex flex-col items-start rounded border bg-card hover:shadow-lg transition-all duration-300 w-full px-4 py-3 space-y-4">
+              <div className="group flex flex-col items-start rounded border bg-card hover:shadow-lg transition-all duration-300 w-fit px-4 py-3 space-y-4">
                 <div className="space-y-2 w-full">
                   <h3 className="text-lg font-semibold tracking-tight">{pass?.name}</h3>
                   <p className="text-sm text-muted-foreground">{pass?.description}</p>

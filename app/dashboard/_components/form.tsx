@@ -19,54 +19,64 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    description: z.string().min(1, "Description is required"),
+    description: z.string().min(1, "Description is required").optional(),
     logoText: z.string().optional(),
-    backgroundColor: z
-        .string()
-        .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color")
-        .optional(),
+    headerFieldLabel: z.string().optional(),
+    headerFieldValue: z.string().optional(),
+    backgroundColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color").optional(),
     logoUrl: z.string().optional(),
     stripImageFrontUrl: z.string().optional(),
     stripImageBackUrl: z.string().optional(),
-    thumbnailUrl: z.string().optional(),
     backgroundUrl: z.string().optional(),
-    primaryFieldLabel: z.string().optional(),
-    primaryFieldValue: z.string().optional(),
     secondaryFieldLabel: z.string().optional(),
     secondaryFieldValue: z.string().optional(),
     auxiliaryFieldLabel: z.string().optional(),
     auxiliaryFieldValue: z.string().optional(),
-    url: z.string().url("Must be a valid URL").optional(),
+    // url: z.string().url("Must be a valid URL").optional(),
+    barcodeFormat: z.enum(["PKBarcodeFormatQR", "PKBarcodeFormatPDF417", "PKBarcodeFormatAztec", "PKBarcodeFormatCode128"]).optional(),
+    barcodeMessage: z.string().optional(),
+    barcodeAltText: z.string().optional(),
+    barcodeEncoding: z.string().optional(),
 });
+
+const barcodeFormatFriendlyNames: Record<string, string> = {
+    "PKBarcodeFormatQR": "QR Code",
+    "PKBarcodeFormatPDF417": "PDF417",
+    "PKBarcodeFormatAztec": "Aztec",
+    "PKBarcodeFormatCode128": "Code 128",
+};
 
 type FormValues = z.infer<typeof formSchema>;
 
 export function CreatePassForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [step, setStep] = useState(1); // Track current step
+    const [step, setStep] = useState<number>(1);
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
             description: "",
-            logoText: "",
-            backgroundColor: "#000", // Default to same color as preview
             logoUrl: "",
+            logoText: "",
+            headerFieldLabel: "",
+            headerFieldValue: "",
+            backgroundColor: "#000",
             stripImageFrontUrl: "",
             stripImageBackUrl: "",
-            thumbnailUrl: "",
-            backgroundUrl: "",
-            primaryFieldLabel: "",
-            primaryFieldValue: "",
             secondaryFieldLabel: "",
             secondaryFieldValue: "",
             auxiliaryFieldLabel: "",
             auxiliaryFieldValue: "",
-            url: "",
+            // url: "",
+            barcodeFormat: "PKBarcodeFormatQR",
+            barcodeMessage: "",
+            barcodeAltText: "",
+            barcodeEncoding: "iso-8859-1",
         },
     });
 
@@ -82,7 +92,9 @@ export function CreatePassForm() {
             });
 
             if (!response.ok) {
-                toast.error("Failed to create pass");
+                const errorText = await response.text();
+                toast.error(`Failed to create pass: ${response.status} ${errorText}`);
+                setLoading(false);
                 return;
             }
 
@@ -91,13 +103,20 @@ export function CreatePassForm() {
             router.push("/dashboard");
         } catch (err) {
             console.error("Error creating pass:", err);
-            toast.error("Unexpected error");
+            toast.error("Unexpected error during pass creation");
             setLoading(false);
         }
     };
 
-    const nextStep = () => setStep(2);
-    const prevStep = () => setStep(1);
+    const nextStep = () => {
+        if (step < 3) setStep(step + 1);
+    };
+
+    const prevStep = () => {
+        if (step > 1) setStep(step - 1);
+    };
+
+    console.log('formState', form.formState.errors)
 
     return (
         <div className="grid grid-cols-2 gap-8 max-w-5xl mx-auto p-4 w-full">
@@ -112,394 +131,245 @@ export function CreatePassForm() {
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>1</div>
                             <div className="h-1 w-16 bg-gray-200 mx-2"></div>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>2</div>
+                            <div className="h-1 w-16 bg-gray-200 mx-2"></div>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}>3</div>
                         </div>
                         <div className="text-sm dark:text-white">
-                            Step {step} of 2
+                            Step {step} of 3
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <div>
-                            {step === 1 ? (
-                                <>
-                                    {/* Basic Info */}
+                        {step === 1 && (
+                            <>
+                                {/* Basic Info */}
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem className="mt-4">
+                                            <FormLabel>Name</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                            </FormControl>
+                                            <FormDescription>This will not be on the pass (for organizational purposes)</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {form.formState.errors.name?.message && (
+                                    <p className="text-red-500 text-sm mt-2">{form.formState.errors.name?.message}</p>
+                                )}
+
+                                <FormField
+                                    control={form.control}
+                                    name="description"
+                                    render={({ field }) => (
+                                        <FormItem className="mt-4">
+                                            <FormLabel>Description</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} className="w-full border p-2 rounded-md" />
+                                            </FormControl>
+                                            <FormDescription>Describe the purpose of your pass</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {form.formState.errors.description?.message && (
+                                    <p className="text-red-500 text-sm mt-2">{form.formState.errors.description?.message}</p>
+                                )}
+                                <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="name"
+                                        name="logoUrl"
+                                        render={({ field: { onChange, ...field } }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Logo</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        ref={field.ref}
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+
+                                                            if (!file) return;
+
+                                                            // Check image dimensions before upload
+                                                            const img = new Image();
+                                                            const objectUrl = URL.createObjectURL(file);
+                                                            let processedFile = file; // Use original file by default
+                                                            let targetMimeType = "image/png"; // Always aim for PNG
+                                                            let originalFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+
+                                                            try {
+                                                                await new Promise<void>((resolve, reject) => {
+                                                                    img.onload = () => resolve();
+                                                                    img.onerror = () => reject(new Error('Failed to load image'));
+                                                                    img.src = objectUrl;
+                                                                });
+
+                                                                const needsResize = img.width > 160;
+                                                                const needsTypeConversion = file.type !== targetMimeType;
+
+                                                                if (needsResize || needsTypeConversion) {
+                                                                    if (needsResize && needsTypeConversion) {
+                                                                        toast.info('Resizing and converting to PNG...');
+                                                                    } else if (needsResize) {
+                                                                        toast.info('Logo image is too wide, resizing to 160px width...');
+                                                                    } else if (needsTypeConversion) {
+                                                                        toast.info(`Converting to ${targetMimeType}...`);
+                                                                    }
+
+                                                                    const canvas = document.createElement('canvas');
+                                                                    const ctx = canvas.getContext('2d');
+                                                                    if (!ctx) {
+                                                                        throw new Error('Failed to get canvas context');
+                                                                    }
+
+                                                                    const aspectRatio = img.height / img.width;
+                                                                    canvas.width = needsResize ? 160 : img.width;
+                                                                    canvas.height = needsResize ? (160 * aspectRatio) : img.height;
+
+                                                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                                                                    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, targetMimeType, 0.95));
+                                                                    if (!blob) {
+                                                                        throw new Error('Failed to convert canvas to blob');
+                                                                    }
+                                                                    processedFile = new File([blob], `${originalFileNameWithoutExtension}.png`, {
+                                                                        type: targetMimeType,
+                                                                        lastModified: Date.now(),
+                                                                    });
+                                                                    toast.success('Logo processed successfully');
+                                                                }
+                                                            } catch (error) {
+                                                                console.error("Image processing error:", error);
+                                                                toast.error("Image processing failed: " + (error instanceof Error ? error.message : String(error)));
+                                                                URL.revokeObjectURL(objectUrl);
+                                                                return;
+                                                            } finally {
+                                                                URL.revokeObjectURL(objectUrl); // Ensure cleanup in all cases
+                                                            }
+
+                                                            try {
+                                                                // read raw bytes from the potentially processed file
+                                                                const buf = await processedFile.arrayBuffer();
+                                                                // send to your endpoint
+                                                                const res = await fetch("/api/upload-image", {
+                                                                    method: "POST",
+                                                                    headers: {
+                                                                        "Content-Type": "application/octet-stream", // Server expects raw bytes
+                                                                        "x-file-name": processedFile.name,
+                                                                    },
+                                                                    body: buf,
+                                                                });
+                                                                if (!res.ok) {
+                                                                    console.error("Upload failed", await res.text());
+                                                                    toast.error("Upload failed");
+                                                                    return;
+                                                                }
+                                                                const { url } = await res.json();
+                                                                toast.success("Upload successful");
+                                                                onChange(url);
+                                                            } catch (error) {
+                                                                console.error("Upload error:", error);
+                                                                toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
+                                                            }
+                                                        }}
+                                                        className="w-full border p-2 rounded-md"
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>Upload logo image</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.logoUrl?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.logoUrl?.message}</p>
+                                    )}
+                                    {!watched?.logoUrl && <FormField
+                                        control={form.control}
+                                        name="logoText"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Name</FormLabel>
+                                                <FormLabel>Logo Text</FormLabel>
                                                 <FormControl>
                                                     <Input {...field} type="text" className="w-full border p-2 rounded-md" />
                                                 </FormControl>
-                                                <FormDescription>Enter your name</FormDescription>
+                                                <FormDescription>Text that appears next to the logo</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
-                                    />
+                                    />}
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="backgroundColor"
+                                    render={({ field }) => (
+                                        <FormItem className="mt-4">
+                                            <FormLabel>Background Color</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} type="color" className="w-full h-10 p-1 rounded-md" />
+                                            </FormControl>
+                                            <FormDescription>Customize your pass background</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {form.formState.errors.backgroundColor?.message && (
+                                    <p className="text-red-500 text-sm mt-2">{form.formState.errors.backgroundColor?.message}</p>
+                                )}
+                            </>
+                        )}
+
+                        {step === 2 && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
 
                                     <FormField
                                         control={form.control}
-                                        name="description"
+                                        name="headerFieldLabel"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Description</FormLabel>
+                                                <FormLabel>Header Field Label</FormLabel>
                                                 <FormControl>
-                                                    <Textarea {...field} className="w-full border p-2 rounded-md" />
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
                                                 </FormControl>
-                                                <FormDescription>Enter your description</FormDescription>
+                                                <FormDescription>Label for the header field</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="logoUrl"
-                                            render={({ field: { onChange, ...field } }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Logo</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            ref={field.ref}
-                                                            onChange={async (e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (!file) return;
-                                                                try {
-                                                                    // read raw bytes
-                                                                    const buf = await file.arrayBuffer();
-                                                                    // send to your endpoint
-                                                                    const res = await fetch("/api/upload-image", {
-                                                                        method: "POST",
-                                                                        headers: {
-                                                                            "Content-Type": "application/octet-stream",
-                                                                            "x-file-name": file.name,
-                                                                        },
-                                                                        body: buf,
-                                                                    });
-                                                                    if (!res.ok) {
-                                                                        console.error("Upload failed", await res.text());
-                                                                        toast.error("Upload failed");
-                                                                        return;
-                                                                    }
-                                                                    const { url } = await res.json();
-                                                                    toast.success("Upload successful");
-                                                                    onChange(url);
-                                                                } catch (error) {
-                                                                    console.error("Upload error:", error);
-                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
-                                                                }
-                                                            }}
-                                                            className="w-full border p-2 rounded-md"
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>Upload logo image</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="logoText"
-                                            render={({ field }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Logo Text</FormLabel>
-                                                    <FormControl>
-                                                        <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                    </FormControl>
-                                                    <FormDescription>Text that appears next to the logo</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    {/* Images */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="thumbnailUrl"
-                                            render={({ field: { onChange, ...field } }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Thumbnail</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            ref={field.ref}
-                                                            onChange={async (e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (!file) return;
-                                                                try {
-                                                                    // read raw bytes
-                                                                    const buf = await file.arrayBuffer();
-                                                                    // send to your endpoint
-                                                                    const res = await fetch("/api/upload-image", {
-                                                                        method: "POST",
-                                                                        headers: {
-                                                                            "Content-Type": "application/octet-stream",
-                                                                            "x-file-name": file.name,
-                                                                        },
-                                                                        body: buf,
-                                                                    });
-                                                                    if (!res.ok) {
-                                                                        console.error("Upload failed", await res.text());
-                                                                        toast.error("Upload failed");
-                                                                        return;
-                                                                    }
-                                                                    const { url } = await res.json();
-                                                                    toast.success("Upload successful");
-                                                                    onChange(url);
-                                                                } catch (error) {
-                                                                    console.error("Upload error:", error);
-                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
-                                                                }
-                                                            }}
-                                                            className="w-full border p-2 rounded-md"
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>Upload thumbnail image</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="stripImageFrontUrl"
-                                            render={({ field: { onChange, ...field } }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Strip Image (Front)</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            ref={field.ref}
-                                                            onChange={async (e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (!file) return;
-                                                                try {
-                                                                    // read raw bytes
-                                                                    const buf = await file.arrayBuffer();
-                                                                    // send to your endpoint
-                                                                    const res = await fetch("/api/upload-image", {
-                                                                        method: "POST",
-                                                                        headers: {
-                                                                            "Content-Type": "application/octet-stream",
-                                                                            "x-file-name": file.name,
-                                                                        },
-                                                                        body: buf,
-                                                                    });
-                                                                    if (!res.ok) {
-                                                                        console.error("Upload failed", await res.text());
-                                                                        toast.error("Upload failed");
-                                                                        return;
-                                                                    }
-                                                                    const { url } = await res.json();
-                                                                    toast.success("Upload successful");
-                                                                    onChange(url);
-                                                                } catch (error) {
-                                                                    console.error("Upload error:", error);
-                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
-                                                                }
-                                                            }}
-                                                            className="w-full border p-2 rounded-md"
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>Upload front strip image</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="stripImageBackUrl"
-                                            render={({ field: { onChange, ...field } }) => (
-                                                <FormItem className="mt-4">
-                                                    <FormLabel>Strip Image (Back)</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            ref={field.ref}
-                                                            onChange={async (e) => {
-                                                                const file = e.target.files?.[0];
-                                                                if (!file) return;
-                                                                try {
-                                                                    // read raw bytes
-                                                                    const buf = await file.arrayBuffer();
-                                                                    // send to your endpoint
-                                                                    const res = await fetch("/api/upload-image", {
-                                                                        method: "POST",
-                                                                        headers: {
-                                                                            "Content-Type": "application/octet-stream",
-                                                                            "x-file-name": file.name,
-                                                                        },
-                                                                        body: buf,
-                                                                    });
-                                                                    if (!res.ok) {
-                                                                        console.error("Upload failed", await res.text());
-                                                                        toast.error("Upload failed");
-                                                                        return;
-                                                                    }
-                                                                    const { url } = await res.json();
-                                                                    toast.success("Upload successful");
-                                                                    onChange(url);
-                                                                } catch (error) {
-                                                                    console.error("Upload error:", error);
-                                                                    toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
-                                                                }
-                                                            }}
-                                                            className="w-full border p-2 rounded-md"
-                                                        />
-                                                    </FormControl>
-                                                    <FormDescription>Upload back strip image</FormDescription>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-
+                                    {form.formState.errors.headerFieldLabel?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.headerFieldLabel?.message}</p>
+                                    )}
                                     <FormField
                                         control={form.control}
-                                        name="backgroundColor"
+                                        name="headerFieldValue"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Background Color</FormLabel>
+                                                <FormLabel>Header Field Value</FormLabel>
                                                 <FormControl>
-                                                    <Input {...field} type="color" className="w-full h-10 p-1 rounded-md" />
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
                                                 </FormControl>
-                                                <FormDescription>Customize your pass background</FormDescription>
+                                                <FormDescription>Value for the header field</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                </>
-                            ) : (
-                                <>
-                                    <div>
-                                        {/* Primary Fields */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="primaryFieldLabel"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Primary Field Label</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Label shown for the primary field</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="primaryFieldValue"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Primary Field Value</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Value for the primary field</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        {/* Secondary Fields */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="secondaryFieldLabel"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Secondary Field Label</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Label for the secondary field</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="secondaryFieldValue"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Secondary Field Value</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Value for the secondary field</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        {/* Auxiliary Fields */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="auxiliaryFieldLabel"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Auxiliary Field Label</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Label for the auxiliary field</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                            <FormField
-                                                control={form.control}
-                                                name="auxiliaryFieldValue"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Auxiliary Field Value</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="text" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Value for the auxiliary field</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField
-                                                control={form.control}
-                                                name="url"
-                                                render={({ field }) => (
-                                                    <FormItem className="mt-4">
-                                                        <FormLabel>Link / Website URL</FormLabel>
-                                                        <FormControl>
-                                                            <Input {...field} type="url" className="w-full border p-2 rounded-md" />
-                                                        </FormControl>
-                                                        <FormDescription>Optional URL related to this pass</FormDescription>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                    </div>
+                                    {form.formState.errors.headerFieldValue?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.headerFieldValue?.message}</p>
+                                    )}
+                                </div>
+                                {/* Images */}
+                                <div className="grid grid-cols-2 gap-4">
                                     <FormField
                                         control={form.control}
-                                        name="backgroundUrl"
+                                        name="stripImageFrontUrl"
                                         render={({ field: { onChange, ...field } }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Background Image</FormLabel>
+                                                <FormLabel>Strip Image (Front)</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="file"
@@ -536,35 +406,239 @@ export function CreatePassForm() {
                                                         className="w-full border p-2 rounded-md"
                                                     />
                                                 </FormControl>
-                                                <FormDescription>Upload background image</FormDescription>
+                                                <FormDescription>Upload front strip image</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                    <div className="flex justify-between mt-6">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={prevStep}
-                                            className="w-24"
-                                        >
-                                            Back
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            className="w-24"
-                                            disabled={loading}
-                                        >
-                                            {loading ? "Creating..." : "Submit"}
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                                    {form.formState.errors.stripImageFrontUrl?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.stripImageFrontUrl?.message}</p>
+                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="stripImageBackUrl"
+                                        render={({ field: { onChange, ...field } }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Strip Image (Back)</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        ref={field.ref}
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file) return;
+                                                            try {
+                                                                // read raw bytes
+                                                                const buf = await file.arrayBuffer();
+                                                                // send to your endpoint
+                                                                const res = await fetch("/api/upload-image", {
+                                                                    method: "POST",
+                                                                    headers: {
+                                                                        "Content-Type": "application/octet-stream",
+                                                                        "x-file-name": file.name,
+                                                                    },
+                                                                    body: buf,
+                                                                });
+                                                                if (!res.ok) {
+                                                                    console.error("Upload failed", await res.text());
+                                                                    toast.error("Upload failed");
+                                                                    return;
+                                                                }
+                                                                const { url } = await res.json();
+                                                                toast.success("Upload successful");
+                                                                onChange(url);
+                                                            } catch (error) {
+                                                                console.error("Upload error:", error);
+                                                                toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
+                                                            }
+                                                        }}
+                                                        className="w-full border p-2 rounded-md"
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>Upload back strip image</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.stripImageBackUrl?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.stripImageBackUrl?.message}</p>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="secondaryFieldLabel"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Secondary Field Label</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>Label for the secondary field</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.secondaryFieldLabel?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.secondaryFieldLabel?.message}</p>
+                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="secondaryFieldValue"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Secondary Field Value</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>Value for the secondary field</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.secondaryFieldValue?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.secondaryFieldValue?.message}</p>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="auxiliaryFieldLabel"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Auxiliary Field Label</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>Label for the auxiliary field</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.auxiliaryFieldLabel?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.auxiliaryFieldLabel?.message}</p>
+                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="auxiliaryFieldValue"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-4">
+                                                <FormLabel>Auxiliary Field Value</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>Value for the auxiliary field</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.auxiliaryFieldValue?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.auxiliaryFieldValue?.message}</p>
+                                    )}
+                                </div>
+
+                            </>
+                        )}
+
+                        {step === 3 && (
+                            <>
+                                <div className="space-y-2 pt-4 border-t mt-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="barcodeFormat"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Barcode Format</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select a barcode format" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="PKBarcodeFormatQR">QR Code</SelectItem>
+                                                        <SelectItem value="PKBarcodeFormatPDF417">PDF417</SelectItem>
+                                                        <SelectItem value="PKBarcodeFormatAztec">Aztec</SelectItem>
+                                                        <SelectItem value="PKBarcodeFormatCode128">Code 128</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormDescription>Choose the barcode format.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.barcodeFormat?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.barcodeFormat?.message}</p>
+                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="barcodeMessage"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-2">
+                                                <FormLabel>Barcode Message</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>The message to encode in the barcode.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.barcodeMessage?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.barcodeMessage?.message}</p>
+                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="barcodeAltText"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-2">
+                                                <FormLabel>Barcode Alternate Text</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>Text displayed near the barcode (e.g., for accessibility).</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.barcodeAltText?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.barcodeAltText?.message}</p>
+                                    )}
+                                    <FormField
+                                        control={form.control}
+                                        name="barcodeEncoding"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-2">
+                                                <FormLabel>Barcode Message Encoding</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                </FormControl>
+                                                <FormDescription>The encoding for the barcode message.</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    {form.formState.errors.barcodeEncoding?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.barcodeEncoding?.message}</p>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
 
-                    {step === 1 && (
-                        <div className="flex justify-end mt-6">
+                    <div className="flex justify-between mt-6">
+                        {step > 1 && (
+                            <Button
+                                type="button"
+                                onClick={prevStep}
+                                variant="outline"
+                                className="w-24"
+                            >
+                                Previous
+                            </Button>
+                        )}
+                        {step < 3 && (
                             <Button
                                 type="button"
                                 onClick={nextStep}
@@ -572,8 +646,17 @@ export function CreatePassForm() {
                             >
                                 Next
                             </Button>
-                        </div>
-                    )}
+                        )}
+                        {step === 3 && (
+                            <Button
+                                type="submit"
+                                className="w-24"
+                                disabled={loading}
+                            >
+                                {loading ? "Creating..." : "Submit"}
+                            </Button>
+                        )}
+                    </div>
                 </form>
             </Form>
             {/* 🔍 Live Preview */}
@@ -596,8 +679,8 @@ export function CreatePassForm() {
                             )}
                         </div>
                         <div className="text-right">
-                            <div>POINTS</div>
-                            <div className="text-lg">0</div>
+                            <div>{watched.headerFieldLabel || "Header Field Label"}</div>
+                            <div className="text-lg">{watched.headerFieldValue || "Header Field Value"}</div>
                         </div>
                     </div>
                     <div className="w-full h-24 bg-white mb-2 flex items-center justify-center">
@@ -608,12 +691,6 @@ export function CreatePassForm() {
                         )}
                     </div>
                     <div className="flex justify-between items-center text-sm font-semibold bg-black/10 py-2 rounded-md">
-                        <div>
-                            <div className="text-xs opacity-80">
-                                {watched.primaryFieldLabel || "Primary Field Label"}
-                            </div>
-                            <div>{watched.primaryFieldValue || "primaryFieldValue"}</div>
-                        </div>
                         <div>
                             <div className="text-xs opacity-80">
                                 {watched.secondaryFieldLabel || "Secondary Field Label"}
@@ -629,11 +706,12 @@ export function CreatePassForm() {
                             <div>{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
                         </div>
                     ) : null}
-                    {watched.url && (
-                        <div className="mt-2 text-xs text-center">
-                            <a href={watched.url} className="underline" target="_blank" rel="noopener noreferrer">
-                                Visit Website
-                            </a>
+                    {watched.barcodeFormat && (
+                        <div className="mt-2 text-sm">
+                            <div className="text-xs opacity-80">
+                                Barcode Format
+                            </div>
+                            <div>{barcodeFormatFriendlyNames[watched.barcodeFormat] || watched.barcodeFormat}</div>
                         </div>
                     )}
                 </div>

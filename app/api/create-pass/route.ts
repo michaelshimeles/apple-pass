@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, description, logoText, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, thumbnailUrl, backgroundUrl, primaryFieldLabel, primaryFieldValue, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat, url } = await req.json();
+    const { name, description, logoText, headerFieldLabel, headerFieldValue, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, backgroundUrl, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat, url } = await req.json();
 
     if (!name || !description) {
         return NextResponse.json({ message: "Missing fields" }, { status: 400 });
@@ -27,12 +27,52 @@ export async function POST(req: NextRequest) {
     try {
         // Load pass template
         const template = await Template.load(
-            path.join(process.cwd(), "public/pass-models/generic.pass")
+            path.join(process.cwd(), "public/pass-models/storecard.pass")
         );
 
+        let logoImageUrl;
+        try {
+            const imageResponse = await fetch(logoUrl);
+            if (!imageResponse.ok) {
+                // Log the status and text for more detailed error information
+                const errorText = await imageResponse.text();
+                console.error(`Failed to fetch logo image. Status: ${imageResponse.status}, URL: ${logoUrl}, Response: ${errorText}`);
+                throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
+            }
+            logoImageUrl = await imageResponse.arrayBuffer();
+        } catch (error) {
+            console.error("Error fetching logo image for pass creation:", error);
+            // Return a specific error response to the client
+            return NextResponse.json({
+                message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
+                details: error instanceof Error ? error.message : String(error)
+            }, { status: 500 });
+        }
+
+        // PassImages.add(imageType: ImageType, pathOrBuffer: string | Buffer, density?: ImageDensity, lang?: string): Promise<void>
         // Add logo if needed
         await template.images.add("logo", path.join(process.cwd(), "public/logo.png"), "1x");
+        // let stripImageUrl;
+        // try {
+        //     const imageResponse = await fetch(logoUrl);
+        //     if (!imageResponse.ok) {
+        //         // Log the status and text for more detailed error information
+        //         const errorText = await imageResponse.text();
+        //         console.error(`Failed to fetch logo image. Status: ${imageResponse.status}, URL: ${logoUrl}, Response: ${errorText}`);
+        //         throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
+        //     }
+        //     stripImageUrl = await imageResponse.arrayBuffer();
+        // } catch (error) {
+        //     console.error("Error fetching logo image for pass creation:", error);
+        //     // Return a specific error response to the client
+        //     return NextResponse.json({
+        //         message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
+        //         details: error instanceof Error ? error.message : String(error)
+        //     }, { status: 500 });
+        // }
 
+
+        // await template.images.add("strip", Buffer.from(stripImageUrl), "1x");
         // Load cert and key from base64 env vars
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
@@ -50,9 +90,10 @@ export async function POST(req: NextRequest) {
             webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
             authenticationToken
         });
-        
+
         pass.logoText = logoText;
         pass.backgroundColor = backgroundColor;
+
 
         pass.primaryFields.add({
             key: "name",
@@ -71,6 +112,19 @@ export async function POST(req: NextRequest) {
             label: "Message",
             value: "Welcome to your pass!", // This will later be dynamic
         });
+
+        // pass.auxiliaryFields.add({
+        //     key: auxiliaryFieldLabel,
+        //     label: auxiliaryFieldLabel,
+        //     value: auxiliaryFieldValue,
+        // });
+
+        // pass.headerFields.add({
+        //     key: headerFieldLabel,
+        //     label: headerFieldLabel,
+        //     value: headerFieldValue, // This will later be dynamic
+        // })
+
 
         const buffer = await pass.asBuffer();
 
@@ -91,10 +145,7 @@ export async function POST(req: NextRequest) {
             logoUrl,
             stripImageFrontUrl,
             stripImageBackUrl,
-            thumbnailUrl,
             backgroundUrl,
-            primaryFieldLabel,
-            primaryFieldValue,
             secondaryFieldLabel,
             secondaryFieldValue,
             auxiliaryFieldLabel,

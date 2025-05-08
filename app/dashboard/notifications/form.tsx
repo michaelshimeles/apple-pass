@@ -46,7 +46,7 @@ export default function NotificationsForm({ passes }: any) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
             <Select onValueChange={setPassId}>
                 <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose a pass" />

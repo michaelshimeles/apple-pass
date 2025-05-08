@@ -4,11 +4,13 @@
     "serialNumber": "SERIAL_PLACEHOLDER",
     "teamIdentifier": "5S3KCRYBD2",
     "organizationName": "Fabrika",
-    "description": "Apple pass test",
-    "backgroundColor": "rgb(255,255,255)",
+    "description": "",
     "logoText": "Apple Pass",
-    "generic": {
+    "backgroundColor": "rgb(255,255,255)",
+    "storeCard": {
+        "headerFields": [],
         "primaryFields": [],
-        "secondaryFields": []
+        "secondaryFields": [],
+        "auxiliaryFields": []
     }
 }

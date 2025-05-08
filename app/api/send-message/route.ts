@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
 
   // Load pass template
-  const template = await Template.load(path.join(process.cwd(), "public/pass-models/generic.pass"));
+  const template = await Template.load(path.join(process.cwd(), "public/pass-models/storecard.pass"));
   await template.images.add("logo", path.join(process.cwd(), "public/logo.png"), "1x");
 
   const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
@@ -56,6 +56,7 @@ export async function POST(req: Request) {
   });
 
   console.log("💬 Updating message to:", message);
+
   passInstance.secondaryFields.add({
     key: "msg",
     label: "Message",
@@ -76,6 +77,8 @@ export async function POST(req: Request) {
     .where(eq(passRegistrations.passId, pass.id))
     .limit(1)
     .then((r) => r[0]);
+
+  console.log("📥 registration:", registration);
 
   if (!registration) {
     return new Response("No registered device for this pass", { status: 404 });
