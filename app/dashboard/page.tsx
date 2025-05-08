@@ -41,7 +41,7 @@ export default async function Dashboard() {
               </div>
             </Fragment>
           )) : (
-            <div className="col-span-full flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30">
+            <div className="col-span-full flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30 w-full">
               <h3 className="text-lg font-semibold mb-2">No passes found</h3>
               <p className="text-sm text-muted-foreground mb-4">Create your first Apple Pass to get started</p>
               <Link prefetch={true} href="/create">
