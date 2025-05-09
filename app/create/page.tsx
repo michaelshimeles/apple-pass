@@ -10,7 +10,7 @@ export default async function Dashboard() {
     const hasBasicPlan = has({ plan: 'basic_plan' })
     const hasPremiumPlan = has({ plan: 'premium_plan' })
 
-    if (!hasBasicPlan && !hasPremiumPlan) {
+    if (!hasBasicPlan || !hasPremiumPlan) {
         redirect('/pricing')
     }
     
