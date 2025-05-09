@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.800.0",
-    "@clerk/nextjs": "^6.18.0",
+    "@clerk/nextjs": "^6.19.1",
     "@hookform/resolvers": "^5.0.1",
     "@icons-pack/react-simple-icons": "^12.7.0",
     "@neondatabase/serverless": "^1.0.0",
