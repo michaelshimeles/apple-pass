@@ -56,7 +56,7 @@ export function CreatePassForm() {
             logoText: "",
             headerFieldLabel: "Expiration Date",
             headerFieldValue: "Mar 3, 2025",
-            backgroundColor: "#b76d6d",
+            backgroundColor: "#8ba5a2",
             stripImageFrontUrl: "",
             secondaryFieldLabel: "Date",
             secondaryFieldValue: "Mar 3, 2025",
@@ -665,8 +665,8 @@ export function CreatePassForm() {
                         padding: 16,
                     }}
                 >
-                    <div className="flex justify-between items-center text-xs font-semibold mb-2">
-                        <div className="flex items-center gap-2">
+                    <div className="flex justify-between items-center font-semibold mb-2">
+                        <div className="flex items-center gap-2 text-xs">
                             {watched.logoUrl ? (
                                 <img src={watched.logoUrl} alt="logo" className="w-7" />
                             ) : (
@@ -675,7 +675,7 @@ export function CreatePassForm() {
                         </div>
                         <div className="text-right">
                             <div className="text-xs font-semibold">{watched.headerFieldLabel || "Header Field Label"}</div>
-                            <div className="text-lg font-medium">{watched.headerFieldValue || "Header Field Value"}</div>
+                            <div className="text-md font-medium">{watched.headerFieldValue || "Header Field Value"}</div>
                         </div>
                     </div>
                     <div className="w-full h-24 bg-zinc-900 mb-2 flex items-center justify-center">
