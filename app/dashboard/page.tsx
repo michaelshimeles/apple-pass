@@ -18,10 +18,11 @@ export default async function Dashboard() {
         </div>
 
         <div className="flex gap-4 flex-wrap justify-start items-center mt-4">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {response?.length > 0 ? response?.sort((a, b) => {
-            return new Date(b?.createdAt!).getTime() - new Date(a?.createdAt!).getTime();
-          })?.map((pass: any) => (
+            const dateA = a?.createdAt ? new Date(a.createdAt).getTime() : -Infinity;
+            const dateB = b?.createdAt ? new Date(b.createdAt).getTime() : -Infinity;
+            return dateB - dateA;
+          })?.map((pass) => (
             <Fragment key={pass?.id}>
               <div className="group flex flex-col items-start rounded border bg-card hover:shadow-lg transition-all duration-300 w-fit px-4 py-3 space-y-4">
                 <div className="space-y-2 w-full">

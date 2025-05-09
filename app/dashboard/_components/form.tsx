@@ -1,9 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { QRCodeCanvas } from "qrcode.react";
 import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
-import { QRCodeCanvas } from "qrcode.react"
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,11 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -31,25 +31,15 @@ const formSchema = z.object({
     backgroundColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color").optional(),
     logoUrl: z.string().optional(),
     stripImageFrontUrl: z.string().optional(),
-    stripImageBackUrl: z.string().optional(),
-    backgroundUrl: z.string().optional(),
     secondaryFieldLabel: z.string().optional(),
     secondaryFieldValue: z.string().optional(),
     auxiliaryFieldLabel: z.string().optional(),
     auxiliaryFieldValue: z.string().optional(),
-    // url: z.string().url("Must be a valid URL").optional(),
     barcodeFormat: z.enum(["PKBarcodeFormatQR", "PKBarcodeFormatPDF417", "PKBarcodeFormatAztec", "PKBarcodeFormatCode128"]).optional(),
     barcodeValue: z.string().optional(),
     barcodeAltText: z.string().optional(),
     barcodeEncoding: z.string().optional(),
 });
-
-const barcodeFormatFriendlyNames: Record<string, string> = {
-    "PKBarcodeFormatQR": "QR Code",
-    "PKBarcodeFormatPDF417": "PDF417",
-    "PKBarcodeFormatAztec": "Aztec",
-    "PKBarcodeFormatCode128": "Code 128",
-};
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -68,12 +58,10 @@ export function CreatePassForm() {
             headerFieldValue: "Mar 3, 2025",
             backgroundColor: "#b76d6d",
             stripImageFrontUrl: "",
-            stripImageBackUrl: "",
             secondaryFieldLabel: "Date",
             secondaryFieldValue: "Mar 3, 2025",
             auxiliaryFieldLabel: "Auxiliary Field Label",
             auxiliaryFieldValue: "Auxiliary Field Value",
-            // url: "",
             barcodeFormat: "PKBarcodeFormatQR",
             barcodeValue: "1234567890",
             barcodeAltText: "",
@@ -198,8 +186,8 @@ export function CreatePassForm() {
                                                             const img = new Image();
                                                             const objectUrl = URL.createObjectURL(file);
                                                             let processedFile = file; // Use original file by default
-                                                            let targetMimeType = "image/png"; // Always aim for PNG
-                                                            let originalFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                                                            const targetMimeType = "image/png"; // Always aim for PNG
+                                                            const originalFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
 
                                                             try {
                                                                 await new Promise<void>((resolve, reject) => {
@@ -362,13 +350,13 @@ export function CreatePassForm() {
                                     )}
                                 </div>
                                 {/* Images */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <FormField
                                         control={form.control}
                                         name="stripImageFrontUrl"
                                         render={({ field: { onChange, ...field } }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Strip Image (Front)</FormLabel>
+                                                <FormLabel>Strip Image</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         type="file"
@@ -383,8 +371,8 @@ export function CreatePassForm() {
                                                             const img = new Image();
                                                             const objectUrl = URL.createObjectURL(file);
                                                             let processedFile = file; // Use original file by default
-                                                            let targetMimeType = "image/png"; // Always aim for PNG
-                                                            let originalFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                                                            const targetMimeType = "image/png"; // Always aim for PNG
+                                                            const originalFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
 
                                                             try {
                                                                 await new Promise<void>((resolve, reject) => {
@@ -471,56 +459,6 @@ export function CreatePassForm() {
                                     />
                                     {form.formState.errors.stripImageFrontUrl?.message && (
                                         <p className="text-red-500 text-sm mt-2">{form.formState.errors.stripImageFrontUrl?.message}</p>
-                                    )}
-                                    <FormField
-                                        control={form.control}
-                                        name="stripImageBackUrl"
-                                        render={({ field: { onChange, ...field } }) => (
-                                            <FormItem className="mt-4">
-                                                <FormLabel>Strip Image (Back)</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        ref={field.ref}
-                                                        onChange={async (e) => {
-                                                            const file = e.target.files?.[0];
-                                                            if (!file) return;
-                                                            try {
-                                                                // read raw bytes
-                                                                const buf = await file.arrayBuffer();
-                                                                // send to your endpoint
-                                                                const res = await fetch("/api/upload-image", {
-                                                                    method: "POST",
-                                                                    headers: {
-                                                                        "Content-Type": "application/octet-stream",
-                                                                        "x-file-name": file.name,
-                                                                    },
-                                                                    body: buf,
-                                                                });
-                                                                if (!res.ok) {
-                                                                    console.error("Upload failed", await res.text());
-                                                                    toast.error("Upload failed");
-                                                                    return;
-                                                                }
-                                                                const { url } = await res.json();
-                                                                toast.success("Upload successful");
-                                                                onChange(url);
-                                                            } catch (error) {
-                                                                console.error("Upload error:", error);
-                                                                toast.error("Upload failed: " + (error instanceof Error ? error.message : String(error)));
-                                                            }
-                                                        }}
-                                                        className="w-full border p-2 rounded-md"
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>Upload back strip image</FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    {form.formState.errors.stripImageBackUrl?.message && (
-                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.stripImageBackUrl?.message}</p>
                                     )}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -722,10 +660,9 @@ export function CreatePassForm() {
                 <div
                     className="rounded shadow-lg overflow-hidden text-white font-sans"
                     style={{
-                        backgroundColor: watched.backgroundColor || "#b76d6d",
+                        backgroundColor: watched.backgroundColor,
                         width: 320,
                         padding: 16,
-                        backgroundImage: watched.backgroundUrl ? `url(${watched.backgroundUrl})` : "none",
                     }}
                 >
                     <div className="flex justify-between items-center text-xs font-semibold mb-2">

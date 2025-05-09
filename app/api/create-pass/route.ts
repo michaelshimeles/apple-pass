@@ -67,9 +67,7 @@ export async function POST(req: NextRequest) {
         await template.images.add("strip", stripImageBuffer, "1x");
 
         // Load cert and key from base64 env vars
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
 
         template.setCertificate(cert);
