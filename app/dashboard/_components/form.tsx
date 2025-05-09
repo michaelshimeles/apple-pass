@@ -106,7 +106,7 @@ export function CreatePassForm() {
     };
 
     return (
-        <div className="grid grid-cols-2 gap-8 max-w-5xl mx-auto p-4 w-full">
+        <div className="grid grid-cols-2 gap-8 w-full">
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -661,8 +661,9 @@ export function CreatePassForm() {
                     className="rounded shadow-lg overflow-hidden text-white font-sans"
                     style={{
                         backgroundColor: watched.backgroundColor,
-                        width: 320,
+                        width: 400,
                         padding: 16,
+                        height: 500,
                     }}
                 >
                     <div className="flex justify-between items-center font-semibold mb-2">
@@ -702,10 +703,10 @@ export function CreatePassForm() {
                         ) : null}
                     </div>
                     {watched.barcodeFormat && (
-                        <div className="flex items-center justify-center mt-5">
+                        <div className="flex items-center justify-center pb-25 h-full">
                             <div className="flex flex-col items-center justify-center bg-white p-2 rounded">
                                 <QRCodeCanvas
-                                    size={100}
+                                    size={150}
                                     value={watched?.barcodeAltText || ""}
                                     className="w-full"
                                 />

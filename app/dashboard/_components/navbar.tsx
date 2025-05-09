@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Banknote, HomeIcon, Settings } from 'lucide-react'
+import { UserButton } from '@clerk/nextjs'
+import { Brush, GitGraph, HomeIcon, MonitorSmartphone } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode } from 'react'
 import ModeToggle from './mode-toggle'
-import { UserProfile } from './user-profile'
 
 export default function DashboardTopNav({ children }: { children: ReactNode }) {
 
@@ -24,7 +24,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           <SheetContent side="left">
             <SheetHeader>
               <Link prefetch={true} href="/">
-                <SheetTitle>Nextjs Starter Kit</SheetTitle>
+                <SheetTitle>Pass Builder</SheetTitle>
               </Link>
             </SheetHeader>
             <div className="flex flex-col space-y-3 mt-[1rem]">
@@ -32,24 +32,32 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
                 <Link prefetch={true} href="/dashboard">
                   <Button variant="outline" className="w-full">
                     <HomeIcon className="mr-2 h-4 w-4" />
-                    Home
+                    Overview
                   </Button>
                 </Link>
               </DialogClose>
               <DialogClose asChild>
-                <Link prefetch={true} href="/dashboard/finance">
+                <Link prefetch={true} href="/dashboard/create">
                   <Button variant="outline" className="w-full">
-                    <Banknote className="mr-2 h-4 w-4" />
-                    Finance
+                    <Brush className="mr-2 h-4 w-4" />
+                    Create Pass
+                  </Button>
+                </Link>
+              </DialogClose>
+              <DialogClose asChild>
+                <Link prefetch={true} href="/dashboard/notifications">
+                  <Button variant="outline" className="w-full">
+                    <MonitorSmartphone className="mr-2 h-4 w-4" />
+                    Notifications
                   </Button>
                 </Link>
               </DialogClose>
               <Separator className="my-3" />
               <DialogClose asChild>
-                <Link prefetch={true} href="/dashboard/settings">
+                <Link prefetch={true} href="/dashboard/analytics">
                   <Button variant="outline" className="w-full">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                    <GitGraph className="mr-2 h-4 w-4" />
+                    Analytics
                   </Button>
                 </Link>
               </DialogClose>
@@ -57,12 +65,12 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           </SheetContent>
         </Dialog>
         <div className="flex justify-center items-center gap-2 ml-auto">
-          <Link prefetch={true} href="/create">
+          <Link prefetch={true} href="/dashboard/create">
             <Button variant="outline" size="sm">
               Create Pass
             </Button>
           </Link>
-          {<UserProfile />}
+          <UserButton />
           <ModeToggle />
         </div>
       </header>

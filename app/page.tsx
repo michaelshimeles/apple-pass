@@ -19,7 +19,7 @@ export default function Home() {
                         </Button>
 
                         <Button asChild variant="outline">
-                            <Link href="/create" prefetch={true}>
+                            <Link href="/dashboard/create" prefetch={true}>
                                 <span>Create Pass</span>
                             </Link>
                         </Button>
