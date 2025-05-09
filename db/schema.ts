@@ -36,6 +36,8 @@ export const passes = pgTable("passes", {
   barcodeValue: text("barcode_value"),
   barcodeFormat: text("barcode_format"),
   url: text("url"),
+  headerFieldLabel: text("header_field_label"),
+  headerFieldValue: text("header_field_value"),
 
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),

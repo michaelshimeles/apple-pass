@@ -1,10 +1,29 @@
 import { db } from "@/db/drizzle";
 import { passMessages, passes } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { Template } from "@walletpass/pass-js";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { Buffer } from "buffer";
+
+async function fetchImageBuffer(imageUrl: string | null | undefined, imageName: string): Promise<ArrayBuffer | null> {
+    if (!imageUrl) {
+        console.warn(`⚠️ ${imageName} URL is missing or null.`);
+        return null;
+    }
+    try {
+        const response = await fetch(imageUrl);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`❌ Failed to fetch ${imageName}. Status: ${response.status}, URL: ${imageUrl}, Response: ${errorText}`);
+            throw new Error(`Failed to fetch ${imageName} from ${imageUrl}: ${response.status} ${response.statusText}`);
+        }
+        return await response.arrayBuffer();
+    } catch (error) {
+        console.error(`❌ General error fetching ${imageName} (URL: ${imageUrl}):`, error);
+        throw error;
+    }
+}
 
 export async function GET(
     req: NextRequest,
@@ -15,118 +34,114 @@ export async function GET(
         }>;
     }
 ) {
-    
     const { passTypeIdentifier, serialNumber } = await context.params;
-    console.log("📥 Apple requested updated pass for:", passTypeIdentifier, serialNumber);
-    console.log("🛬 Received GET /passes");
-    console.log("🔍 Params:", { passTypeIdentifier, serialNumber });
+    console.log(`🛬 Received GET /api/passkit/v1/passes/${passTypeIdentifier}/${serialNumber}`);
 
-    const pass = await db
-        .select()
-        .from(passes)
-        .where(eq(passes.serialNumber, serialNumber))
-        .limit(1)
-        .then((rows) => rows[0]);
+    let pass;
+    try {
+        pass = await db
+            .select()
+            .from(passes)
+            .where(eq(passes.serialNumber, serialNumber))
+            .limit(1)
+            .then((rows) => rows[0]);
 
-    if (!pass) {
-        console.warn("❌ Pass not found in DB for serial:", serialNumber);
-        return new NextResponse("Pass not found", { status: 404 });
+        if (!pass) {
+            console.warn(`❌ Pass not found in DB for serial: ${serialNumber} (passTypeIdentifier: ${passTypeIdentifier})`);
+            return NextResponse.json({ message: "Pass not found" }, { status: 404 });
+        }
+
+        console.log("📦 Found pass in DB:", {
+            id: pass.id,
+            name: pass.name,
+            updatedAt: pass.updatedAt,
+            serialNumber: pass.serialNumber,
+        });
+    } catch (dbError) {
+        console.error("❌ Database error fetching pass:", dbError);
+        return NextResponse.json({ message: "Database error fetching pass.", details: dbError instanceof Error ? dbError.message : String(dbError) }, { status: 500 });
     }
 
-    console.log("📦 Found pass in DB:", {
-        name: pass.name,
-        description: pass.description,
-        updatedAt: pass.updatedAt,
-    });
-
-    const latestMessage = await db
-        .select()
-        .from(passMessages)
-        .where(eq(passMessages.passId, pass.id))
-        .orderBy(passMessages.createdAt)
-        .then((rows) => rows.at(-1)?.message ?? "No messages yet");
-
-    console.log("💬 Latest message for pass:", latestMessage);
-
-    // Load & create pass
-    const template = await Template.load(
-        path.join(process.cwd(), "public/pass-models/storecard.pass")
-    );
-
-    let logoImageUrl;
+    let latestMessage;
     try {
-        const imageResponse = await fetch(pass.logoUrl!);
-        if (!imageResponse.ok) {
-            // Log the status and text for more detailed error information
-            const errorText = await imageResponse.text();
-            console.error(`Failed to fetch logo image. Status: ${imageResponse.status}, URL: ${pass.logoUrl}, Response: ${errorText}`);
-            throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${pass.logoUrl}`);
+        const messageRecord = await db
+            .select({ message: passMessages.message })
+            .from(passMessages)
+            .where(eq(passMessages.passId, pass.id))
+            .orderBy(desc(passMessages.createdAt))
+            .limit(1)
+            .then((rows) => rows[0]);
+
+        latestMessage = messageRecord?.message ?? "No messages yet";
+        console.log("💬 Latest message for pass:", latestMessage);
+    } catch (dbError) {
+        console.error("❌ Database error fetching latest message:", dbError);
+        return NextResponse.json({ message: "Database error fetching pass message.", details: dbError instanceof Error ? dbError.message : String(dbError) }, { status: 500 });
+    }
+
+    const templatePath = path.join(process.cwd(), "public/pass-models/storecard.pass");
+    let template: Template;
+    try {
+        template = await Template.load(templatePath);
+        console.log("🎟️ Pass template loaded successfully from:", templatePath);
+    } catch (templateError) {
+        console.error("❌ Error loading pass template:", templateError);
+        return NextResponse.json({ message: "Failed to load pass template.", details: templateError instanceof Error ? templateError.message : String(templateError) }, { status: 500 });
+    }
+
+    try {
+        const logoImageBuffer = await fetchImageBuffer(pass.logoUrl, "logo image");
+        if (logoImageBuffer) {
+            await template.images.add("logo", Buffer.from(logoImageBuffer), "1x");
         }
-        logoImageUrl = await imageResponse.arrayBuffer();
-    } catch (error) {
-        console.error("Error fetching logo image for pass creation:", error);
-        // Return a specific error response to the client
+
+        const stripImageBuffer = await fetchImageBuffer(pass.stripImageFrontUrl, "strip image");
+        if (stripImageBuffer) {
+            await template.images.add("strip", Buffer.from(stripImageBuffer), "1x");
+        }
+        console.log("🖼️ Images processed and added to template (if available).");
+    } catch (imageError) {
+        console.error("❌ Error processing images for pass:", imageError);
         return NextResponse.json({
-            message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
-            details: error instanceof Error ? error.message : String(error)
+            message: "Failed to retrieve or process an image for the pass. Please ensure image URLs are valid and accessible.",
+            details: imageError instanceof Error ? imageError.message : String(imageError)
         }, { status: 500 });
     }
 
-    let stripImageUrl;
-
     try {
-        const imageResponse = await fetch(pass.stripImageFrontUrl!);
-        if (!imageResponse.ok) {
-            // Log the status and text for more detailed error information
-            const errorText = await imageResponse.text();
-            console.error(`Failed to fetch strip image. Status: ${imageResponse.status}, URL: ${pass.stripImageFrontUrl}, Response: ${errorText}`);
-            throw new Error(`Failed to fetch strip image: ${imageResponse.statusText} from ${pass.stripImageFrontUrl}`);
+        const certEnv = process.env.PASS_CERT_PEM;
+        const keyEnv = process.env.PASS_KEY_PEM;
+        const passphraseEnv = process.env.PASS_CERT_PASSPHRASE || "";
+
+        if (!certEnv) {
+            console.error("❌ Missing pass certificate (PASS_CERT_PEM) in environment variables.");
+            throw new Error("Pass certificate not configured on the server.");
         }
-        stripImageUrl = await imageResponse.arrayBuffer();
-    } catch (error) {
-        console.error("Error fetching strip image for pass creation:", error);
-        // Return a specific error response to the client
-        return NextResponse.json({
-            message: "Failed to retrieve strip image for the pass. Please ensure the image URL is valid and accessible.",
-            details: error instanceof Error ? error.message : String(error)
-        }, { status: 500 });
-    }
+        if (!keyEnv) {
+            console.error("❌ Missing pass private key (PASS_KEY_PEM) in environment variables.");
+            throw new Error("Pass private key not configured on the server.");
+        }
 
-    try {
-        const imageBuffer = Buffer.from(logoImageUrl);
+        const cert = Buffer.from(certEnv, "base64").toString("utf-8");
+        const key = Buffer.from(keyEnv, "base64").toString("utf-8");
 
-        await template.images.add("logo", imageBuffer, "1x");
-
-        const stripImageBuffer = Buffer.from(stripImageUrl);
-        await template.images.add("strip", stripImageBuffer, "1x");
-
-        console.log("🖼️ Images added successfully");
-    } catch (err) {
-        console.error("❌ Error adding images:", err);
-        return new NextResponse("Image error", { status: 500 });
-    }
-
-    try {
-        const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString("utf-8");
-        const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString("utf-8");
         template.setCertificate(cert);
-        template.setPrivateKey(key, process.env.PASS_CERT_PASSPHRASE || "");
-        console.log("🔐 Certificate and key set");
-    } catch (err) {
-        console.error("❌ Error setting cert/key:", err);
-        return new NextResponse("Cert error", { status: 500 });
+        template.setPrivateKey(key, passphraseEnv);
+        console.log("🔐 Certificate and private key set successfully.");
+    } catch (certError) {
+        console.error("❌ Error setting certificate/key:", certError);
+        const message = certError instanceof Error ? certError.message : "Certificate or key setup error.";
+        return NextResponse.json({ message, details: String(certError) }, { status: 500 });
     }
 
     const instance = template.createPass({
         serialNumber: pass.serialNumber,
-        description: pass.description,
+        description: pass.description || "Pass Description",
         webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
         authenticationToken: pass.authenticationToken,
-        passTypeIdentifier, // from URL param, overrides template if different
-        // organizationName and teamIdentifier will be taken from the loaded template
+        passTypeIdentifier,
     });
 
-    // Populate pass instance with data from the database, similar to POST route
     if (pass.logoText) {
         instance.logoText = pass.logoText;
     }
@@ -135,80 +150,72 @@ export async function GET(
         instance.backgroundColor = pass.backgroundColor;
     }
 
+    type PKBarcodeFormat = "PKBarcodeFormatQR" | "PKBarcodeFormatPDF417" | "PKBarcodeFormatAztec" | "PKBarcodeFormatCode128";
+    const validBarcodeFormats: PKBarcodeFormat[] = ["PKBarcodeFormatQR", "PKBarcodeFormatPDF417", "PKBarcodeFormatAztec", "PKBarcodeFormatCode128"];
+
     if (pass.barcodeFormat && pass.barcodeValue) {
-        instance.barcodes = [
-            {
-                format: pass.barcodeFormat as any, // Ensure this matches WalletPass accepted formats
-                message: pass.barcodeValue, // Use dynamic value from DB
-                messageEncoding: "iso-8859-1", // Default, adjust if needed
-            },
-        ];
+        if (validBarcodeFormats.includes(pass.barcodeFormat as PKBarcodeFormat)) {
+            instance.barcodes = [
+                {
+                    format: pass.barcodeFormat as PKBarcodeFormat,
+                    message: pass.barcodeValue,
+                    messageEncoding: "iso-8859-1",
+                },
+            ];
+        } else {
+            console.warn(`⚠️ Invalid or unsupported barcode format: ${pass.barcodeFormat}. Barcode will not be added.`);
+        }
     }
 
-    instance.primaryFields.add({
-        key: "name",
-        label: "Name",
-        value: pass.name,
-    });
+    if (pass.description) {
+        instance.secondaryFields.add({
+            key: "details",
+            label: "Details",
+            value: pass.description,
+        });
+    }
 
-    instance.secondaryFields.add({
+    instance.backFields.add({
         key: "msg",
         label: "Message",
         value: latestMessage,
         changeMessage: "New message: %@",
     });
 
-    instance.secondaryFields.add({
-        key: "desc",
-        label: "Access",
-        value: pass.description,
-    });
-
-    instance.backFields.add({
-        key: "message",
-        label: "Message",
-        value: "Welcome to your pass!", // This will later be dynamic
-        changeMessage: "New message: %@",
-    });
+    if (pass.headerFieldLabel && pass.headerFieldValue) {
+        instance.headerFields.add({
+            key: "header",
+            label: pass.headerFieldLabel,
+            value: pass.headerFieldValue,
+        });
+    }
 
     if (pass.auxiliaryFieldLabel && pass.auxiliaryFieldValue) {
         instance.auxiliaryFields.add({
-            key: pass.auxiliaryFieldLabel,
+            key: pass.auxiliaryFieldLabel.replace(/\s+/g, '').toLowerCase() || "auxinfo",
             label: pass.auxiliaryFieldLabel,
             value: pass.auxiliaryFieldValue,
         });
     }
 
-    if (pass.url) {
-        instance.backFields.add({
-            key: "website",
-            label: "Website",
-            value: pass.url,
-        });
-    }
-
-    instance.relevantDate = new Date(Date.now() + Math.random() * 1000).toISOString();
+    instance.relevantDate = pass.updatedAt ? new Date(pass.updatedAt).toISOString() : new Date().toISOString();
     console.log("🕒 Set relevantDate to:", instance.relevantDate);
 
-    console.log("🔁 Returning pass with message:", latestMessage);
+    console.log(`🔁 Returning updated pass (Serial: ${pass.serialNumber}, Message: "${latestMessage}", RelevantDate: ${instance.relevantDate})`);
     try {
         const buffer = await instance.asBuffer();
-        console.log("📦 Successfully generated .pkpass buffer (size):", buffer.byteLength);
-
-        console.log("🧠 Pass content:", {
-            message: latestMessage,
-            relevantDate: instance.relevantDate,
-        });
+        console.log("✅ Successfully generated .pkpass buffer (size):", buffer.byteLength);
 
         return new NextResponse(buffer, {
             status: 200,
             headers: {
                 "Content-Type": "application/vnd.apple.pkpass",
-                "Content-Disposition": `attachment; filename=${pass.serialNumber}.pkpass`,
+                "Last-Modified": new Date(pass.updatedAt || Date.now()).toUTCString(),
+                "Content-Disposition": `attachment; filename="${pass.serialNumber}.pkpass"`,
             },
         });
-    } catch (err) {
-        console.error("❌ Error generating .pkpass buffer:", err);
-        return new NextResponse("Buffer error", { status: 500 });
+    } catch (bufferError) {
+        console.error("❌ Error generating .pkpass buffer:", bufferError);
+        return NextResponse.json({ message: "Failed to generate pass buffer.", details: bufferError instanceof Error ? bufferError.message : String(bufferError) }, { status: 500 });
     }
 }

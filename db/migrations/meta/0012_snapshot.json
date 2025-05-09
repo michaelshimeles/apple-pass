@@ -1,0 +1,396 @@
+{
+  "id": "0c34fe78-fc9c-4c9c-8289-4ce3072b0b0c",
+  "prevId": "51cd1889-f385-41b7-9d27-379f06a7e2ef",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.pass_installs": {
+      "name": "pass_installs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pass_id": {
+          "name": "pass_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pass_installs_pass_id_passes_id_fk": {
+          "name": "pass_installs_pass_id_passes_id_fk",
+          "tableFrom": "pass_installs",
+          "tableTo": "passes",
+          "columnsFrom": [
+            "pass_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pass_messages": {
+      "name": "pass_messages",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pass_id": {
+          "name": "pass_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pass_messages_pass_id_passes_id_fk": {
+          "name": "pass_messages_pass_id_passes_id_fk",
+          "tableFrom": "pass_messages",
+          "tableTo": "passes",
+          "columnsFrom": [
+            "pass_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pass_registrations": {
+      "name": "pass_registrations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "device_library_id": {
+          "name": "device_library_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "push_token": {
+          "name": "push_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pass_type_id": {
+          "name": "pass_type_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "authenticationToken": {
+          "name": "authenticationToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "serial_number": {
+          "name": "serial_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pass_id": {
+          "name": "pass_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pass_registrations_pass_id_passes_id_fk": {
+          "name": "pass_registrations_pass_id_passes_id_fk",
+          "tableFrom": "pass_registrations",
+          "tableTo": "passes",
+          "columnsFrom": [
+            "pass_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.passes": {
+      "name": "passes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_url": {
+          "name": "file_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "authentication_token": {
+          "name": "authentication_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "serialNumber": {
+          "name": "serialNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "logo_text": {
+          "name": "logo_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "background_color": {
+          "name": "background_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_url": {
+          "name": "logo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "strip_image_front_url": {
+          "name": "strip_image_front_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "strip_image_back_url": {
+          "name": "strip_image_back_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "background_url": {
+          "name": "background_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primary_field_label": {
+          "name": "primary_field_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primary_field_value": {
+          "name": "primary_field_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "secondary_field_label": {
+          "name": "secondary_field_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "secondary_field_value": {
+          "name": "secondary_field_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auxiliary_field_label": {
+          "name": "auxiliary_field_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auxiliary_field_value": {
+          "name": "auxiliary_field_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "barcode_value": {
+          "name": "barcode_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "barcode_format": {
+          "name": "barcode_format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_field_label": {
+          "name": "header_field_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_field_value": {
+          "name": "header_field_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "passes_serialNumber_unique": {
+          "name": "passes_serialNumber_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "serialNumber"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

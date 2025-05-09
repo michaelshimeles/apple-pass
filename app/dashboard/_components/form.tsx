@@ -39,7 +39,7 @@ const formSchema = z.object({
     auxiliaryFieldValue: z.string().optional(),
     // url: z.string().url("Must be a valid URL").optional(),
     barcodeFormat: z.enum(["PKBarcodeFormatQR", "PKBarcodeFormatPDF417", "PKBarcodeFormatAztec", "PKBarcodeFormatCode128"]).optional(),
-    barcodeMessage: z.string().optional(),
+    barcodeValue: z.string().optional(),
     barcodeAltText: z.string().optional(),
     barcodeEncoding: z.string().optional(),
 });
@@ -75,7 +75,7 @@ export function CreatePassForm() {
             auxiliaryFieldValue: "Auxiliary Field Value",
             // url: "",
             barcodeFormat: "PKBarcodeFormatQR",
-            barcodeMessage: "1234567890",
+            barcodeValue: "1234567890",
             barcodeAltText: "",
             barcodeEncoding: "iso-8859-1",
         },
@@ -631,7 +631,7 @@ export function CreatePassForm() {
                                     )}
                                     <FormField
                                         control={form.control}
-                                        name="barcodeMessage"
+                                        name="barcodeValue"
                                         render={({ field }) => (
                                             <FormItem className="mt-2">
                                                 <FormLabel>Barcode Message</FormLabel>
@@ -643,8 +643,8 @@ export function CreatePassForm() {
                                             </FormItem>
                                         )}
                                     />
-                                    {form.formState.errors.barcodeMessage?.message && (
-                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.barcodeMessage?.message}</p>
+                                    {form.formState.errors.barcodeValue?.message && (
+                                        <p className="text-red-500 text-sm mt-2">{form.formState.errors.barcodeValue?.message}</p>
                                     )}
                                     <FormField
                                         control={form.control}

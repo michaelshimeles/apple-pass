@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, description, logoText, headerFieldLabel, headerFieldValue, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, backgroundUrl, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat, url } = await req.json();
+    const { name, description, logoText, headerFieldLabel, headerFieldValue, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, backgroundUrl, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat } = await req.json();
 
     if (!name || !description) {
         return NextResponse.json({ message: "Missing fields" }, { status: 400 });
@@ -117,19 +117,11 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        // pass.headerFields.add({
-        //     key: headerFieldLabel,
-        //     label: headerFieldLabel,
-        //     value: headerFieldValue, // This will later be dynamic
-        // })
-
-        if (url) {
-            pass.backFields.add({
-                key: "website",
-                label: "Website",
-                value: url,
-            });
-        }
+        pass.headerFields.add({
+            key: headerFieldLabel,
+            label: headerFieldLabel,
+            value: headerFieldValue, // This will later be dynamic
+        })
 
         const buffer = await pass.asBuffer();
 
@@ -157,7 +149,6 @@ export async function POST(req: NextRequest) {
             auxiliaryFieldValue,
             barcodeValue,
             barcodeFormat,
-            url,
         });
 
         return new NextResponse(JSON.stringify({ url: fileUrl }), {
