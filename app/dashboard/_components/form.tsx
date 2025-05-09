@@ -64,7 +64,7 @@ export function CreatePassForm() {
             auxiliaryFieldValue: "Auxiliary Field Value",
             barcodeFormat: "PKBarcodeFormatQR",
             barcodeValue: "1234567890",
-            barcodeAltText: "",
+            barcodeAltText: "Apple Pass",
             barcodeEncoding: "iso-8859-1",
         },
     });
