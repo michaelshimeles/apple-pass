@@ -9,10 +9,11 @@ export default async function Dashboard() {
 
     const hasBasicPlan = has({ plan: 'basic_plan' })
     const hasPremiumPlan = has({ plan: 'premium_plan' })
-
-    if (!hasBasicPlan || !hasPremiumPlan) {
-        redirect('/pricing')
+  
+    if (!hasBasicPlan && !hasPremiumPlan) {
+      redirect('/pricing')
     }
+  
     
     return (
         <div className="flex flex-col justify-center items-center w-full h-screen p-3">
