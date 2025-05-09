@@ -145,6 +145,8 @@ export async function POST(req: NextRequest) {
             secondaryFieldValue,
             auxiliaryFieldLabel,
             auxiliaryFieldValue,
+            headerFieldLabel,
+            headerFieldValue,
             barcodeValue,
             barcodeFormat,
         });
