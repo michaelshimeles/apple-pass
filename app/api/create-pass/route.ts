@@ -1,220 +1,165 @@
 import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
-import { uploadPkpassToR2 } from "@/lib/r2";
+import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Template } from "@walletpass/pass-js";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
-// Define an interface for the expected request body
-interface CreatePassRequestBody {
-    name: string;
-    description: string;
-    logoUrl: string;
-    stripImageFrontUrl: string;
-    logoText?: string;
-    headerFieldLabel?: string;
-    headerFieldValue?: string;
-    backgroundColor?: string;
-    stripImageBackUrl?: string;
-    backgroundUrl?: string;
-    secondaryFieldLabel?: string;
-    secondaryFieldValue?: string;
-    auxiliaryFieldLabel?: string;
-    auxiliaryFieldValue?: string;
-    barcodeValue?: string;
-    barcodeFormat?: string; // Should conform to PKBarcodeFormat
-}
-
-// Helper function to fetch image ArrayBuffer
-async function fetchImageArrayBuffer(url: string, fieldName: string): Promise<ArrayBuffer> {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch ${fieldName} image: ${response.status} ${response.statusText} from ${url}`);
-        }
-        return await response.arrayBuffer();
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        // Re-throw a more specific error to be caught by the main handler
-        throw new Error(`Error retrieving ${fieldName} image. Ensure URL is valid and accessible: ${message}`);
-    }
-}
-
 export async function POST(req: NextRequest) {
+    await auth.protect();
+    const user = await currentUser();
+
+    if (!user?.id) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const { name, description, logoText, headerFieldLabel, headerFieldValue, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, backgroundUrl, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat } = await req.json();
+
+    if (!name || !description) {
+        return NextResponse.json({ message: "Missing fields" }, { status: 400 });
+    }
+
+    const slug = nanoid(8);
+    const serial = `pass-${Date.now()}`;
+
     try {
-        await auth.protect();
-        const user = await currentUser();
-
-        if (!user?.id) {
-            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-        }
-
-        // Check for required environment variables
-        const passCertPem = process.env.PASS_CERT_PEM;
-        const passKeyPem = process.env.PASS_KEY_PEM;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-        const passCertPassphrase = process.env.PASS_CERT_PASSPHRASE || "";
-
-        if (!passCertPem || !passKeyPem) {
-            console.error("Missing pass certificate or key in environment variables.");
-            return NextResponse.json({ message: "Pass generation configuration error. Contact support." }, { status: 500 });
-        }
-        if (!appUrl) {
-            console.error("Missing NEXT_PUBLIC_APP_URL in environment variables.");
-            return NextResponse.json({ message: "Application configuration error. Contact support." }, { status: 500 });
-        }
-
-        const body: CreatePassRequestBody = await req.json();
-
-        const {
-            name,
-            description,
-            logoUrl,
-            stripImageFrontUrl,
-            logoText,
-            headerFieldLabel,
-            headerFieldValue,
-            backgroundColor,
-            stripImageBackUrl, // Will be saved to DB
-            backgroundUrl,   // Will be saved to DB
-            secondaryFieldLabel,
-            secondaryFieldValue,
-            auxiliaryFieldLabel,
-            auxiliaryFieldValue,
-            barcodeValue,
-            barcodeFormat,
-        } = body;
-
-        // Validate required fields from the request body
-        if (!name || !description || !logoUrl || !stripImageFrontUrl) {
-            return NextResponse.json({ message: "Missing required fields: name, description, logoUrl, or stripImageFrontUrl." }, { status: 400 });
-        }
-
-        const slug = nanoid(8);
-        const serialNumber = `pass-${Date.now()}`;
-        const authenticationToken = nanoid(32);
-
         // Load pass template
         const template = await Template.load(
             path.join(process.cwd(), "public/pass-models/storecard.pass")
         );
 
-        // Fetch and add logo image
-        const logoImageBuffer = await fetchImageArrayBuffer(logoUrl, "logo");
-        await template.images.add("logo", Buffer.from(logoImageBuffer));
+        let logoImageUrl;
+        try {
+            const imageResponse = await fetch(logoUrl);
+            if (!imageResponse.ok) {
+                throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
+            }
+            logoImageUrl = await imageResponse.arrayBuffer();
+        } catch (error) {
+            return NextResponse.json({
+                message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
+                details: error instanceof Error ? error.message : String(error)
+            }, { status: 500 });
+        }
 
-        // Fetch and add strip image
-        const stripImageBuffer = await fetchImageArrayBuffer(stripImageFrontUrl, "strip");
-        await template.images.add("strip", Buffer.from(stripImageBuffer));
-        
-        // Load cert and key
-        const cert = Buffer.from(passCertPem, "base64").toString("utf-8");
-        const key = Buffer.from(passKeyPem, "base64").toString("utf-8");
+        let stripImageUrl;
+
+        try {
+            const imageResponse = await fetch(stripImageFrontUrl);
+            if (!imageResponse.ok) {
+                throw new Error(`Failed to fetch strip image: ${imageResponse.statusText} from ${stripImageFrontUrl}`);
+            }
+            stripImageUrl = await imageResponse.arrayBuffer();
+        } catch (error) {
+            return NextResponse.json({
+                message: "Failed to retrieve strip image for the pass. Please ensure the image URL is valid and accessible.",
+                details: error instanceof Error ? error.message : String(error)
+            }, { status: 500 });
+        }
+
+        const imageBuffer = Buffer.from(logoImageUrl);
+
+        await template.images.add("logo", imageBuffer, "1x");
+
+        const stripImageBuffer = Buffer.from(stripImageUrl);
+        await template.images.add("strip", stripImageBuffer, "1x");
+
+        // Load cert and key from base64 env vars
+        const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
+        const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
 
         template.setCertificate(cert);
-        template.setPrivateKey(key, passCertPassphrase);
+        template.setPrivateKey(key, process.env.PASS_CERT_PASSPHRASE || "");
+
+        const authenticationToken = nanoid(32); // or use UUID
 
         const pass = template.createPass({
-            serialNumber: serialNumber,
-            description: description, // Pass description for accessibility
-            webServiceURL: `${appUrl}/api/passkit`,
-            authenticationToken: authenticationToken,
+            serialNumber: serial,
+            description,
+            webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
+            authenticationToken
         });
 
-        // Conditionally set optional top-level pass properties
-        if (logoText) {
-            pass.logoText = logoText;
-        }
-        if (backgroundColor) {
-            pass.backgroundColor = backgroundColor;
-        }
+        pass.logoText = logoText;
+        pass.backgroundColor = backgroundColor;
 
-        // Conditionally add barcodes
         if (barcodeFormat && barcodeValue) {
-            pass.barcodes = [{
-                format: barcodeFormat as any, 
-                message: barcodeValue,
-                messageEncoding: "iso-8859-1",
-            }];
+            pass.barcodes = [
+                {
+                    format: barcodeFormat, // Ensure this is a valid PKBarcodeFormat string
+                    message: barcodeValue, // Use dynamic value from request
+                    messageEncoding: "iso-8859-1", // Default, adjust if needed
+                }
+            ];
         }
 
-        pass.primaryFields.add({
-            key: "primaryContent",
-            label: name,
-            value: description, 
-        });
-        
-        if (headerFieldLabel && headerFieldValue) {
-            pass.headerFields.add({
-                key: "headerCustom", 
-                label: headerFieldLabel,
-                value: headerFieldValue,
-            });
-        }
-        
         pass.secondaryFields.add({
-            key: "details", 
-            label: "Details", 
-            value: description, 
+            key: "desc",
+            label: "Access",
+            value: description,
         });
-        
-        if (secondaryFieldLabel && secondaryFieldValue) {
-            pass.secondaryFields.add({
-                key: "secondaryCustom", 
-                label: secondaryFieldLabel,
-                value: secondaryFieldValue,
-            });
-        }
+
+        pass.backFields.add({
+            key: "message",
+            label: "Message",
+            value: "Welcome to your pass!", // This will later be dynamic
+        });
 
         if (auxiliaryFieldLabel && auxiliaryFieldValue) {
             pass.auxiliaryFields.add({
-                key: "auxiliaryCustom", 
+                key: auxiliaryFieldLabel,
                 label: auxiliaryFieldLabel,
                 value: auxiliaryFieldValue,
             });
         }
 
-        pass.backFields.add({
-            key: "info",
-            label: "More Information",
-            value: `Visit our website or contact support for more details. Pass ID: ${serialNumber}`,
-        });
+        pass.headerFields.add({
+            key: headerFieldLabel,
+            label: headerFieldLabel,
+            value: headerFieldValue, // This will later be dynamic
+        })
 
-        const passBuffer = await pass.asBuffer();
+        const buffer = await pass.asBuffer();
 
-        const fileUrl = await uploadPkpassToR2(passBuffer, `${slug}.pkpass`);
+        // Upload to R2
+        const fileUrl = await uploadPkpassToR2(buffer, `${slug}.pkpass`);
 
+        // Save in DB
         await db.insert(passes).values({
             name,
             description,
             slug,
-            serialNumber: serialNumber,
+            serialNumber: serial,
             fileUrl,
             userId: user.id,
             authenticationToken,
-            logoText: logoText || null,
-            backgroundColor: backgroundColor || null,
+            logoText,
+            backgroundColor,
             logoUrl,
             stripImageFrontUrl,
-            stripImageBackUrl: stripImageBackUrl || null,
-            backgroundUrl: backgroundUrl || null,
-            secondaryFieldLabel: secondaryFieldLabel || null,
-            secondaryFieldValue: secondaryFieldValue || null,
-            auxiliaryFieldLabel: auxiliaryFieldLabel || null,
-            auxiliaryFieldValue: auxiliaryFieldValue || null,
-            headerFieldLabel: headerFieldLabel || null,
-            headerFieldValue: headerFieldValue || null,
-            barcodeValue: barcodeValue || null,
-            barcodeFormat: barcodeFormat || null,
+            stripImageBackUrl,
+            backgroundUrl,
+            secondaryFieldLabel,
+            secondaryFieldValue,
+            auxiliaryFieldLabel,
+            auxiliaryFieldValue,
+            headerFieldLabel,
+            headerFieldValue,
+            barcodeValue,
+            barcodeFormat,
         });
 
-        return NextResponse.json({ url: fileUrl, slug: slug }, { status: 200 });
-
-    } catch (err: unknown) {
+        return new NextResponse(JSON.stringify({ url: fileUrl }), {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        // eslint-disable-next-line
+    } catch (err: any) {
         console.error("Error creating pass:", err);
-        const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during pass creation.";
-        return NextResponse.json({ message: "Internal Server Error", details: errorMessage }, { status: 500 });
+        return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }
 }
