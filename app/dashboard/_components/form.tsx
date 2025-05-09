@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
+import { QRCodeCanvas } from "qrcode.react"
 
 import { Button } from "@/components/ui/button";
 import {
@@ -63,18 +64,18 @@ export function CreatePassForm() {
             description: "Virtual | Premium",
             logoUrl: "",
             logoText: "",
-            headerFieldLabel: "Header Field Label",
-            headerFieldValue: "Header Field Value",
-            backgroundColor: "#000",
+            headerFieldLabel: "Expiration Date",
+            headerFieldValue: "Mar 3, 2025",
+            backgroundColor: "#b76d6d",
             stripImageFrontUrl: "",
             stripImageBackUrl: "",
             secondaryFieldLabel: "Date",
-            secondaryFieldValue: "Mar 3, 2025 | 10:00 PM EST",
+            secondaryFieldValue: "Mar 3, 2025",
             auxiliaryFieldLabel: "Auxiliary Field Label",
             auxiliaryFieldValue: "Auxiliary Field Value",
             // url: "",
             barcodeFormat: "PKBarcodeFormatQR",
-            barcodeMessage: "",
+            barcodeMessage: "1234567890",
             barcodeAltText: "",
             barcodeEncoding: "iso-8859-1",
         },
@@ -115,8 +116,6 @@ export function CreatePassForm() {
     const prevStep = () => {
         if (step > 1) setStep(step - 1);
     };
-
-    console.log('formState', form.formState.errors)
 
     return (
         <div className="grid grid-cols-2 gap-8 max-w-5xl mx-auto p-4 w-full">
@@ -377,16 +376,75 @@ export function CreatePassForm() {
                                                         ref={field.ref}
                                                         onChange={async (e) => {
                                                             const file = e.target.files?.[0];
+
                                                             if (!file) return;
+
+                                                            // Check image dimensions before upload
+                                                            const img = new Image();
+                                                            const objectUrl = URL.createObjectURL(file);
+                                                            let processedFile = file; // Use original file by default
+                                                            let targetMimeType = "image/png"; // Always aim for PNG
+                                                            let originalFileNameWithoutExtension = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+
                                                             try {
-                                                                // read raw bytes
-                                                                const buf = await file.arrayBuffer();
+                                                                await new Promise<void>((resolve, reject) => {
+                                                                    img.onload = () => resolve();
+                                                                    img.onerror = () => reject(new Error('Failed to load image'));
+                                                                    img.src = objectUrl;
+                                                                });
+
+                                                                const needsResize = img.width > 160;
+                                                                const needsTypeConversion = file.type !== targetMimeType;
+
+                                                                if (needsResize || needsTypeConversion) {
+                                                                    if (needsResize && needsTypeConversion) {
+                                                                        toast.info('Resizing and converting to PNG...');
+                                                                    } else if (needsResize) {
+                                                                        toast.info('Logo image is too wide, resizing to 160px width...');
+                                                                    } else if (needsTypeConversion) {
+                                                                        toast.info(`Converting to ${targetMimeType}...`);
+                                                                    }
+
+                                                                    const canvas = document.createElement('canvas');
+                                                                    const ctx = canvas.getContext('2d');
+                                                                    if (!ctx) {
+                                                                        throw new Error('Failed to get canvas context');
+                                                                    }
+
+                                                                    const aspectRatio = img.height / img.width;
+                                                                    canvas.width = needsResize ? 144 : img.width;
+                                                                    canvas.height = needsResize ? (144 * aspectRatio) : img.height;
+
+                                                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                                                                    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, targetMimeType, 0.95));
+                                                                    if (!blob) {
+                                                                        throw new Error('Failed to convert canvas to blob');
+                                                                    }
+                                                                    processedFile = new File([blob], `${originalFileNameWithoutExtension}.png`, {
+                                                                        type: targetMimeType,
+                                                                        lastModified: Date.now(),
+                                                                    });
+                                                                    toast.success('Logo processed successfully');
+                                                                }
+                                                            } catch (error) {
+                                                                console.error("Image processing error:", error);
+                                                                toast.error("Image processing failed: " + (error instanceof Error ? error.message : String(error)));
+                                                                URL.revokeObjectURL(objectUrl);
+                                                                return;
+                                                            } finally {
+                                                                URL.revokeObjectURL(objectUrl); // Ensure cleanup in all cases
+                                                            }
+
+                                                            try {
+                                                                // read raw bytes from the potentially processed file
+                                                                const buf = await processedFile.arrayBuffer();
                                                                 // send to your endpoint
                                                                 const res = await fetch("/api/upload-image", {
                                                                     method: "POST",
                                                                     headers: {
-                                                                        "Content-Type": "application/octet-stream",
-                                                                        "x-file-name": file.name,
+                                                                        "Content-Type": "application/octet-stream", // Server expects raw bytes
+                                                                        "x-file-name": processedFile.name,
                                                                     },
                                                                     body: buf,
                                                                 });
@@ -673,45 +731,48 @@ export function CreatePassForm() {
                     <div className="flex justify-between items-center text-xs font-semibold mb-2">
                         <div className="flex items-center gap-2">
                             {watched.logoUrl ? (
-                                <img src={watched.logoUrl} alt="logo" className="w-6 h-6 rounded-full" />
+                                <img src={watched.logoUrl} alt="logo" className="w-7" />
                             ) : (
                                 <span>{watched.logoText || "LOGO TEXT"}</span>
                             )}
                         </div>
                         <div className="text-right">
-                            <div>{watched.headerFieldLabel || "Header Field Label"}</div>
-                            <div className="text-lg">{watched.headerFieldValue || "Header Field Value"}</div>
+                            <div className="text-xs font-semibold">{watched.headerFieldLabel || "Header Field Label"}</div>
+                            <div className="text-lg font-medium">{watched.headerFieldValue || "Header Field Value"}</div>
                         </div>
                     </div>
-                    <div className="w-full h-24 bg-white mb-2 flex items-center justify-center">
+                    <div className="w-full h-24 bg-zinc-900 mb-2 flex items-center justify-center">
                         {watched.stripImageFrontUrl ? (
                             <img src={watched.stripImageFrontUrl} alt="strip" className="w-full h-full" />
                         ) : (
-                            <span className="text-black text-xs">[strip image]</span>
+                            <span className="text-white text-xs">[strip image]</span>
                         )}
                     </div>
-                    <div className="flex justify-between items-center text-sm font-semibold bg-black/10 py-2 rounded-md">
+                    <div className="flex justify-between items-center text-sm font-semibold py-2 rounded-md">
                         <div>
-                            <div className="text-xs opacity-80">
+                            <div className="text-xs font-semibold">
                                 {watched.secondaryFieldLabel || "Secondary Field Label"}
                             </div>
-                            <div>{watched.secondaryFieldValue || "secondaryFieldValue"}</div>
+                            <div className="text-xs font-medium">{watched.secondaryFieldValue || "secondaryFieldValue"}</div>
                         </div>
+                        {watched.auxiliaryFieldLabel || watched.auxiliaryFieldValue ? (
+                            <div>
+                                <div className="text-xs font-semibold">
+                                    {watched.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
+                                </div>
+                                <div className="text-xs font-medium">{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
+                            </div>
+                        ) : null}
                     </div>
-                    {watched.auxiliaryFieldLabel || watched.auxiliaryFieldValue ? (
-                        <div className="mt-2 text-sm">
-                            <div className="text-xs opacity-80">
-                                {watched.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
-                            </div>
-                            <div>{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
-                        </div>
-                    ) : null}
                     {watched.barcodeFormat && (
-                        <div className="mt-2 text-sm">
-                            <div className="text-xs opacity-80">
-                                Barcode Format
+                        <div className="flex items-center justify-center mt-5">
+                            <div className="flex flex-col items-center justify-center bg-white p-2 rounded">
+                                <QRCodeCanvas
+                                    size={100}
+                                    value={watched?.barcodeAltText || ""}
+                                    className="w-full"
+                                />
                             </div>
-                            <div>{barcodeFormatFriendlyNames[watched.barcodeFormat] || watched.barcodeFormat}</div>
                         </div>
                     )}
                 </div>

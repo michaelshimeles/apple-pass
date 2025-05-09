@@ -30,49 +30,42 @@ export async function POST(req: NextRequest) {
             path.join(process.cwd(), "public/pass-models/storecard.pass")
         );
 
-        // let logoImageUrl;
-        // try {
-        //     const imageResponse = await fetch(logoUrl);
-        //     if (!imageResponse.ok) {
-        //         // Log the status and text for more detailed error information
-        //         const errorText = await imageResponse.text();
-        //         console.error(`Failed to fetch logo image. Status: ${imageResponse.status}, URL: ${logoUrl}, Response: ${errorText}`);
-        //         throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
-        //     }
-        //     logoImageUrl = await imageResponse.arrayBuffer();
-        // } catch (error) {
-        //     console.error("Error fetching logo image for pass creation:", error);
-        //     // Return a specific error response to the client
-        //     return NextResponse.json({
-        //         message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
-        //         details: error instanceof Error ? error.message : String(error)
-        //     }, { status: 500 });
-        // }
+        let logoImageUrl;
+        try {
+            const imageResponse = await fetch(logoUrl);
+            if (!imageResponse.ok) {
+                throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
+            }
+            logoImageUrl = await imageResponse.arrayBuffer();
+        } catch (error) {
+            return NextResponse.json({
+                message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
+                details: error instanceof Error ? error.message : String(error)
+            }, { status: 500 });
+        }
 
-        // PassImages.add(imageType: ImageType, pathOrBuffer: string | Buffer, density?: ImageDensity, lang?: string): Promise<void>
-        // Add logo if needed
-        await template.images.add("logo", path.join(process.cwd(), "public/logo.png"), "1x");
-        // let stripImageUrl;
-        // try {
-        //     const imageResponse = await fetch(logoUrl);
-        //     if (!imageResponse.ok) {
-        //         // Log the status and text for more detailed error information
-        //         const errorText = await imageResponse.text();
-        //         console.error(`Failed to fetch logo image. Status: ${imageResponse.status}, URL: ${logoUrl}, Response: ${errorText}`);
-        //         throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
-        //     }
-        //     stripImageUrl = await imageResponse.arrayBuffer();
-        // } catch (error) {
-        //     console.error("Error fetching logo image for pass creation:", error);
-        //     // Return a specific error response to the client
-        //     return NextResponse.json({
-        //         message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
-        //         details: error instanceof Error ? error.message : String(error)
-        //     }, { status: 500 });
-        // }
+        let stripImageUrl;
 
+        try {
+            const imageResponse = await fetch(stripImageFrontUrl);
+            if (!imageResponse.ok) {
+                throw new Error(`Failed to fetch strip image: ${imageResponse.statusText} from ${stripImageFrontUrl}`);
+            }
+            stripImageUrl = await imageResponse.arrayBuffer();
+        } catch (error) {
+            return NextResponse.json({
+                message: "Failed to retrieve strip image for the pass. Please ensure the image URL is valid and accessible.",
+                details: error instanceof Error ? error.message : String(error)
+            }, { status: 500 });
+        }
 
-        // await template.images.add("strip", Buffer.from(stripImageUrl), "1x");
+        const imageBuffer = Buffer.from(logoImageUrl);
+
+        await template.images.add("logo", imageBuffer, "1x");
+
+        const stripImageBuffer = Buffer.from(stripImageUrl);
+        await template.images.add("strip", stripImageBuffer, "1x");
+
         // Load cert and key from base64 env vars
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
@@ -93,19 +86,16 @@ export async function POST(req: NextRequest) {
 
         pass.logoText = logoText;
         pass.backgroundColor = backgroundColor;
-        pass.barcodes = [
-            {
-                format: barcodeFormat,
-                message: "1234567890",
-                messageEncoding: "iso-8859-1",
-            }
-        ]
 
-        pass.primaryFields.add({
-            key: "name",
-            label: "Name",
-            value: name,
-        });
+        if (barcodeFormat && barcodeValue) {
+            pass.barcodes = [
+                {
+                    format: barcodeFormat, // Ensure this is a valid PKBarcodeFormat string
+                    message: barcodeValue, // Use dynamic value from request
+                    messageEncoding: "iso-8859-1", // Default, adjust if needed
+                }
+            ];
+        }
 
         pass.secondaryFields.add({
             key: "desc",
@@ -119,18 +109,27 @@ export async function POST(req: NextRequest) {
             value: "Welcome to your pass!", // This will later be dynamic
         });
 
-        pass.auxiliaryFields.add({
-            key: auxiliaryFieldLabel,
-            label: auxiliaryFieldLabel,
-            value: auxiliaryFieldValue,
-        });
+        if (auxiliaryFieldLabel && auxiliaryFieldValue) {
+            pass.auxiliaryFields.add({
+                key: auxiliaryFieldLabel,
+                label: auxiliaryFieldLabel,
+                value: auxiliaryFieldValue,
+            });
+        }
 
-        pass.headerFields.add({
-            key: headerFieldLabel,
-            label: headerFieldLabel,
-            value: headerFieldValue, // This will later be dynamic
-        })
+        // pass.headerFields.add({
+        //     key: headerFieldLabel,
+        //     label: headerFieldLabel,
+        //     value: headerFieldValue, // This will later be dynamic
+        // })
 
+        if (url) {
+            pass.backFields.add({
+                key: "website",
+                label: "Website",
+                value: url,
+            });
+        }
 
         const buffer = await pass.asBuffer();
 

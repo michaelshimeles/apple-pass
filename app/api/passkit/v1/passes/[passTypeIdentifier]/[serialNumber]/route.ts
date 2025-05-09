@@ -49,11 +49,57 @@ export async function GET(
     console.log("💬 Latest message for pass:", latestMessage);
 
     // Load & create pass
-    const template = new Template();
+    const template = await Template.load(
+        path.join(process.cwd(), "public/pass-models/storecard.pass")
+    );
+
+    let logoImageUrl;
+    try {
+        const imageResponse = await fetch(pass.logoUrl!);
+        if (!imageResponse.ok) {
+            // Log the status and text for more detailed error information
+            const errorText = await imageResponse.text();
+            console.error(`Failed to fetch logo image. Status: ${imageResponse.status}, URL: ${pass.logoUrl}, Response: ${errorText}`);
+            throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${pass.logoUrl}`);
+        }
+        logoImageUrl = await imageResponse.arrayBuffer();
+    } catch (error) {
+        console.error("Error fetching logo image for pass creation:", error);
+        // Return a specific error response to the client
+        return NextResponse.json({
+            message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
+    }
+
+    let stripImageUrl;
 
     try {
-        await template.images.add("logo", path.join(process.cwd(), "public/logo.png"), "1x");
-        await template.images.add("icon", path.join(process.cwd(), "public/icon.png"), "1x");
+        const imageResponse = await fetch(pass.stripImageFrontUrl!);
+        if (!imageResponse.ok) {
+            // Log the status and text for more detailed error information
+            const errorText = await imageResponse.text();
+            console.error(`Failed to fetch strip image. Status: ${imageResponse.status}, URL: ${pass.stripImageFrontUrl}, Response: ${errorText}`);
+            throw new Error(`Failed to fetch strip image: ${imageResponse.statusText} from ${pass.stripImageFrontUrl}`);
+        }
+        stripImageUrl = await imageResponse.arrayBuffer();
+    } catch (error) {
+        console.error("Error fetching strip image for pass creation:", error);
+        // Return a specific error response to the client
+        return NextResponse.json({
+            message: "Failed to retrieve strip image for the pass. Please ensure the image URL is valid and accessible.",
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
+    }
+
+    try {
+        const imageBuffer = Buffer.from(logoImageUrl);
+
+        await template.images.add("logo", imageBuffer, "1x");
+
+        const stripImageBuffer = Buffer.from(stripImageUrl);
+        await template.images.add("strip", stripImageBuffer, "1x");
+
         console.log("🖼️ Images added successfully");
     } catch (err) {
         console.error("❌ Error adding images:", err);
@@ -76,11 +122,28 @@ export async function GET(
         description: pass.description,
         webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
         authenticationToken: pass.authenticationToken,
-        organizationName: "Fabrika",
-        teamIdentifier: "5S3KCRYBD2",
-        passTypeIdentifier,
-        style: "storeCard",
+        passTypeIdentifier, // from URL param, overrides template if different
+        // organizationName and teamIdentifier will be taken from the loaded template
     });
+
+    // Populate pass instance with data from the database, similar to POST route
+    if (pass.logoText) {
+        instance.logoText = pass.logoText;
+    }
+
+    if (pass.backgroundColor) {
+        instance.backgroundColor = pass.backgroundColor;
+    }
+
+    if (pass.barcodeFormat && pass.barcodeValue) {
+        instance.barcodes = [
+            {
+                format: pass.barcodeFormat as any, // Ensure this matches WalletPass accepted formats
+                message: pass.barcodeValue, // Use dynamic value from DB
+                messageEncoding: "iso-8859-1", // Default, adjust if needed
+            },
+        ];
+    }
 
     instance.primaryFields.add({
         key: "name",
@@ -95,8 +158,37 @@ export async function GET(
         changeMessage: "New message: %@",
     });
 
+    instance.secondaryFields.add({
+        key: "desc",
+        label: "Access",
+        value: pass.description,
+    });
+
+    instance.backFields.add({
+        key: "message",
+        label: "Message",
+        value: "Welcome to your pass!", // This will later be dynamic
+        changeMessage: "New message: %@",
+    });
+
+    if (pass.auxiliaryFieldLabel && pass.auxiliaryFieldValue) {
+        instance.auxiliaryFields.add({
+            key: pass.auxiliaryFieldLabel,
+            label: pass.auxiliaryFieldLabel,
+            value: pass.auxiliaryFieldValue,
+        });
+    }
+
+    if (pass.url) {
+        instance.backFields.add({
+            key: "website",
+            label: "Website",
+            value: pass.url,
+        });
+    }
+
     instance.relevantDate = new Date(Date.now() + Math.random() * 1000).toISOString();
-        console.log("🕒 Set relevantDate to:", instance.relevantDate);
+    console.log("🕒 Set relevantDate to:", instance.relevantDate);
 
     console.log("🔁 Returning pass with message:", latestMessage);
     try {
