@@ -6,7 +6,7 @@ import { QRCodeCanvas } from "qrcode.react"
 export default function QRCode({ response }: { response: any }) {
     return (
         <QRCodeCanvas
-            size={200}
+            size={100}
             value={`${process.env.NEXT_PUBLIC_APP_URL}/api/add/${response?.slug}`}
             className="w-full"
         />

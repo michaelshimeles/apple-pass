@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { Fragment } from "react";
 import QRCode from "./_components/qr-code";
+import ShareModal from "./_components/share-modal";
 
 export default async function Dashboard() {
   const user = await currentUser()
@@ -32,12 +33,13 @@ export default async function Dashboard() {
                 {/* <div className="w-full flex justify-center bg-muted/30 rounded-lg p-4"> */}
                 <QRCode key={pass?.id} response={pass} />
                 {/* </div> */}
-                <div className="flex items-center justify-start w-full">
+                <div className="flex items-center justify-start w-full gap-2">
                   <Link prefetch={true} href={pass?.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button size="sm" variant="outline" className="w-full">
                       Download Pass
                     </Button>
                   </Link>
+                  <ShareModal pass={pass} />
                 </div>
               </div>
             </Fragment>
