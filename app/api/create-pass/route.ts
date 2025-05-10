@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
                 "Content-Type": "application/json",
             },
         });
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Error creating pass:", err);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
     }

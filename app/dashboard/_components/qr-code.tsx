@@ -3,7 +3,6 @@
 import { ApplePass } from "@/lib/types"
 import { QRCodeCanvas } from "qrcode.react"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function QRCode({ pass, size }: { pass: ApplePass, size?: number }) {
     return (
         <QRCodeCanvas
