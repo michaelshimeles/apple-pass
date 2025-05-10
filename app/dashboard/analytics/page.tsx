@@ -7,6 +7,7 @@ import { count, eq } from "drizzle-orm";
 import PassSelector from "../notifications/pass-selector";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+// Icons removed with View All sections
 
 export default async function Analytics({ searchParams }: { searchParams: { passId?: string } }) {
     // Get the passId from the URL query parameters

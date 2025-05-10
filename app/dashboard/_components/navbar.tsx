@@ -5,7 +5,7 @@ import { Dialog, DialogClose } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
 import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { UserButton } from '@clerk/nextjs'
-import { Brush, GitGraph, HomeIcon, MonitorSmartphone } from 'lucide-react'
+import { Brush, HomeIcon, LucideGitBranchPlus, MonitorSmartphone } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode } from 'react'
 
@@ -55,7 +55,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
               <DialogClose asChild>
                 <Link prefetch={true} href="/dashboard/analytics">
                   <Button variant="outline" className="w-full">
-                    <GitGraph className="mr-2 h-4 w-4" />
+                    <LucideGitBranchPlus className="mr-2 h-4 w-4" />
                     Analytics
                   </Button>
                 </Link>

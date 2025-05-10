@@ -3,7 +3,6 @@ import { passes } from "@/db/schema";
 import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Template } from "@walletpass/pass-js";
-import { uuid } from "drizzle-orm/gel-core";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";

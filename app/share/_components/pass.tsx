@@ -28,7 +28,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                 transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="my-5"
             >
-                <Link href={`${pass.fileUrl}`} target="_blank" className="flex flex-col items-center justify-center gap-2">
+                <Link href={`${process.env.NEXT_PUBLIC_APP_URL}/api/add/${pass?.slug}`} target="_blank" className="flex flex-col items-center justify-center gap-2">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                         <Image
                             src="/add.png"
