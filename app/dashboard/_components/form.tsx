@@ -269,7 +269,7 @@ export function CreatePassForm() {
                                                         className="w-full border p-2 rounded-md"
                                                     />
                                                 </FormControl>
-                                                <FormDescription>Upload logo image</FormDescription>
+                                                <FormDescription>Upload logo image (Recommended: PNG format, 160px wide, square aspect ratio)</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -544,7 +544,7 @@ export function CreatePassForm() {
                                                         className="w-full border p-2 rounded-md"
                                                     />
                                                 </FormControl>
-                                                <FormDescription>Upload front strip image</FormDescription>
+                                                <FormDescription>Upload front strip image (Required: 144px height, recommended width 750px, PNG format for best quality)</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
