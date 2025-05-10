@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     try {
         // Load pass template
         const template = await Template.load(
-            path.join(process.cwd(), "public/pass-models/storecard.pass")
+            path.join(process.cwd(), "public/pass-models/storecard.pass"),
         );
 
         // --- Fetch and convert logo image ---
