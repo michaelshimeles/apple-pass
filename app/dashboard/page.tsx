@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import QRCode from "./_components/qr-code";
 import ShareModal from "./_components/share-modal";
+import { ApplePass } from "@/lib/types";
 
 export default async function Dashboard() {
   const user = await currentUser()
@@ -39,7 +40,7 @@ export default async function Dashboard() {
                       Download Pass
                     </Button>
                   </Link>
-                  <ShareModal pass={pass} />
+                  <ShareModal pass={pass as ApplePass} />
                 </div>
               </div>
             </Fragment>
