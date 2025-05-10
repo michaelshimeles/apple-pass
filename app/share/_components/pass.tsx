@@ -62,7 +62,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                     <div className="flex justify-between items-center font-semibold mb-4">
                         <div className="flex items-center gap-2 text-xs">
                             {pass.logoUrl ? (
-                                <Image src={pass.logoUrl} alt="logo" width={32} height={32} className="w-8 h-8 object-contain" />
+                                <img src={pass.logoUrl} alt="logo" width={32} height={32} className="w-8 h-8 object-contain" />
                             ) : (
                                 <span className="font-medium">{pass.logoText || "LOGO TEXT"}</span>
                             )}
@@ -74,24 +74,24 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                     </div>
                     <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center rounded-lg overflow-hidden">
                         {pass.stripImageFrontUrl ? (
-                            <Image src={pass.stripImageFrontUrl} alt="strip" width={350} height={28} className="w-full h-full object-cover" />
+                            <img src={pass.stripImageFrontUrl} alt="strip" width={350} height={28} className="w-full h-full object-cover" />
                         ) : (
                             <span className="text-white text-xs">[strip image]</span>
                         )}
                     </div>
                     <div className="flex justify-between items-center text-sm font-semibold py-3 px-2 rounded-lg mb-3 backdrop-blur-sm">
                         <div>
-                            <div className="text-xs font-semibold tracking-tight">
+                            <div className="font-semibold tracking-tight">
                                 {pass.secondaryFieldLabel || "Secondary Field Label"}
                             </div>
-                            <div className="text-xs font-medium">{pass.secondaryFieldValue || "secondaryFieldValue"}</div>
+                            <div className="font-medium text-lg">{pass.secondaryFieldValue || "secondaryFieldValue"}</div>
                         </div>
                         {pass.auxiliaryFieldLabel || pass.auxiliaryFieldValue ? (
-                            <div>
-                                <div className="text-xs font-semibold tracking-tight">
+                            <div className="text-right">
+                                <div className="font-semibold tracking-tight">
                                     {pass.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
                                 </div>
-                                <div className="text-xs font-medium">{pass.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
+                                <div className="font-medium text-lg">{pass.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
                             </div>
                         ) : null}
                     </div>
@@ -102,7 +102,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.4 }}
                         >
-                            <div className="flex flex-col items-center mb-[12rem] justify-center bg-white p-3 rounded-lg shadow-sm">
+                            <div className="flex flex-col items-center mb-[15rem] justify-center bg-white p-3 rounded-lg shadow-sm">
                                 <QRCode
                                     pass={pass}
                                 />

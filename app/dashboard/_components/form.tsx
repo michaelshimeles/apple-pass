@@ -62,8 +62,8 @@ export function CreatePassForm() {
             stripImageFrontUrl: "",
             secondaryFieldLabel: "Date",
             secondaryFieldValue: "Mar 3, 2025",
-            auxiliaryFieldLabel: "Auxiliary Field Label",
-            auxiliaryFieldValue: "Auxiliary Field Value",
+            auxiliaryFieldLabel: "Auxiliary Label",
+            auxiliaryFieldValue: "Auxiliary Value",
             barcodeFormat: "PKBarcodeFormatQR",
             barcodeValue: "1234567890",
             barcodeAltText: "Apple Pass",
@@ -700,17 +700,17 @@ export function CreatePassForm() {
                         </div>
                         <div className="flex justify-between items-center text-sm font-semibold py-3 px-2 rounded-lg mb-3 backdrop-blur-sm">
                             <div>
-                                <div className="text-xs font-semibold tracking-tight">
+                                <div className="font-semibold tracking-tight">
                                     {watched.secondaryFieldLabel || "Secondary Field Label"}
                                 </div>
-                                <div className="text-xs font-medium">{watched.secondaryFieldValue || "secondaryFieldValue"}</div>
+                                <div className="font-medium text-lg">{watched.secondaryFieldValue || "secondaryFieldValue"}</div>
                             </div>
                             {watched.auxiliaryFieldLabel || watched.auxiliaryFieldValue ? (
-                                <div>
-                                    <div className="text-xs font-semibold tracking-tight">
+                                <div className="text-right">
+                                    <div className="font-semibold tracking-tight">
                                         {watched.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
                                     </div>
-                                    <div className="text-xs font-medium">{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
+                                    <div className="font-medium text-lg">{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
                                 </div>
                             ) : null}
                         </div>
@@ -721,7 +721,7 @@ export function CreatePassForm() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.5, delay: 0.4 }}
                             >
-                                <div className="flex flex-col items-center mb-[12rem] justify-center bg-white p-3 rounded-lg shadow-sm">
+                                <div className="flex flex-col items-center mb-[15rem] justify-center bg-white p-3 rounded-lg shadow-sm">
                                     <QRCode
                                         pass={watched as ApplePass}
                                     />
@@ -730,63 +730,6 @@ export function CreatePassForm() {
                         )}
                     </motion.div>
                 </motion.div>
-                {/* <div
-                    className="rounded shadow-lg overflow-hidden text-white font-sans"
-                    style={{
-                        backgroundColor: watched.backgroundColor,
-                        width: 400,
-                        padding: 16,
-                        height: 500,
-                    }}
-                >
-                    <div className="flex justify-between items-center font-semibold mb-2">
-                        <div className="flex items-center gap-2 text-xs">
-                            {watched.logoUrl ? (
-                                <img src={watched.logoUrl} alt="logo" className="w-7" />
-                            ) : (
-                                <span>{watched.logoText || "LOGO TEXT"}</span>
-                            )}
-                        </div>
-                        <div className="text-right">
-                            <div className="text-xs font-semibold">{watched.headerFieldLabel || "Header Field Label"}</div>
-                            <div className="text-md font-medium">{watched.headerFieldValue || "Header Field Value"}</div>
-                        </div>
-                    </div>
-                    <div className="w-full h-24 bg-zinc-900 mb-2 flex items-center justify-center">
-                        {watched.stripImageFrontUrl ? (
-                            <img src={watched.stripImageFrontUrl} alt="strip" className="w-full h-full" />
-                        ) : (
-                            <span className="text-white text-xs">[strip image]</span>
-                        )}
-                    </div>
-                    <div className="flex justify-between items-center text-sm font-semibold py-2 rounded-md">
-                        <div>
-                            <div className="text-xs font-semibold">
-                                {watched.secondaryFieldLabel || "Secondary Field Label"}
-                            </div>
-                            <div className="text-xs font-medium">{watched.secondaryFieldValue || "secondaryFieldValue"}</div>
-                        </div>
-                        {watched.auxiliaryFieldLabel || watched.auxiliaryFieldValue ? (
-                            <div>
-                                <div className="text-xs font-semibold">
-                                    {watched.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
-                                </div>
-                                <div className="text-xs font-medium">{watched.auxiliaryFieldValue || "auxiliaryFieldValue"}</div>
-                            </div>
-                        ) : null}
-                    </div>
-                    {watched.barcodeFormat && (
-                        <div className="flex items-center justify-center pb-25 h-full">
-                            <div className="flex flex-col items-center justify-center bg-white p-2 rounded">
-                                <QRCodeCanvas
-                                    size={150}
-                                    value={watched?.barcodeAltText || ""}
-                                    className="w-full"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div> */}
             </div>
         </div>
     );
