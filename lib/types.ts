@@ -5,6 +5,7 @@ export const PassSchema = z.object({
   
   name: z.string().nonempty("Name is required"),
   description: z.string().nonempty("Description is required"),
+  passShareId: z.string().nonempty("Pass share ID is required"),
   
   fileUrl: z.string().url("Must be a valid URL"),
   authenticationToken: z.string().nonempty("Authentication token is required"),

@@ -23,10 +23,10 @@ export default function ShareModal({ pass }: { pass: ApplePass  }) {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex items-center gap-2">
-                    <Input disabled className="w-full" placeholder="Enter email" value={`${process.env.NEXT_PUBLIC_APP_URL}/share/pass/${pass?.id}`} />
+                    <Input disabled className="w-full" placeholder="Enter email" value={`${process.env.NEXT_PUBLIC_APP_URL}/share/pass/${pass?.passShareId}`} />
                     <Button size="sm" variant="outline"
                         onClick={() => {
-                            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL}/share/pass/${pass?.id}`)
+                            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL}/share/pass/${pass?.passShareId}`)
                             toast.success("Pass copied to clipboard")
                         }}>
                         <Copy />

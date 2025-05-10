@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
         // Upload to R2
         const fileUrl = await uploadPkpassToR2(buffer, `${slug}.pkpass`);
 
-        const passShareId = uuid()
+        const passShareId = nanoid(12).toLowerCase()
 
         // Save to DB
         await db.insert(passes).values({
@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
             headerFieldValue,
             barcodeValue,
             barcodeFormat,
-            passShareId: String(passShareId),
+            passShareId,
         });
 
         return new NextResponse(JSON.stringify({ url: fileUrl }), {
