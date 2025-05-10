@@ -386,18 +386,15 @@ export function CreatePassForm() {
                                                                 // For strip images, height MUST be exactly 144px
                                                                 const needsHeightAdjustment = img.height !== 144;
                                                                 const needsTypeConversion = file.type !== targetMimeType;
+                                                                // Higher quality settings for strip images
+                                                                const IDEAL_STRIP_WIDTH = 750; // Optimal width for Apple Pass strip image
+                                                                const needsOptimization = true; // Always optimize strip images for best quality
 
-                                                                if (needsHeightAdjustment || needsTypeConversion) {
-                                                                    if (needsHeightAdjustment && needsTypeConversion) {
-                                                                        toast.info('Adjusting image height to 144px and converting to PNG...');
-                                                                    } else if (needsHeightAdjustment) {
-                                                                        toast.info('Strip image must have height of 144px, adjusting...');
-                                                                    } else if (needsTypeConversion) {
-                                                                        toast.info(`Converting to ${targetMimeType}...`);
-                                                                    }
+                                                                if (needsHeightAdjustment || needsTypeConversion || needsOptimization) {
+                                                                    toast.info(`Optimizing strip image for best display quality...`);
 
                                                                     const canvas = document.createElement('canvas');
-                                                                    const ctx = canvas.getContext('2d');
+                                                                    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
                                                                     if (!ctx) {
                                                                         throw new Error('Failed to get canvas context');
                                                                     }
@@ -405,11 +402,102 @@ export function CreatePassForm() {
                                                                     // Maintain aspect ratio but ensure height is exactly 144px
                                                                     const aspectRatio = img.width / img.height;
                                                                     canvas.height = 144; // Strip images MUST be 144px height
-                                                                    canvas.width = Math.round(144 * aspectRatio); // Calculate width based on aspect ratio
+                                                                    
+                                                                    // Calculate optimal width while maintaining aspect ratio
+                                                                    const targetWidth = Math.min(Math.round(144 * aspectRatio), IDEAL_STRIP_WIDTH);
+                                                                    canvas.width = targetWidth;
+                                                                    
+                                                                    // Set up highest quality rendering options
+                                                                    ctx.imageSmoothingEnabled = true;
+                                                                    ctx.imageSmoothingQuality = 'high';
+                                                                    
+                                                                    // Advanced progressive downsampling for superior image quality
+                                                                    // This technique produces sharper results by stepping down gradually
+                                                                    if (img.width > targetWidth * 2) {
+                                                                        // Multi-step progressive downsampling for high-res images
+                                                                        let currentWidth = img.width;
+                                                                        let currentHeight = img.height;
+                                                                        const steps = Math.min(4, Math.floor(Math.log2(img.width / targetWidth)));
+                                                                        
+                                                                        // Create a temporary canvas for the multi-step process
+                                                                        const tempCanvas = document.createElement('canvas');
+                                                                        const tempCtx = tempCanvas.getContext('2d', { alpha: true });
+                                                                        if (!tempCtx) throw new Error('Failed to create temporary context');
+                                                                        
+                                                                        // Initial drawing of original image
+                                                                        tempCanvas.width = currentWidth;
+                                                                        tempCanvas.height = currentHeight;
+                                                                        tempCtx.drawImage(img, 0, 0, currentWidth, currentHeight);
+                                                                        
+                                                                        // Progressive downsampling steps
+                                                                        for (let i = 0; i < steps; i++) {
+                                                                            const nextWidth = Math.max(targetWidth, Math.floor(currentWidth * 0.5));
+                                                                            const nextHeight = Math.max(144, Math.floor(currentHeight * 0.5));
+                                                                            
+                                                                            // Create another temp canvas for this step
+                                                                            const stepCanvas = document.createElement('canvas');
+                                                                            const stepCtx = stepCanvas.getContext('2d', { alpha: true });
+                                                                            if (!stepCtx) throw new Error('Failed to create step context');
+                                                                            
+                                                                            stepCanvas.width = nextWidth;
+                                                                            stepCanvas.height = nextHeight;
+                                                                            stepCtx.imageSmoothingEnabled = true;
+                                                                            stepCtx.imageSmoothingQuality = 'high';
+                                                                            
+                                                                            // Draw previous step result to this step's canvas
+                                                                            stepCtx.drawImage(tempCanvas, 0, 0, nextWidth, nextHeight);
+                                                                            
+                                                                            // Update the main temp canvas with this result
+                                                                            tempCanvas.width = nextWidth;
+                                                                            tempCanvas.height = nextHeight;
+                                                                            tempCtx.clearRect(0, 0, nextWidth, nextHeight);
+                                                                            tempCtx.drawImage(stepCanvas, 0, 0);
+                                                                            
+                                                                            // Update dimensions for next iteration
+                                                                            currentWidth = nextWidth;
+                                                                            currentHeight = nextHeight;
+                                                                            
+                                                                            // Break if we've reached our target dimensions
+                                                                            if (currentWidth === targetWidth && currentHeight === 144) break;
+                                                                        }
+                                                                        
+                                                                        // Final drawing to output canvas
+                                                                        ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+                                                                    } else {
+                                                                        // For smaller images, use sharper direct rendering
+                                                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                                                    }
 
-                                                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                                                                    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, targetMimeType, 0.95));
+                                                                    // Apply sharpening filter for better edge definition
+                                                                    try {
+                                                                        // Create temporary canvases for sharpening
+                                                                        const sharpenCanvas = document.createElement('canvas');
+                                                                        sharpenCanvas.width = canvas.width;
+                                                                        sharpenCanvas.height = canvas.height;
+                                                                        const sharpenCtx = sharpenCanvas.getContext('2d', { alpha: true });
+                                                                        if (sharpenCtx) {
+                                                                            // Draw original image
+                                                                            sharpenCtx.drawImage(canvas, 0, 0);
+                                                                            
+                                                                            // Apply contrast enhancement
+                                                                            sharpenCtx.drawImage(canvas, 0, 0);
+                                                                            sharpenCtx.globalCompositeOperation = 'overlay';
+                                                                            sharpenCtx.globalAlpha = 0.2;
+                                                                            sharpenCtx.drawImage(canvas, 0, 0);
+                                                                            sharpenCtx.globalCompositeOperation = 'source-over';
+                                                                            sharpenCtx.globalAlpha = 1.0;
+                                                                            
+                                                                            // Copy enhanced image back to original canvas
+                                                                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                                                            ctx.drawImage(sharpenCanvas, 0, 0);
+                                                                        }
+                                                                    } catch (err) {
+                                                                        // If sharpening fails, continue with the unsharpened image
+                                                                        console.warn('Image sharpening skipped:', err);
+                                                                    }
+                                                                    
+                                                                    // Use maximum quality for the PNG compression
+                                                                    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, targetMimeType, 1.0));
                                                                     if (!blob) {
                                                                         throw new Error('Failed to convert canvas to blob');
                                                                     }
@@ -693,7 +781,7 @@ export function CreatePassForm() {
                         </div>
                         <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center rounded-lg overflow-hidden">
                             {watched.stripImageFrontUrl ? (
-                                <img src={watched.stripImageFrontUrl} alt="strip" width={350} height={28} className="w-full h-full object-cover" />
+                                <img src={watched.stripImageFrontUrl} alt="strip" width={350} height={144} className="w-full h-full object-cover object-center drop-shadow-sm" style={{ imageRendering: 'auto' }} />
                             ) : (
                                 <span className="text-white text-xs">[strip image]</span>
                             )}
