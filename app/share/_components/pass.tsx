@@ -104,7 +104,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                         >
                             <div className="flex flex-col items-center mb-[12rem] justify-center bg-white p-3 rounded-lg shadow-sm">
                                 <QRCode
-                                    response={pass}
+                                    pass={pass}
                                 />
                             </div>
                         </motion.div>

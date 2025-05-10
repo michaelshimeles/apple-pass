@@ -15,7 +15,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, description, logoText, headerFieldLabel, headerFieldValue, backgroundColor, logoUrl, stripImageFrontUrl, stripImageBackUrl, backgroundUrl, secondaryFieldLabel, secondaryFieldValue, auxiliaryFieldLabel, auxiliaryFieldValue, barcodeValue, barcodeFormat } = await req.json();
+    const {
+        name,
+        description,
+        logoText,
+        headerFieldLabel,
+        headerFieldValue,
+        backgroundColor,
+        logoUrl,
+        stripImageFrontUrl,
+        stripImageBackUrl,
+        backgroundUrl,
+        secondaryFieldLabel,
+        secondaryFieldValue,
+        auxiliaryFieldLabel,
+        auxiliaryFieldValue,
+        barcodeValue,
+        barcodeFormat
+    } = await req.json();
 
     if (!name || !description) {
         return NextResponse.json({ message: "Missing fields" }, { status: 400 });
@@ -30,40 +47,40 @@ export async function POST(req: NextRequest) {
             path.join(process.cwd(), "public/pass-models/storecard.pass")
         );
 
-        let logoImageUrl;
+        // --- Fetch and convert logo image ---
+        let logoImageBuffer: Buffer;
         try {
             const imageResponse = await fetch(logoUrl);
             if (!imageResponse.ok) {
-                throw new Error(`Failed to fetch logo image: ${imageResponse.statusText} from ${logoUrl}`);
+                throw new Error(`Failed to fetch logo image: ${imageResponse.statusText}`);
             }
-            logoImageUrl = await imageResponse.arrayBuffer();
+            const arrayBuffer = await imageResponse.arrayBuffer();
+            logoImageBuffer = Buffer.from(new Uint8Array(arrayBuffer)); // ✅ proper conversion
         } catch (error) {
             return NextResponse.json({
-                message: "Failed to retrieve logo image for the pass. Please ensure the image URL is valid and accessible.",
+                message: "Failed to retrieve logo image. Please ensure the URL is valid and accessible.",
                 details: error instanceof Error ? error.message : String(error)
             }, { status: 500 });
         }
 
-        let stripImageUrl;
-
+        // --- Fetch and convert strip image ---
+        let stripImageBuffer: Buffer;
         try {
             const imageResponse = await fetch(stripImageFrontUrl);
             if (!imageResponse.ok) {
-                throw new Error(`Failed to fetch strip image: ${imageResponse.statusText} from ${stripImageFrontUrl}`);
+                throw new Error(`Failed to fetch strip image: ${imageResponse.statusText}`);
             }
-            stripImageUrl = await imageResponse.arrayBuffer();
+            const arrayBuffer = await imageResponse.arrayBuffer();
+            stripImageBuffer = Buffer.from(new Uint8Array(arrayBuffer)); // ✅ proper conversion
         } catch (error) {
             return NextResponse.json({
-                message: "Failed to retrieve strip image for the pass. Please ensure the image URL is valid and accessible.",
+                message: "Failed to retrieve strip image. Please ensure the URL is valid and accessible.",
                 details: error instanceof Error ? error.message : String(error)
             }, { status: 500 });
         }
 
-        const imageBuffer = Buffer.from(logoImageUrl);
-
-        await template.images.add("logo", imageBuffer, "1x");
-
-        const stripImageBuffer = Buffer.from(stripImageUrl);
+        // Add images to template
+        await template.images.add("logo", logoImageBuffer, "1x");
         await template.images.add("strip", stripImageBuffer, "1x");
 
         // Load cert and key from base64 env vars
@@ -73,7 +90,7 @@ export async function POST(req: NextRequest) {
         template.setCertificate(cert);
         template.setPrivateKey(key, process.env.PASS_CERT_PASSPHRASE || "");
 
-        const authenticationToken = nanoid(32); // or use UUID
+        const authenticationToken = nanoid(32);
 
         const pass = template.createPass({
             serialNumber: serial,
@@ -82,15 +99,16 @@ export async function POST(req: NextRequest) {
             authenticationToken
         });
 
+        // Set visual + dynamic fields
         pass.logoText = logoText;
         pass.backgroundColor = backgroundColor;
 
         if (barcodeFormat && barcodeValue) {
             pass.barcodes = [
                 {
-                    format: barcodeFormat, // Ensure this is a valid PKBarcodeFormat string
-                    message: barcodeValue, // Use dynamic value from request
-                    messageEncoding: "iso-8859-1", // Default, adjust if needed
+                    format: barcodeFormat,
+                    message: barcodeValue,
+                    messageEncoding: "iso-8859-1",
                 }
             ];
         }
@@ -104,7 +122,7 @@ export async function POST(req: NextRequest) {
         pass.backFields.add({
             key: "message",
             label: "Message",
-            value: "Welcome to your pass!", // This will later be dynamic
+            value: "Welcome to your pass!",
         });
 
         if (auxiliaryFieldLabel && auxiliaryFieldValue) {
@@ -118,15 +136,15 @@ export async function POST(req: NextRequest) {
         pass.headerFields.add({
             key: headerFieldLabel,
             label: headerFieldLabel,
-            value: headerFieldValue, // This will later be dynamic
-        })
+            value: headerFieldValue,
+        });
 
         const buffer = await pass.asBuffer();
 
         // Upload to R2
         const fileUrl = await uploadPkpassToR2(buffer, `${slug}.pkpass`);
 
-        // Save in DB
+        // Save to DB
         await db.insert(passes).values({
             name,
             description,
@@ -157,7 +175,6 @@ export async function POST(req: NextRequest) {
                 "Content-Type": "application/json",
             },
         });
-        // eslint-disable-next-line
     } catch (err: any) {
         console.error("Error creating pass:", err);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

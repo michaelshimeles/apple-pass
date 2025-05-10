@@ -1,15 +1,15 @@
 "use client"
 
+import { ApplePass } from "@/lib/types"
 import { QRCodeCanvas } from "qrcode.react"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function QRCode({ response }: { response: any }) {
+export default function QRCode({ pass, size }: { pass: ApplePass, size?: number }) {
     return (
         <QRCodeCanvas
-            size={100}
-            value={`${process.env.NEXT_PUBLIC_APP_URL}/api/add/${response?.slug}`}
+            size={size || 100}
+            value={`${process.env.NEXT_PUBLIC_APP_URL}/api/add/${pass?.slug}`}
             className="w-full"
         />
     )
-
 }

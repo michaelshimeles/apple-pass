@@ -26,14 +26,12 @@ export default async function Dashboard() {
             return dateB - dateA;
           })?.map((pass) => (
             <Fragment key={pass?.id}>
-              <div className="group flex flex-col items-start rounded border bg-card hover:shadow-lg transition-all duration-300 w-fit px-4 py-3 space-y-4">
+              <div className="group flex flex-col items-start rounded border bg-card hover:shadow-lg transition-all duration-300 max-w-[250px] w-full px-4 py-3 space-y-4">
                 <div className="space-y-2 w-full">
                   <h3 className="text-lg font-semibold tracking-tight">{pass?.name}</h3>
                   <p className="text-sm text-muted-foreground">{pass?.description}</p>
                 </div>
-                {/* <div className="w-full flex justify-center bg-muted/30 rounded-lg p-4"> */}
-                <QRCode key={pass?.id} response={pass} />
-                {/* </div> */}
+                <QRCode pass={pass as ApplePass} size={215} />
                 <div className="flex items-center justify-start w-full gap-2">
                   <Link prefetch={true} href={pass?.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button size="sm" variant="outline" className="w-full">
@@ -48,7 +46,7 @@ export default async function Dashboard() {
             <div className="col-span-full flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30 w-full">
               <h3 className="text-lg font-semibold mb-2">No passes found</h3>
               <p className="text-sm text-muted-foreground mb-4">Create your first Apple Pass to get started</p>
-              <Link prefetch={true} href="/create">
+              <Link prefetch={true} href="/dashboard/create">
                 <Button>
                   Create New Pass
                 </Button>
