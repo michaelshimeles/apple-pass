@@ -25,22 +25,22 @@ import { toast } from "sonner";
 import QRCode from "./qr-code";
 
 const formSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    description: z.string().min(1, "Description is required").optional(),
-    logoText: z.string().optional(),
-    headerFieldLabel: z.string().optional(),
-    headerFieldValue: z.string().optional(),
+    name: z.string().min(1, "Name is required").max(50, "Name cannot exceed 50 characters"),
+    description: z.string().min(1, "Description is required").max(100, "Description cannot exceed 100 characters").optional(),
+    logoText: z.string().max(20, "Logo text cannot exceed 20 characters").optional(),
+    headerFieldLabel: z.string().max(25, "Header label cannot exceed 25 characters").optional(),
+    headerFieldValue: z.string().max(30, "Header value cannot exceed 30 characters").optional(),
     backgroundColor: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color").optional(),
     logoUrl: z.string().optional(),
     stripImageFrontUrl: z.string().optional(),
-    secondaryFieldLabel: z.string().optional(),
-    secondaryFieldValue: z.string().optional(),
-    auxiliaryFieldLabel: z.string().optional(),
-    auxiliaryFieldValue: z.string().optional(),
+    secondaryFieldLabel: z.string().max(25, "Secondary label cannot exceed 25 characters").optional(),
+    secondaryFieldValue: z.string().max(30, "Secondary value cannot exceed 30 characters").optional(),
+    auxiliaryFieldLabel: z.string().max(25, "Auxiliary label cannot exceed 25 characters").optional(),
+    auxiliaryFieldValue: z.string().max(30, "Auxiliary value cannot exceed 30 characters").optional(),
     barcodeFormat: z.enum(["PKBarcodeFormatQR", "PKBarcodeFormatPDF417", "PKBarcodeFormatAztec", "PKBarcodeFormatCode128"]).optional(),
-    barcodeValue: z.string().optional(),
-    barcodeAltText: z.string().optional(),
-    barcodeEncoding: z.string().optional(),
+    barcodeValue: z.string().max(500, "Barcode message cannot exceed 500 characters").optional(),
+    barcodeAltText: z.string().max(30, "Barcode alt text cannot exceed 30 characters").optional(),
+    barcodeEncoding: z.string().max(20, "Encoding cannot exceed 20 characters").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -137,9 +137,17 @@ export function CreatePassForm() {
                                     name="name"
                                     render={({ field }) => (
                                         <FormItem className="mt-4">
-                                            <FormLabel>Name</FormLabel>
+                                            <div className="flex justify-between">
+                                                <FormLabel>Name</FormLabel>
+                                                <span className="text-xs text-gray-500">{field.value?.length || 0}/50</span>
+                                            </div>
                                             <FormControl>
-                                                <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                <Input 
+                                                    {...field} 
+                                                    type="text" 
+                                                    className="w-full border p-2 rounded-md" 
+                                                    maxLength={50}
+                                                />
                                             </FormControl>
                                             <FormDescription>This will not be on the pass (for organizational purposes)</FormDescription>
                                             <FormMessage />
@@ -155,9 +163,16 @@ export function CreatePassForm() {
                                     name="description"
                                     render={({ field }) => (
                                         <FormItem className="mt-4">
-                                            <FormLabel>Description</FormLabel>
+                                            <div className="flex justify-between">
+                                                <FormLabel>Description</FormLabel>
+                                                <span className="text-xs text-gray-500">{field.value?.length || 0}/100</span>
+                                            </div>
                                             <FormControl>
-                                                <Textarea {...field} className="w-full border p-2 rounded-md" />
+                                                <Textarea 
+                                                    {...field} 
+                                                    className="w-full border p-2 rounded-md" 
+                                                    maxLength={100}
+                                                />
                                             </FormControl>
                                             <FormDescription>Describe the purpose of your pass</FormDescription>
                                             <FormMessage />
@@ -282,9 +297,17 @@ export function CreatePassForm() {
                                         name="logoText"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Logo Text</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Logo Text</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/20</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={20}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Text that appears next to the logo</FormDescription>
                                                 <FormMessage />
@@ -321,9 +344,17 @@ export function CreatePassForm() {
                                         name="headerFieldLabel"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Header Field Label</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Header Field Label</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/25</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={25}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Label for the header field</FormDescription>
                                                 <FormMessage />
@@ -338,9 +369,17 @@ export function CreatePassForm() {
                                         name="headerFieldValue"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Header Field Value</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Header Field Value</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/30</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={30}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Value for the header field</FormDescription>
                                                 <FormMessage />
@@ -559,9 +598,17 @@ export function CreatePassForm() {
                                         name="secondaryFieldLabel"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Secondary Field Label</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Secondary Field Label</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/25</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={25}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Label for the secondary field</FormDescription>
                                                 <FormMessage />
@@ -576,9 +623,17 @@ export function CreatePassForm() {
                                         name="secondaryFieldValue"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Secondary Field Value</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Secondary Field Value</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/30</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={30}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Value for the secondary field</FormDescription>
                                                 <FormMessage />
@@ -595,9 +650,17 @@ export function CreatePassForm() {
                                         name="auxiliaryFieldLabel"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Auxiliary Field Label</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Auxiliary Field Label</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/25</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={25}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Label for the auxiliary field</FormDescription>
                                                 <FormMessage />
@@ -612,9 +675,17 @@ export function CreatePassForm() {
                                         name="auxiliaryFieldValue"
                                         render={({ field }) => (
                                             <FormItem className="mt-4">
-                                                <FormLabel>Auxiliary Field Value</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Auxiliary Field Value</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/30</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={30}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Value for the auxiliary field</FormDescription>
                                                 <FormMessage />
@@ -664,9 +735,17 @@ export function CreatePassForm() {
                                         name="barcodeValue"
                                         render={({ field }) => (
                                             <FormItem className="mt-2">
-                                                <FormLabel>Barcode Message</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Barcode Message</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/500</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={500}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>The message to encode in the barcode.</FormDescription>
                                                 <FormMessage />
@@ -681,9 +760,17 @@ export function CreatePassForm() {
                                         name="barcodeAltText"
                                         render={({ field }) => (
                                             <FormItem className="mt-2">
-                                                <FormLabel>Barcode Alternate Text</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Barcode Alternate Text</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/30</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={30}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>Text displayed near the barcode (e.g., for accessibility).</FormDescription>
                                                 <FormMessage />
@@ -698,9 +785,17 @@ export function CreatePassForm() {
                                         name="barcodeEncoding"
                                         render={({ field }) => (
                                             <FormItem className="mt-2">
-                                                <FormLabel>Barcode Message Encoding</FormLabel>
+                                                <div className="flex justify-between">
+                                                    <FormLabel>Barcode Message Encoding</FormLabel>
+                                                    <span className="text-xs text-gray-500">{field.value?.length || 0}/20</span>
+                                                </div>
                                                 <FormControl>
-                                                    <Input {...field} type="text" className="w-full border p-2 rounded-md" />
+                                                    <Input 
+                                                        {...field} 
+                                                        type="text" 
+                                                        className="w-full border p-2 rounded-md" 
+                                                        maxLength={20}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>The encoding for the barcode message.</FormDescription>
                                                 <FormMessage />

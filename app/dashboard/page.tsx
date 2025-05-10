@@ -3,6 +3,7 @@ import { listAllPasses } from "@/db/functions/listAllPasses";
 import { ApplePass } from "@/lib/types";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
+import DeletePass from "./_components/delete-pass";
 import PassView from "./_components/pass-view";
 import ShareModal from "./_components/share-modal";
 
@@ -25,6 +26,7 @@ export default async function Dashboard() {
             return dateB - dateA;
           })?.map((pass) => (
             <div key={pass?.id} className="w-fit border rounded-lg p-4">
+              <p className="mb-3 text-lg font-medium">{pass.name}</p>
               <PassView pass={pass as ApplePass} />
               <div className="flex items-center justify-start w-full gap-2 mt-4">
                 <Link prefetch={true} href={pass?.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full">
@@ -33,6 +35,7 @@ export default async function Dashboard() {
                   </Button>
                 </Link>
                 <ShareModal pass={pass as ApplePass} />
+                <DeletePass passId={pass?.id?.toString()} />
               </div>
             </div>
           )) : (
