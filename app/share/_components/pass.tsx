@@ -49,7 +49,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                 transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
                 <motion.div
-                    className="rounded-md shadow-xl overflow-hidden text-white font-[-apple-system,BlinkMacSystemFont]"
+                    className="rounded-md shadow-xl overflow-hidden text-black font-[-apple-system,BlinkMacSystemFont]"
                     style={{
                         backgroundColor: pass.backgroundColor!,
                         width: 350,
@@ -76,7 +76,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
                         {pass.stripImageFrontUrl ? (
                             <img src={pass.stripImageFrontUrl} alt="strip" width={350} height={28} className="w-full h-full object-cover" />
                         ) : (
-                            <span className="text-white text-xs">[strip image]</span>
+                            <span className="text-black text-xs">[strip image]</span>
                         )}
                     </div>
                     <div className="flex justify-between items-center text-sm font-semibold py-3 px-2 rounded-lg mb-3 backdrop-blur-sm">

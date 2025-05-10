@@ -756,7 +756,7 @@ export function CreatePassForm() {
                     transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 >
                     <motion.div
-                        className="rounded-md shadow-xl overflow-hidden text-white font-[-apple-system,BlinkMacSystemFont]"
+                        className="rounded-md shadow-xl overflow-hidden text-black font-[-apple-system,BlinkMacSystemFont]"
                         style={{
                             backgroundColor: watched.backgroundColor!,
                             width: 350,
