@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { listAllPasses } from "@/db/functions/listAllPasses";
+import { ApplePass } from "@/lib/types";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
-import QRCode from "./_components/qr-code";
-import ShareModal from "./_components/share-modal";
-import { ApplePass } from "@/lib/types";
 import PassView from "./_components/pass-view";
+import ShareModal from "./_components/share-modal";
 
 export default async function Dashboard() {
   const user = await currentUser()
