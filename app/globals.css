@@ -6,8 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-apple-system);
+  --font-mono: var(--font-sf-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -37,104 +37,116 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
 }
 
 :root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0 0 0);
-  --popover: oklch(0.99 0 0);
-  --popover-foreground: oklch(0 0 0);
-  --primary: oklch(0 0 0);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.94 0 0);
-  --secondary-foreground: oklch(0 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.44 0 0);
-  --accent: oklch(0.94 0 0);
-  --accent-foreground: oklch(0 0 0);
-  --destructive: oklch(0.63 0.19 23.03);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.94 0 0);
-  --ring: oklch(0 0 0);
-  --chart-1: oklch(0.81 0.17 75.35);
-  --chart-2: oklch(0.55 0.22 264.53);
-  --chart-3: oklch(0.72 0 0);
-  --chart-4: oklch(0.92 0 0);
-  --chart-5: oklch(0.56 0 0);
-  --sidebar: oklch(0.99 0 0);
-  --sidebar-foreground: oklch(0 0 0);
-  --sidebar-primary: oklch(0 0 0);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0 0);
-  --sidebar-accent-foreground: oklch(0 0 0);
-  --sidebar-border: oklch(0.94 0 0);
-  --sidebar-ring: oklch(0 0 0);
-  --font-sans: Geist, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Geist Mono, monospace;
-  --radius: 0.5rem;
-  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-  --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-  --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
-  --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
+  /* Apple Light Theme Colors */
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #0071e3; /* Apple Blue */
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f7; /* Apple Light Gray */
+  --secondary-foreground: #1d1d1f;
+  --muted: #f5f5f7;
+  --muted-foreground: #86868b;
+  --accent: #0071e3; /* Apple Blue */
+  --accent-foreground: #ffffff;
+  --destructive: #ff3b30; /* Apple Red */
+  --destructive-foreground: #ffffff;
+  --border: #e2e2e7; /* Lighter, more subtle border */
+  --input: #f5f5f7;
+  --ring: #0071e3;
+  --chart-1: #0071e3; /* Apple Blue */
+  --chart-2: #34c759; /* Apple Green */
+  --chart-3: #ff9500; /* Apple Orange */
+  --chart-4: #ffcc00; /* Apple Yellow */
+  --chart-5: #af52de; /* Apple Purple */
+  --sidebar: #f5f5f7;
+  --sidebar-foreground: #1d1d1f;
+  --sidebar-primary: #0071e3;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8e8ed;
+  --sidebar-accent-foreground: #1d1d1f;
+  --sidebar-border: #e2e2e7; /* Lighter border */
+  --sidebar-ring: #0071e3;
+  /* Apple Fonts */
+  --font-apple-system: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, sans-serif;
+  --font-sf-mono: "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-apple-system);
+  --font-serif: "New York", Georgia, serif;
+  --font-mono: var(--font-sf-mono);
+  /* Apple uses more rounded corners */
+  --radius: 10px;
+  /* Apple-style shadows */
+  --shadow-2xs: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0px 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0px 8px 16px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0px 12px 24px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0px 16px 32px rgba(0, 0, 0, 0.1);
 }
 
 .dark {
-  --background: oklch(0 0 0);
-  --foreground: oklch(1 0 0);
-  --card: oklch(0.14 0 0);
-  --card-foreground: oklch(1 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(1 0 0);
-  --primary: oklch(1 0 0);
-  --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.25 0 0);
-  --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.23 0 0);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(0.32 0 0);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.69 0.20 23.91);
-  --destructive-foreground: oklch(0 0 0);
-  --border: oklch(0.26 0 0);
-  --input: oklch(0.32 0 0);
-  --ring: oklch(0.72 0 0);
-  --chart-1: oklch(0.81 0.17 75.35);
-  --chart-2: oklch(0.58 0.21 260.84);
-  --chart-3: oklch(0.56 0 0);
-  --chart-4: oklch(0.44 0 0);
-  --chart-5: oklch(0.92 0 0);
-  --sidebar: oklch(0.18 0 0);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.32 0 0);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.32 0 0);
-  --sidebar-ring: oklch(0.72 0 0);
-  --font-sans: Geist, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Geist Mono, monospace;
-  --radius: 0.5rem;
-  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-  --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-  --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
-  --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
+  /* Apple Dark Theme Colors */
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #1c1c1e;
+  --card-foreground: #ffffff;
+  --popover: #2c2c2e;
+  --popover-foreground: #ffffff;
+  --primary: #0077ED; /* Apple Blue (Dark) */
+  --primary-foreground: #ffffff;
+  --secondary: #2c2c2e; /* Apple Dark Gray */
+  --secondary-foreground: #ffffff;
+  --muted: #3a3a3c;
+  --muted-foreground: #8e8e93;
+  --accent: #0077ED; /* Apple Blue (Dark) */
+  --accent-foreground: #ffffff;
+  --destructive: #ff453a; /* Apple Red (Dark) */
+  --destructive-foreground: #ffffff;
+  --border: #3d3d41; /* Slightly lighter border for dark mode */
+  --input: #2c2c2e;
+  --ring: #0077ED;
+  --chart-1: #0077ED; /* Apple Blue (Dark) */
+  --chart-2: #30d158; /* Apple Green (Dark) */
+  --chart-3: #ff9f0a; /* Apple Orange (Dark) */
+  --chart-4: #ffd60a; /* Apple Yellow (Dark) */
+  --chart-5: #bf5af2; /* Apple Purple (Dark) */
+  --sidebar: #1c1c1e;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #0077ED;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2c2c2e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3d3d41; /* Slightly lighter border */
+  --sidebar-ring: #0077ED;
+  /* Apple Fonts */
+  --font-apple-system: -apple-system, BlinkMacSystemFont, "San Francisco", "Helvetica Neue", Helvetica, sans-serif;
+  --font-sf-mono: "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-apple-system);
+  --font-serif: "New York", Georgia, serif;
+  --font-mono: var(--font-sf-mono);
+  /* Apple uses more rounded corners */
+  --radius: 10px;
+  /* Apple-style shadows (darker for dark mode) */
+  --shadow-2xs: 0px 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-xs: 0px 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0px 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow: 0px 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0px 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0px 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0px 12px 24px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0px 16px 32px rgba(0, 0, 0, 0.3);
 }
 
 @layer base {
@@ -142,6 +154,14 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  button, input, select, textarea {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
   }
 }

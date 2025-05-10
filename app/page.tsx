@@ -1,7 +1,5 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import ModeToggle from './dashboard/_components/mode-toggle'
-import { UserButton } from '@clerk/nextjs'
 
 export default function Home() {
     return (
@@ -23,8 +21,6 @@ export default function Home() {
                                 <span>Create Pass</span>
                             </Link>
                         </Button>
-                        <UserButton />
-                        <ModeToggle />
                     </div>
                 </div>
             </div>

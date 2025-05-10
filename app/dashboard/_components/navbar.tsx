@@ -8,7 +8,6 @@ import { UserButton } from '@clerk/nextjs'
 import { Brush, GitGraph, HomeIcon, MonitorSmartphone } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode } from 'react'
-import ModeToggle from './mode-toggle'
 
 export default function DashboardTopNav({ children }: { children: ReactNode }) {
 
@@ -71,7 +70,6 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
             </Button>
           </Link>
           <UserButton />
-          <ModeToggle />
         </div>
       </header>
       {children}
