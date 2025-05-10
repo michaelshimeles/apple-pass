@@ -1,0 +1,1 @@
+ALTER TABLE "passes" ADD COLUMN "pass_share_id" integer NOT NULL;

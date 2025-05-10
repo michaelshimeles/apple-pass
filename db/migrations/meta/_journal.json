@@ -92,6 +92,20 @@
       "when": 1746776391332,
       "tag": "0012_outgoing_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1746889299746,
+      "tag": "0013_youthful_shatterstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1746889382861,
+      "tag": "0014_many_lockjaw",
+      "breakpoints": true
     }
   ]
 }

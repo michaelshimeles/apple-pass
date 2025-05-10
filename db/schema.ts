@@ -2,6 +2,7 @@ import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const passes = pgTable("passes", {
   id: serial("id").primaryKey(),
+  passShareId: text("pass_share_id"),
 
   name: text("name").notNull(),
   description: text("description").notNull(),

@@ -3,6 +3,7 @@ import { passes } from "@/db/schema";
 import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Template } from "@walletpass/pass-js";
+import { uuid } from "drizzle-orm/gel-core";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -144,6 +145,8 @@ export async function POST(req: NextRequest) {
         // Upload to R2
         const fileUrl = await uploadPkpassToR2(buffer, `${slug}.pkpass`);
 
+        const passShareId = uuid()
+
         // Save to DB
         await db.insert(passes).values({
             name,
@@ -167,6 +170,7 @@ export async function POST(req: NextRequest) {
             headerFieldValue,
             barcodeValue,
             barcodeFormat,
+            passShareId: String(passShareId),
         });
 
         return new NextResponse(JSON.stringify({ url: fileUrl }), {
