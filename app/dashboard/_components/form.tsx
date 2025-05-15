@@ -29,7 +29,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import QRCode from "./qr-code";
-import { Image as NewImage } from "next/image";
 
 const formSchema = z.object({
   name: z
@@ -1026,7 +1025,7 @@ export function CreatePassForm() {
         </form>
       </Form>
       {/* 🔍 Live Preview */}
-      <QuickView watched={watched} />
+      <QuickView watched={watched as ApplePass} />
     </div>
   );
 }
@@ -1147,7 +1146,7 @@ async function processImage(
   });
 }
 
-function QuickView({ watched }) {
+function QuickView({ watched }: { watched: ApplePass }) {
   return (
     <div className="flex items-center justify-center sticky top-4">
       <motion.div
@@ -1170,7 +1169,7 @@ function QuickView({ watched }) {
           <div className="flex justify-between items-center font-semibold mb-4">
             <div className="flex items-center gap-2 text-xs">
               {watched.logoUrl ? (
-                <NewImage
+                <img
                   src={watched.logoUrl}
                   alt="logo"
                   width={32}
@@ -1199,7 +1198,7 @@ function QuickView({ watched }) {
             </div>
             <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center rounded-lg overflow-hidden max-w-[144px]">
               {watched.thumbnail ? (
-                <NewImage
+                <img
                   src={watched.thumbnail}
                   alt="thumbnail"
                   width={144}
