@@ -1,16 +1,25 @@
-"use client"
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogClose } from '@/components/ui/dialog'
-import { Separator } from '@/components/ui/separator'
-import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { UserButton } from '@clerk/nextjs'
-import { Brush, HomeIcon, LucideGitBranchPlus, MonitorSmartphone } from 'lucide-react'
-import Link from 'next/link'
-import { ReactNode } from 'react'
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogClose } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import {
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { UserButton } from "@clerk/nextjs";
+import {
+  Brush,
+  HomeIcon,
+  LucideGitBranchPlus,
+  MonitorSmartphone,
+} from "lucide-react";
+import Link from "next/link";
+import { ReactNode } from "react";
 
 export default function DashboardTopNav({ children }: { children: ReactNode }) {
-
   return (
     <div className="flex flex-col">
       <header className="flex h-14 lg:h-[55px] items-center gap-4 border-b px-3">
@@ -74,5 +83,5 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
       </header>
       {children}
     </div>
-  )
+  );
 }

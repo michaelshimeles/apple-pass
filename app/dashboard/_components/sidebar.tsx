@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import clsx from 'clsx'
+import clsx from "clsx";
 import {
   Brush,
   GitGraph,
   HomeIcon,
   LucideIcon,
-  MonitorSmartphone
-} from "lucide-react"
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+  MonitorSmartphone,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 interface NavItem {
   label: string;
@@ -21,56 +21,60 @@ const navItems: NavItem[] = [
   {
     label: "Overview",
     href: "/dashboard",
-    icon: HomeIcon
+    icon: HomeIcon,
   },
   {
     label: "Create Pass",
     href: "/dashboard/create",
-    icon: Brush
+    icon: Brush,
   },
   {
     label: "Notifications",
     href: "/dashboard/notifications",
-    icon: MonitorSmartphone
+    icon: MonitorSmartphone,
   },
   {
     label: "Analytics",
     href: "/dashboard/analytics",
-    icon: GitGraph
-  }
-]
+    icon: GitGraph,
+  },
+];
 
 export default function DashboardSideBar() {
   const pathname = usePathname();
-  
+  const router = useRouter();
+
   return (
     <div className="min-[1024px]:block hidden w-64 border-r h-full bg-background">
       <div className="flex h-full flex-col">
         <div className="flex h-[3.45rem] items-center border-b px-4">
-          <Link prefetch={true} className="flex items-center gap-2 font-semibold hover:cursor-pointer" href="/">
+          <Link
+            prefetch={true}
+            className="flex items-center gap-2 font-semibold hover:cursor-pointer"
+            href="/"
+          >
             <span>Apple Pass</span>
           </Link>
         </div>
 
         <nav className="flex-1 space-y-1 p-4">
           {navItems.map((item) => (
-            <Link
+            <div
               key={item.href}
-              prefetch={true}
-              href={item.href}
+              onClick={() => router.push(item.href)}
               className={clsx(
                 "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 pathname === item.href
                   ? "bg-primary/10 text-primary hover:bg-primary/20"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               <item.icon className="h-4 w-4" />
               {item.label}
-            </Link>
+            </div>
           ))}
         </nav>
       </div>
     </div>
-  )
+  );
 }

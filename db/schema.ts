@@ -20,8 +20,6 @@ export const passes = pgTable("passes", {
 
   // Images
   logoUrl: text("logo_url"),
-  stripImageFrontUrl: text("strip_image_front_url"),
-  stripImageBackUrl: text("strip_image_back_url"),
   thumbnailUrl: text("thumbnail_url"),
   backgroundUrl: text("background_url"),
 
@@ -44,10 +42,11 @@ export const passes = pgTable("passes", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-
 export const passInstalls = pgTable("pass_installs", {
   id: serial("id").primaryKey(),
-  passId: integer("pass_id").references(() => passes.id).notNull(),
+  passId: integer("pass_id")
+    .references(() => passes.id)
+    .notNull(),
   userAgent: text("user_agent"),
   ip: text("ip"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -60,14 +59,17 @@ export const passRegistrations = pgTable("pass_registrations", {
   passTypeIdentifier: text("pass_type_id").notNull(),
   authenticationToken: text("authenticationToken").notNull(),
   serialNumber: text("serial_number").notNull(),
-  passId: integer("pass_id").references(() => passes.id).notNull(),
+  passId: integer("pass_id")
+    .references(() => passes.id)
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-
 export const passMessages = pgTable("pass_messages", {
   id: serial("id").primaryKey(),
-  passId: integer("pass_id").notNull().references(() => passes.id),
+  passId: integer("pass_id")
+    .notNull()
+    .references(() => passes.id),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
