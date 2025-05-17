@@ -5,15 +5,22 @@ import { passRegistrations, passes } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-export async function POST(req: NextRequest, context: {
-  params: Promise<{
-    deviceLibraryIdentifier: string;
-    passTypeIdentifier: string;
-    serialNumber: string;
-  }>
-}) {
-  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } = await context.params;
-  const authToken = req.headers.get("authorization")?.replace("ApplePass ", "").trim();
+export async function POST(
+  req: NextRequest,
+  context: {
+    params: Promise<{
+      deviceLibraryIdentifier: string;
+      passTypeIdentifier: string;
+      serialNumber: string;
+    }>;
+  },
+) {
+  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } =
+    await context.params;
+  const authToken = req.headers
+    .get("authorization")
+    ?.replace("ApplePass ", "")
+    .trim();
 
   if (!authToken) {
     return new Response("Missing auth token", { status: 401 });
@@ -42,8 +49,8 @@ export async function POST(req: NextRequest, context: {
     .where(
       and(
         eq(passRegistrations.deviceLibraryIdentifier, deviceLibraryIdentifier),
-        eq(passRegistrations.serialNumber, serialNumber)
-      )
+        eq(passRegistrations.serialNumber, serialNumber),
+      ),
     )
     .then((rows) => rows[0]);
 
@@ -61,4 +68,29 @@ export async function POST(req: NextRequest, context: {
   }
 
   return new Response(null, { status: 200 }); // Already registered
+}
+
+export async function DELETE(
+  req: Request,
+  context: {
+    params: Promise<{
+      deviceLibraryIdentifier: string;
+      passTypeIdentifier: string;
+      serialNumber: string;
+    }>;
+  },
+) {
+  const { deviceLibraryIdentifier, passTypeIdentifier, serialNumber } =
+    await context.params;
+
+  // 🔥 Log or clean up the device registration
+  console.log("Pass removed:", {
+    deviceLibraryIdentifier,
+    passTypeIdentifier,
+    serialNumber,
+  });
+
+  // Your DB cleanup logic here
+
+  return new Response(null, { status: 200 });
 }

@@ -154,7 +154,7 @@ export function CreatePassForm() {
   };
 
   const nextStep = () => {
-    if (step < 3) setStep(step + 1);
+    if (step < 2) setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -182,14 +182,8 @@ export function CreatePassForm() {
               >
                 2
               </div>
-              <div className="h-1 w-16 bg-gray-200 mx-2"></div>
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 3 ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
-              >
-                3
-              </div>
             </div>
-            <div className="text-sm dark:text-white">Step {step} of 3</div>
+            <div className="text-sm dark:text-white">Step {step} of 2</div>
           </div>
 
           <div className="space-y-4">
@@ -258,334 +252,347 @@ export function CreatePassForm() {
                     {form.formState.errors.description?.message}
                   </p>
                 )}
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="logoUrl"
+                      render={({ field: { onChange, ...field } }) => (
+                        <FormItem className="mt-4">
+                          <FormLabel>Logo</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              ref={field.ref}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+
+                                if (!file) return;
+
+                                // Check image dimensions before upload
+                                const img = new Image();
+                                const objectUrl = URL.createObjectURL(file);
+                                let processedFile = file; // Use original file by default
+                                const targetMimeType = "image/png"; // Always aim for PNG
+                                const originalFileNameWithoutExtension =
+                                  file.name.substring(
+                                    0,
+                                    file.name.lastIndexOf("."),
+                                  ) || file.name;
+
+                                try {
+                                  await new Promise<void>((resolve, reject) => {
+                                    img.onload = () => resolve();
+                                    img.onerror = () =>
+                                      reject(new Error("Failed to load image"));
+                                    img.src = objectUrl;
+                                  });
+
+                                  const needsResize = img.width > 160;
+                                  const needsTypeConversion =
+                                    file.type !== targetMimeType;
+
+                                  if (needsResize || needsTypeConversion) {
+                                    if (needsResize && needsTypeConversion) {
+                                      toast.info(
+                                        "Resizing and converting to PNG...",
+                                      );
+                                    } else if (needsResize) {
+                                      toast.info(
+                                        "Logo image is too wide, resizing to 160px width...",
+                                      );
+                                    } else if (needsTypeConversion) {
+                                      toast.info(
+                                        `Converting to ${targetMimeType}...`,
+                                      );
+                                    }
+
+                                    const canvas =
+                                      document.createElement("canvas");
+                                    const ctx = canvas.getContext("2d");
+                                    if (!ctx) {
+                                      throw new Error(
+                                        "Failed to get canvas context",
+                                      );
+                                    }
+
+                                    const aspectRatio = img.height / img.width;
+                                    canvas.width = needsResize
+                                      ? 160
+                                      : img.width;
+                                    canvas.height = needsResize
+                                      ? 160 * aspectRatio
+                                      : img.height;
+
+                                    ctx.drawImage(
+                                      img,
+                                      0,
+                                      0,
+                                      canvas.width,
+                                      canvas.height,
+                                    );
+
+                                    const blob = await new Promise<Blob | null>(
+                                      (resolve) =>
+                                        canvas.toBlob(
+                                          resolve,
+                                          targetMimeType,
+                                          0.95,
+                                        ),
+                                    );
+                                    if (!blob) {
+                                      throw new Error(
+                                        "Failed to convert canvas to blob",
+                                      );
+                                    }
+                                    processedFile = new File(
+                                      [blob],
+                                      `${originalFileNameWithoutExtension}.png`,
+                                      {
+                                        type: targetMimeType,
+                                        lastModified: Date.now(),
+                                      },
+                                    );
+                                    toast.success(
+                                      "Logo processed successfully",
+                                    );
+                                  }
+                                } catch (error) {
+                                  console.error(
+                                    "Image processing error:",
+                                    error,
+                                  );
+                                  toast.error(
+                                    "Image processing failed: " +
+                                      (error instanceof Error
+                                        ? error.message
+                                        : String(error)),
+                                  );
+                                  URL.revokeObjectURL(objectUrl);
+                                  return;
+                                } finally {
+                                  URL.revokeObjectURL(objectUrl); // Ensure cleanup in all cases
+                                }
+
+                                try {
+                                  // read raw bytes from the potentially processed file
+                                  const buf = await processedFile.arrayBuffer();
+                                  // send to your endpoint
+                                  const res = await fetch("/api/upload-image", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type":
+                                        "application/octet-stream", // Server expects raw bytes
+                                      "x-file-name": processedFile.name,
+                                    },
+                                    body: buf,
+                                  });
+                                  if (!res.ok) {
+                                    console.error(
+                                      "Upload failed",
+                                      await res.text(),
+                                    );
+                                    toast.error("Upload failed");
+                                    return;
+                                  }
+                                  const { url } = await res.json();
+                                  toast.success("Upload successful");
+                                  onChange(url);
+                                } catch (error) {
+                                  console.error("Upload error:", error);
+                                  toast.error(
+                                    "Upload failed: " +
+                                      (error instanceof Error
+                                        ? error.message
+                                        : String(error)),
+                                  );
+                                }
+                              }}
+                              className="w-full border rounded-md"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Upload logo image (Recommended: PNG format, 160px
+                            wide, square aspect ratio)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {form.formState.errors.logoUrl?.message && (
+                      <p className="text-red-500 text-sm mt-2">
+                        {form.formState.errors.logoUrl?.message}
+                      </p>
+                    )}
+                  </>
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="stripImage"
+                      render={({ field: { onChange, ...field } }) => (
+                        <FormItem className="mt-4">
+                          <FormLabel>Thumbnail Image</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              ref={field.ref}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                const isThumbnail = true;
+                                const targetMimeType = "image/png";
+                                const originalName = file.name.replace(
+                                  /\.[^/.]+$/,
+                                  "",
+                                );
+
+                                // Load image
+                                const img = await new Promise<HTMLImageElement>(
+                                  (res, rej) => {
+                                    const url = URL.createObjectURL(file);
+                                    const img = new Image();
+                                    img.onload = () => {
+                                      URL.revokeObjectURL(url);
+                                      res(img);
+                                    };
+                                    img.onerror = () => {
+                                      URL.revokeObjectURL(url);
+                                      rej(new Error("Failed to load"));
+                                    };
+                                    img.src = url;
+                                  },
+                                );
+
+                                // Configure per-mode
+                                const config = isThumbnail
+                                  ? {
+                                      height: 90,
+                                      width: 90,
+                                      enforceSquare: true,
+                                      minRatio: 2 / 3,
+                                      maxRatio: 3 / 2,
+                                    }
+                                  : {
+                                      height: 144,
+                                      idealWidth: 750,
+                                      enforceSquare: false,
+                                    };
+
+                                try {
+                                  toast.info(
+                                    "Optimizing image for best quality…",
+                                  );
+                                  const processedFile = await processImage(
+                                    img,
+                                    file,
+                                    originalName,
+                                    targetMimeType,
+                                    config,
+                                  );
+                                  toast.success("Image processed successfully");
+
+                                  // Upload
+                                  const buf = await processedFile.arrayBuffer();
+                                  const res = await fetch("/api/upload-image", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type":
+                                        "application/octet-stream",
+                                      "x-file-name": processedFile.name,
+                                    },
+                                    body: buf,
+                                  });
+                                  if (!res.ok)
+                                    throw new Error(await res.text());
+                                  const { url } = await res.json();
+                                  toast.success("Upload successful");
+                                  onChange(url);
+                                } catch (err) {
+                                  console.error(err);
+                                  toast.error(
+                                    "Image processing/upload failed: " +
+                                      err.message,
+                                  );
+                                }
+                              }}
+                              className="w-full border rounded-md"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Upload front strip image (Required: 144px height,
+                            recommended width 750px, PNG format)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {form.formState.errors.stripImage?.message && (
+                      <p className="text-red-500 text-sm mt-2">
+                        {form.formState.errors.stripImage?.message}
+                      </p>
+                    )}
+                  </>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="logoUrl"
-                    render={({ field: { onChange, ...field } }) => (
+                    name="backgroundColor"
+                    render={({ field }) => (
                       <FormItem className="mt-4">
-                        <FormLabel>Logo</FormLabel>
+                        <FormLabel>Background Color</FormLabel>
                         <FormControl>
                           <Input
-                            type="file"
-                            accept="image/*"
-                            ref={field.ref}
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-
-                              if (!file) return;
-
-                              // Check image dimensions before upload
-                              const img = new Image();
-                              const objectUrl = URL.createObjectURL(file);
-                              let processedFile = file; // Use original file by default
-                              const targetMimeType = "image/png"; // Always aim for PNG
-                              const originalFileNameWithoutExtension =
-                                file.name.substring(
-                                  0,
-                                  file.name.lastIndexOf("."),
-                                ) || file.name;
-
-                              try {
-                                await new Promise<void>((resolve, reject) => {
-                                  img.onload = () => resolve();
-                                  img.onerror = () =>
-                                    reject(new Error("Failed to load image"));
-                                  img.src = objectUrl;
-                                });
-
-                                const needsResize = img.width > 160;
-                                const needsTypeConversion =
-                                  file.type !== targetMimeType;
-
-                                if (needsResize || needsTypeConversion) {
-                                  if (needsResize && needsTypeConversion) {
-                                    toast.info(
-                                      "Resizing and converting to PNG...",
-                                    );
-                                  } else if (needsResize) {
-                                    toast.info(
-                                      "Logo image is too wide, resizing to 160px width...",
-                                    );
-                                  } else if (needsTypeConversion) {
-                                    toast.info(
-                                      `Converting to ${targetMimeType}...`,
-                                    );
-                                  }
-
-                                  const canvas =
-                                    document.createElement("canvas");
-                                  const ctx = canvas.getContext("2d");
-                                  if (!ctx) {
-                                    throw new Error(
-                                      "Failed to get canvas context",
-                                    );
-                                  }
-
-                                  const aspectRatio = img.height / img.width;
-                                  canvas.width = needsResize ? 160 : img.width;
-                                  canvas.height = needsResize
-                                    ? 160 * aspectRatio
-                                    : img.height;
-
-                                  ctx.drawImage(
-                                    img,
-                                    0,
-                                    0,
-                                    canvas.width,
-                                    canvas.height,
-                                  );
-
-                                  const blob = await new Promise<Blob | null>(
-                                    (resolve) =>
-                                      canvas.toBlob(
-                                        resolve,
-                                        targetMimeType,
-                                        0.95,
-                                      ),
-                                  );
-                                  if (!blob) {
-                                    throw new Error(
-                                      "Failed to convert canvas to blob",
-                                    );
-                                  }
-                                  processedFile = new File(
-                                    [blob],
-                                    `${originalFileNameWithoutExtension}.png`,
-                                    {
-                                      type: targetMimeType,
-                                      lastModified: Date.now(),
-                                    },
-                                  );
-                                  toast.success("Logo processed successfully");
-                                }
-                              } catch (error) {
-                                console.error("Image processing error:", error);
-                                toast.error(
-                                  "Image processing failed: " +
-                                    (error instanceof Error
-                                      ? error.message
-                                      : String(error)),
-                                );
-                                URL.revokeObjectURL(objectUrl);
-                                return;
-                              } finally {
-                                URL.revokeObjectURL(objectUrl); // Ensure cleanup in all cases
-                              }
-
-                              try {
-                                // read raw bytes from the potentially processed file
-                                const buf = await processedFile.arrayBuffer();
-                                // send to your endpoint
-                                const res = await fetch("/api/upload-image", {
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/octet-stream", // Server expects raw bytes
-                                    "x-file-name": processedFile.name,
-                                  },
-                                  body: buf,
-                                });
-                                if (!res.ok) {
-                                  console.error(
-                                    "Upload failed",
-                                    await res.text(),
-                                  );
-                                  toast.error("Upload failed");
-                                  return;
-                                }
-                                const { url } = await res.json();
-                                toast.success("Upload successful");
-                                onChange(url);
-                              } catch (error) {
-                                console.error("Upload error:", error);
-                                toast.error(
-                                  "Upload failed: " +
-                                    (error instanceof Error
-                                      ? error.message
-                                      : String(error)),
-                                );
-                              }
-                            }}
-                            className="w-full border p-2 rounded-md"
+                            {...field}
+                            type="color"
+                            className="w-full h-10 p-1 rounded-md"
                           />
                         </FormControl>
                         <FormDescription>
-                          Upload logo image (Recommended: PNG format, 160px
-                          wide, square aspect ratio)
+                          Customize your pass background
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.logoUrl?.message && (
+                  {form.formState.errors.backgroundColor?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.logoUrl?.message}
+                      {form.formState.errors.backgroundColor?.message}
+                    </p>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="textColor"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel>Text Color</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="color"
+                            className="w-full h-10 p-1 rounded-md"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Customize your text color
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {form.formState.errors.textColor?.message && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {form.formState.errors.textColor?.message}
                     </p>
                   )}
                 </div>
-                <FormField
-                  control={form.control}
-                  name="backgroundColor"
-                  render={({ field }) => (
-                    <FormItem className="mt-4">
-                      <FormLabel>Background Color</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="color"
-                          className="w-full h-10 p-1 rounded-md"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Customize your pass background
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {form.formState.errors.backgroundColor?.message && (
-                  <p className="text-red-500 text-sm mt-2">
-                    {form.formState.errors.backgroundColor?.message}
-                  </p>
-                )}
-                <FormField
-                  control={form.control}
-                  name="textColor"
-                  render={({ field }) => (
-                    <FormItem className="mt-4">
-                      <FormLabel>Text Color</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="color"
-                          className="w-full h-10 p-1 rounded-md"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Customize your text color
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {form.formState.errors.textColor?.message && (
-                  <p className="text-red-500 text-sm mt-2">
-                    {form.formState.errors.textColor?.message}
-                  </p>
-                )}
               </>
             )}
 
             {step === 2 && (
               <>
-                {/* Images */}
-                <div className="grid grid-cols-1 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="stripImage"
-                    render={({ field: { onChange, ...field } }) => (
-                      <FormItem className="mt-4">
-                        <FormLabel>Thumbnail Image</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            ref={field.ref}
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-
-                              const isThumbnail = true;
-                              const targetMimeType = "image/png";
-                              const originalName = file.name.replace(
-                                /\.[^/.]+$/,
-                                "",
-                              );
-
-                              // Load image
-                              const img = await new Promise<HTMLImageElement>(
-                                (res, rej) => {
-                                  const url = URL.createObjectURL(file);
-                                  const img = new Image();
-                                  img.onload = () => {
-                                    URL.revokeObjectURL(url);
-                                    res(img);
-                                  };
-                                  img.onerror = () => {
-                                    URL.revokeObjectURL(url);
-                                    rej(new Error("Failed to load"));
-                                  };
-                                  img.src = url;
-                                },
-                              );
-
-                              // Configure per-mode
-                              const config = isThumbnail
-                                ? {
-                                    height: 90,
-                                    width: 90,
-                                    enforceSquare: true,
-                                    minRatio: 2 / 3,
-                                    maxRatio: 3 / 2,
-                                  }
-                                : {
-                                    height: 144,
-                                    idealWidth: 750,
-                                    enforceSquare: false,
-                                  };
-
-                              try {
-                                toast.info(
-                                  "Optimizing image for best quality…",
-                                );
-                                const processedFile = await processImage(
-                                  img,
-                                  file,
-                                  originalName,
-                                  targetMimeType,
-                                  config,
-                                );
-                                toast.success("Image processed successfully");
-
-                                // Upload
-                                const buf = await processedFile.arrayBuffer();
-                                const res = await fetch("/api/upload-image", {
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/octet-stream",
-                                    "x-file-name": processedFile.name,
-                                  },
-                                  body: buf,
-                                });
-                                if (!res.ok) throw new Error(await res.text());
-                                const { url } = await res.json();
-                                toast.success("Upload successful");
-                                onChange(url);
-                              } catch (err) {
-                                console.error(err);
-                                toast.error(
-                                  "Image processing/upload failed: " +
-                                    err.message,
-                                );
-                              }
-                            }}
-                            className="w-full border p-2 rounded-md"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Upload front strip image (Required: 144px height,
-                          recommended width 750px, PNG format for best quality)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.stripImage?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.stripImage?.message}
-                    </p>
-                  )}
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -774,15 +781,10 @@ export function CreatePassForm() {
                   />
                   {form.formState.errors.secondaryRightValue?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.secondaryFieldValue?.message}
+                      {form.formState.errors.secondaryRightValue?.message}
                     </p>
                   )}
                 </div>
-              </>
-            )}
-
-            {step === 3 && (
-              <>
                 <div className="space-y-2 pt-4 border-t mt-4">
                   <FormField
                     control={form.control}
@@ -827,12 +829,12 @@ export function CreatePassForm() {
                 Previous
               </Button>
             )}
-            {step < 3 && (
+            {step < 2 && (
               <Button type="button" onClick={nextStep} className="w-24">
                 Next
               </Button>
             )}
-            {step === 3 && (
+            {step === 2 && (
               <Button type="submit" className="w-24" disabled={loading}>
                 {loading ? "Creating..." : "Submit"}
               </Button>

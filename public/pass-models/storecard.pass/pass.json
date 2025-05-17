@@ -8,14 +8,14 @@
       "messageEncoding": "UTF-8"
     }
   ],
-  "description": "Fabrika Membership Card",
-  "foregroundColor": "#ffffff",
-  "labelColor": "#ffffff",
+  "description": "",
+  "foregroundColor": "",
+  "labelColor": "",
   "formatVersion": 1,
   "maxDistance": 0,
-  "organizationName": "Fabrika",
+  "organizationName": "",
   "passTypeIdentifier": "pass.com.heyfabrika.pass",
-  "serialNumber": "SERIAL_PLACEHOLDER",
+  "serialNumber": "",
   "sharingProhibited": false,
   "storeCard": {
     "backFields": [],

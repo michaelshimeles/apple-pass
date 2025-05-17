@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
     const pass = template.createPass({
       serialNumber: serial,
       description: name,
+      organizationName: name,
       webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
       authenticationToken,
       passTypeIdentifier: process.env.PASS_TYPE_IDENTIFIER,

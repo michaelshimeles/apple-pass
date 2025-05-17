@@ -1,4 +1,11 @@
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 export const passes = pgTable("passes", {
   id: serial("id").primaryKey(),
@@ -69,4 +76,32 @@ export const passMessages = pgTable("pass_messages", {
     .references(() => passes.id),
   message: text("message").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userAnalytics = pgTable("user_analytics", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  // Optional: use Clerk userId if logged in
+  userId: text("user_id"),
+
+  // Required: link to pass
+  passId: integer("pass_id")
+    .references(() => passes.id)
+    .notNull(),
+
+  // Device + Browser Info
+  os: text("os"),
+  browser: text("browser"),
+  deviceType: text("device_type"), // mobile / tablet / desktop
+
+  // Region Info
+  country: text("country"),
+  region: text("region"),
+  city: text("city"),
+
+  // Optional: frontend metrics
+  screenSize: text("screen_size"),
+  timezone: text("timezone"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

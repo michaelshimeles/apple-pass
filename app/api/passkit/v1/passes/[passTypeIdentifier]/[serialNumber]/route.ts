@@ -242,6 +242,7 @@ export async function GET(
     });
   }
 
+  instance.organizationName = pass.name;
   // Back fields
   instance.backFields.add({
     key: "website_link",
