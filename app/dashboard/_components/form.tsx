@@ -39,12 +39,16 @@ const formSchema = z.object({
     .string()
     .max(30, "Header value cannot exceed 30 characters")
     .optional(),
+  textColor: z
+    .string()
+    .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color")
+    .optional(),
   backgroundColor: z
     .string()
     .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color")
     .optional(),
   logoUrl: z.string().optional(),
-  thumbnailUrl: z.string().optional(),
+  stripImage: z.string().optional(),
   secondaryLeftLabel: z
     .string()
     .max(25, "Primary label cannot exceed 25 characters"),
@@ -94,10 +98,11 @@ export function CreatePassForm() {
       name: "Exodus Labs",
       description: "A pass for the employees of Exodus Labs",
       logoUrl: "",
-      headerFieldLabel: "Special Offers",
+      headerFieldLabel: "SPECIAL OFFERS",
       headerFieldValue: "TAP ••• FOR OFFERS",
-      backgroundColor: "#000",
-      thumbnailUrl: "",
+      textColor: "#FFFFFF",
+      backgroundColor: "#000000",
+      stripImage: "",
       secondaryLeftLabel: "Team",
       secondaryLeftValue: "Engineer",
       secondaryRightLabel: "Status",
@@ -433,6 +438,31 @@ export function CreatePassForm() {
                     {form.formState.errors.backgroundColor?.message}
                   </p>
                 )}
+                <FormField
+                  control={form.control}
+                  name="textColor"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Text Color</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="color"
+                          className="w-full h-10 p-1 rounded-md"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Customize your text color
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.formState.errors.textColor?.message && (
+                  <p className="text-red-500 text-sm mt-2">
+                    {form.formState.errors.textColor?.message}
+                  </p>
+                )}
               </>
             )}
 
@@ -442,7 +472,7 @@ export function CreatePassForm() {
                 <div className="grid grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
-                    name="thumbnailUrl"
+                    name="stripImage"
                     render={({ field: { onChange, ...field } }) => (
                       <FormItem className="mt-4">
                         <FormLabel>Thumbnail Image</FormLabel>
@@ -540,9 +570,9 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.thumbnail?.message && (
+                  {form.formState.errors.stripImage?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.thumbnail?.message}
+                      {form.formState.errors.stripImage?.message}
                     </p>
                   )}
                 </div>

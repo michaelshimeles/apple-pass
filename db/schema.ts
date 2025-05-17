@@ -17,24 +17,21 @@ export const passes = pgTable("passes", {
   // Custom visual fields
   logoText: text("logo_text"),
   backgroundColor: text("background_color"),
-
+  textColor: text("text_color"),
   // Images
   logoUrl: text("logo_url"),
-  thumbnailUrl: text("thumbnail_url"),
-  backgroundUrl: text("background_url"),
+  stripImage: text("strip_image"),
 
   // Pass fields
-  primaryFieldLabel: text("primary_field_label"),
-  primaryFieldValue: text("primary_field_value"),
-  secondaryFieldLabel: text("secondary_field_label"),
-  secondaryFieldValue: text("secondary_field_value"),
-  auxiliaryFieldLabel: text("auxiliary_field_label"),
-  auxiliaryFieldValue: text("auxiliary_field_value"),
+  secondaryLeftLabel: text("secondary_left_label"),
+  secondaryLeftValue: text("secondary_left_value"),
+  secondaryRightLabel: text("secondary_right_label"),
+  secondaryRightValue: text("secondary_right_value"),
 
   // Barcode and links
   barcodeValue: text("barcode_value"),
   barcodeFormat: text("barcode_format"),
-  url: text("url"),
+  websiteUrl: text("website_url"),
   headerFieldLabel: text("header_field_label"),
   headerFieldValue: text("header_field_value"),
 

@@ -13,10 +13,13 @@ import {
 import { deletePass } from "@/db/functions/deletePass";
 import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function DeletePass({ passId }: { passId: string }) {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -35,9 +38,11 @@ export default function DeletePass({ passId }: { passId: string }) {
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
+              disabled={loading}
               variant="destructive"
               type="submit"
               onClick={async () => {
+                setLoading(true);
                 try {
                   const result = await deletePass(passId);
                   if (result) {
@@ -47,11 +52,12 @@ export default function DeletePass({ passId }: { passId: string }) {
                     toast.error("Pass deleting failed");
                   }
                 } catch (error) {
+                  setLoading(false);
                   toast.error(JSON.stringify(error));
                 }
               }}
             >
-              Delete
+              {loading ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogHeader>

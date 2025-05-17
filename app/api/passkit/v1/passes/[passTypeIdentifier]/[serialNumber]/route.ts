@@ -135,12 +135,12 @@ export async function GET(
       await template.images.add("logo", Buffer.from(logoImageBuffer), "1x");
     }
 
-    const thumbnailBuffer = await fetchImageBuffer(
-      pass.thumbnailUrl,
-      "thumbnailUrl",
+    const stripImageBuffer = await fetchImageBuffer(
+      pass.stripImage,
+      "strip image",
     );
-    if (thumbnailBuffer) {
-      await template.images.add("strip", Buffer.from(thumbnailBuffer), "1x");
+    if (stripImageBuffer) {
+      await template.images.add("strip", Buffer.from(stripImageBuffer), "1x");
     }
     console.log("🖼️ Images processed and added to template (if available).");
   } catch (imageError) {
@@ -204,6 +204,11 @@ export async function GET(
     instance.backgroundColor = pass.backgroundColor;
   }
 
+  if (pass.textColor) {
+    instance.foregroundColor = pass.textColor;
+    instance.labelColor = pass.textColor;
+  }
+
   type PKBarcodeFormat =
     | "PKBarcodeFormatQR"
     | "PKBarcodeFormatPDF417"
@@ -218,29 +223,29 @@ export async function GET(
 
   // Primary & Secondary Field
   if (
-    pass?.primaryFieldValue &&
-    pass?.primaryFieldLabel &&
-    pass.secondaryFieldLabel &&
-    pass.secondaryFieldValue
+    pass?.secondaryLeftLabel &&
+    pass?.secondaryLeftValue &&
+    pass.secondaryRightLabel &&
+    pass.secondaryRightValue
   ) {
     instance.secondaryFields.add({
-      key: pass?.primaryFieldLabel,
-      label: pass?.primaryFieldLabel,
-      value: pass?.primaryFieldValue,
+      key: pass?.secondaryLeftLabel,
+      label: pass?.secondaryLeftLabel,
+      value: pass?.secondaryLeftValue,
     });
 
     instance.secondaryFields.add({
-      key: "Michael",
-      label: pass.secondaryFieldLabel,
-      value: pass.secondaryFieldValue,
+      key: pass.secondaryRightLabel,
+      label: pass.secondaryRightLabel,
+      value: pass.secondaryRightValue,
     });
   }
 
   // Back fields
   instance.backFields.add({
-    key: "website",
+    key: "website_link",
     label: "Website",
-    value: pass.barcodeValue!,
+    value: pass.websiteUrl!,
   });
 
   instance.backFields.add({

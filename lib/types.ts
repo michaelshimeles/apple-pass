@@ -17,13 +17,10 @@ export const PassSchema = z.object({
   // Custom visual fields (optional)
   logoText: z.string().optional(),
   backgroundColor: z.string().optional(),
-
+  textColor: z.string().optional(),
   // Images (optional)
   logoUrl: z.string().url("Must be a valid URL").optional(),
-  stripImageFrontUrl: z.string().url("Must be a valid URL").optional(),
-  stripImageBackUrl: z.string().url("Must be a valid URL").optional(),
-  thumbnailUrl: z.string().url("Must be a valid URL").optional(),
-  backgroundUrl: z.string().url("Must be a valid URL").optional(),
+  stripImage: z.string().url("Must be a valid URL").optional(),
 
   // Pass fields (optional)
   secondaryLeftLabel: z.string().optional(),

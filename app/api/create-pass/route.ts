@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
     headerFieldLabel,
     headerFieldValue,
     backgroundColor,
+    textColor,
     logoUrl,
-    thumbnailUrl,
-    backgroundUrl,
+    stripImage,
     secondaryLeftLabel,
     secondaryLeftValue,
     secondaryRightLabel,
@@ -69,16 +69,16 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Fetch and convert strip image ---
-    let thumbnailBuffer: Buffer;
+    let stripImageBuffer: Buffer;
     try {
-      const imageResponse = await fetch(thumbnailUrl);
+      const imageResponse = await fetch(stripImage);
       if (!imageResponse.ok) {
         throw new Error(
           `Failed to fetch strip image: ${imageResponse.statusText}`,
         );
       }
       const arrayBuffer = await imageResponse.arrayBuffer();
-      thumbnailBuffer = Buffer.from(new Uint8Array(arrayBuffer)); // ✅ proper conversion
+      stripImageBuffer = Buffer.from(new Uint8Array(arrayBuffer)); // ✅ proper conversion
     } catch (error) {
       return NextResponse.json(
         {
@@ -92,7 +92,8 @@ export async function POST(req: NextRequest) {
 
     // Add images to template
     await template.images.add("logo", logoImageBuffer, "1x");
-    await template.images.add("strip", thumbnailBuffer, "1x");
+    await template.images.add("icon", logoImageBuffer, "1x");
+    await template.images.add("strip", stripImageBuffer, "1x");
 
     // Load cert and key from base64 env vars
     const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
@@ -112,6 +113,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Set visual + dynamic fields
+    pass.foregroundColor = textColor;
+    pass.labelColor = textColor;
     pass.backgroundColor = backgroundColor;
 
     if (barcodeFormat && barcodeValue) {
@@ -173,14 +176,15 @@ export async function POST(req: NextRequest) {
       fileUrl,
       userId: user.id,
       authenticationToken,
+      textColor,
       backgroundColor,
       logoUrl,
-      thumbnailUrl,
-      backgroundUrl,
-      primaryFieldLabel: secondaryLeftLabel,
-      primaryFieldValue: secondaryLeftValue,
-      secondaryFieldLabel: secondaryRightLabel,
-      secondaryFieldValue: secondaryRightValue,
+      websiteUrl,
+      stripImage,
+      secondaryLeftLabel,
+      secondaryLeftValue,
+      secondaryRightLabel,
+      secondaryRightValue,
       headerFieldLabel,
       headerFieldValue,
       barcodeValue,
