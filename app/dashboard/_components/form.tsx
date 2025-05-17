@@ -21,6 +21,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import Pass from "@/app/share/_components/pass";
+import { balloons, textBalloons } from "balloons-js";
+
 const formSchema = z.object({
   name: z
     .string()
@@ -136,6 +138,14 @@ export function CreatePassForm() {
       toast.success("Pass created successfully");
       router.prefetch("/dashboard");
       router.push("/dashboard");
+      balloons();
+      textBalloons([
+        {
+          text: "Time to cook 🔥",
+          fontSize: 120,
+          color: "#000000",
+        },
+      ]);
     } catch (err) {
       console.error("Error creating pass:", err);
       toast.error("Unexpected error during pass creation");
