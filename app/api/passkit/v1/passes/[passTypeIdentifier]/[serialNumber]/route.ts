@@ -133,6 +133,7 @@ export async function GET(
     const logoImageBuffer = await fetchImageBuffer(pass.logoUrl, "logo image");
     if (logoImageBuffer) {
       await template.images.add("logo", Buffer.from(logoImageBuffer), "1x");
+      await template.images.add("icon", Buffer.from(logoImageBuffer), "1x");
     }
 
     const stripImageBuffer = await fetchImageBuffer(
@@ -194,7 +195,7 @@ export async function GET(
 
   const instance = template.createPass({
     serialNumber: pass.serialNumber,
-    description: pass.description,
+    description: pass.name,
     webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
     authenticationToken: pass.authenticationToken,
     passTypeIdentifier,
@@ -249,10 +250,16 @@ export async function GET(
   });
 
   instance.backFields.add({
+    key: "description",
+    label: "Description",
+    value: pass.description,
+  });
+
+  instance.backFields.add({
     key: "msg",
     label: "Notification",
     value: latestMessage,
-    changeMessage: "New message: %@",
+    changeMessage: "%@",
   });
 
   // Header

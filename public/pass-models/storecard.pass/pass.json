@@ -18,13 +18,7 @@
   "serialNumber": "SERIAL_PLACEHOLDER",
   "sharingProhibited": false,
   "storeCard": {
-    "backFields": [
-      {
-        "changeMessage": "%@",
-        "key": "",
-        "value": ""
-      }
-    ],
+    "backFields": [],
     "headerFields": [],
     "secondaryFields": []
   },

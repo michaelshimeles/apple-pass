@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
     const pass = template.createPass({
       serialNumber: serial,
-      description,
+      description: name,
       webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
       authenticationToken,
       passTypeIdentifier: process.env.PASS_TYPE_IDENTIFIER,
@@ -150,6 +150,12 @@ export async function POST(req: NextRequest) {
       key: "website",
       label: "Website",
       value: websiteUrl,
+    });
+
+    pass.backFields.add({
+      key: "description",
+      label: "Description",
+      value: description,
     });
 
     if (headerFieldLabel && headerFieldValue) {

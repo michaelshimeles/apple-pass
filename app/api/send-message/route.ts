@@ -14,7 +14,12 @@ export async function POST(req: Request) {
     return new Response("Missing fields", { status: 400 });
   }
 
-  const pass = await db.select().from(passes).where(eq(passes.id, passId)).limit(1).then((data) => data[0]);
+  const pass = await db
+    .select()
+    .from(passes)
+    .where(eq(passes.id, passId))
+    .limit(1)
+    .then((data) => data[0]);
 
   if (!pass) {
     return new Response("Pass not found", { status: 404 });
@@ -26,14 +31,20 @@ export async function POST(req: Request) {
     message,
   });
 
-  await db.update(passes)
+  await db
+    .update(passes)
     .set({ updatedAt: new Date() })
     .where(eq(passes.id, pass.id));
 
-
   // Load pass template
-  const template = await Template.load(path.join(process.cwd(), "public/pass-models/storecard.pass"));
-  await template.images.add("logo", path.join(process.cwd(), "public/logo.png"), "1x");
+  const template = await Template.load(
+    path.join(process.cwd(), "public/pass-models/storecard.pass"),
+  );
+  await template.images.add(
+    "logo",
+    path.join(process.cwd(), "public/logo.png"),
+    "1x",
+  );
 
   const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
   const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
@@ -49,19 +60,19 @@ export async function POST(req: Request) {
     authenticationToken: pass.authenticationToken,
   });
 
-  passInstance.primaryFields.add({
-    key: "name",
-    label: "Name",
-    value: pass.name,
-  });
-
   console.log("💬 Updating message to:", message);
+
+  const logoImageBuffer = await fetchImageBuffer(pass.logoUrl, "logo image");
+
+  if (logoImageBuffer) {
+    await passInstance.images.add("icon", Buffer.from(logoImageBuffer), "1x");
+  }
 
   passInstance.secondaryFields.add({
     key: "msg",
     label: "Message",
     value: message,
-    changeMessage: "New message: %@"
+    changeMessage: "%@",
   });
 
   passInstance.relevantDate = new Date().toISOString();
@@ -85,7 +96,10 @@ export async function POST(req: Request) {
   }
 
   // Push silent update
-  await sendPassPushNotification(process.env.PASS_TYPE_IDENTIFIER!, registration.pushToken);
+  await sendPassPushNotification(
+    process.env.PASS_TYPE_IDENTIFIER!,
+    registration.pushToken,
+  );
 
   return new Response(JSON.stringify({ fileUrl }), {
     status: 200,
@@ -93,4 +107,33 @@ export async function POST(req: Request) {
       "Content-Type": "application/json",
     },
   });
+}
+
+async function fetchImageBuffer(
+  imageUrl: string | null | undefined,
+  imageName: string,
+): Promise<ArrayBuffer | null> {
+  if (!imageUrl) {
+    console.warn(`⚠️ ${imageName} URL is missing or null.`);
+    return null;
+  }
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `❌ Failed to fetch ${imageName}. Status: ${response.status}, URL: ${imageUrl}, Response: ${errorText}`,
+      );
+      throw new Error(
+        `Failed to fetch ${imageName} from ${imageUrl}: ${response.status} ${response.statusText}`,
+      );
+    }
+    return await response.arrayBuffer();
+  } catch (error) {
+    console.error(
+      `❌ General error fetching ${imageName} (URL: ${imageUrl}):`,
+      error,
+    );
+    throw error;
+  }
 }

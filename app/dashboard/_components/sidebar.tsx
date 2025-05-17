@@ -24,14 +24,14 @@ const navItems: NavItem[] = [
     icon: HomeIcon,
   },
   {
-    label: "Create Pass",
-    href: "/dashboard/create",
-    icon: Brush,
-  },
-  {
     label: "Notifications",
     href: "/dashboard/notifications",
     icon: MonitorSmartphone,
+  },
+  {
+    label: "Create Pass",
+    href: "/dashboard/create",
+    icon: Brush,
   },
   {
     label: "Analytics",
