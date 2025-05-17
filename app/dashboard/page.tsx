@@ -4,8 +4,8 @@ import { ApplePass } from "@/lib/types";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import DeletePass from "./_components/delete-pass";
-import PassView from "./_components/pass-view";
 import ShareModal from "./_components/share-modal";
+import Pass from "../share/_components/pass";
 
 export default async function Dashboard() {
   const user = await currentUser();
@@ -40,7 +40,7 @@ export default async function Dashboard() {
                   className="w-fit border border-gray-100 shadow-xl rounded-lg p-4"
                 >
                   <p className="mb-3 text-lg font-medium">{pass.name}</p>
-                  <PassView pass={pass as ApplePass} />
+                  <Pass pass={pass as ApplePass} />
                   <div className="flex items-center justify-start w-full gap-2 mt-4">
                     <Link
                       prefetch={true}

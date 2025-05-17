@@ -1,141 +1,94 @@
 "use client";
 
 import { motion } from "motion/react";
-import Link from "next/link";
-import Image from "next/image";
 import QRCode from "@/app/dashboard/_components/qr-code";
 import { ApplePass } from "@/lib/types";
 
 export default function Pass({ pass }: { pass: ApplePass }) {
   return (
     <motion.div
-      className="flex flex-col justify-center items-center w-full p-6 h-screen animate-fadeInPage"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      className="flex items-center justify-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
     >
-      <motion.h1
-        className="text-5xl font-semibold tracking-tight font-[-apple-system,BlinkMacSystemFont] animate-fadeInUp"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {pass.name}
-      </motion.h1>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="my-5"
+        className="rounded shadow-xl overflow-hidden text-white font-[-apple-system,BlinkMacSystemFont]"
+        style={{
+          backgroundColor: pass.backgroundColor!,
+          width: 350,
+          height: 450,
+        }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Link
-          href={`${process.env.NEXT_PUBLIC_APP_URL}/api/add/${pass?.slug}`}
-          target="_blank"
-          className="flex flex-col items-center justify-center gap-2"
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-            <Image
-              src="/add.png"
-              alt="Add to Apple Wallet"
-              width={160}
-              height={50}
-              className="drop-shadow-md"
-              quality={95}
-            />
-          </motion.div>
-          <span className="text-xs text-gray-500 mt-2 font-[-apple-system,BlinkMacSystemFont]">
-            Tap to add to your Apple Wallet
-          </span>
-        </Link>
-      </motion.div>
-      <motion.div
-        className="flex items-center justify-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <motion.div
-          className="rounded-md shadow-xl overflow-hidden text-black font-[-apple-system,BlinkMacSystemFont]"
-          style={{
-            backgroundColor: pass.backgroundColor!,
-            width: 350,
-            padding: 20,
-            height: 450,
-          }}
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="flex justify-between items-center font-semibold mb-4">
-            <div className="flex items-center gap-2 text-xs">
-              {pass.logoUrl ? (
-                <Image
-                  src={pass.logoUrl}
-                  alt="logo"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 object-contain"
-                />
-              ) : (
-                <span className="font-medium">
-                  {pass.logoText || "LOGO TEXT"}
-                </span>
-              )}
-            </div>
-            <div className="text-right">
-              <div className="text-xs font-semibold tracking-tight">
-                {pass.headerFieldLabel || "Header Field Label"}
-              </div>
-              <div className="text-md font-medium">
-                {pass.headerFieldValue || "Header Field Value"}
-              </div>
-            </div>
-          </div>
-          <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center rounded-lg overflow-hidden">
-            {pass.stripImageFrontUrl ? (
-              <Image
-                src={pass.stripImageFrontUrl}
-                alt="strip"
-                width={350}
-                height={28}
-                className="w-full h-full object-cover"
+        <div className="flex justify-between items-center font-semibold mb-4 pt-[20px] px-[20px]">
+          <div className="flex items-center gap-2 text-xs">
+            {pass.logoUrl && (
+              <img
+                src={pass.logoUrl}
+                alt="logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
               />
-            ) : (
-              <span className="text-black text-xs">[strip image]</span>
             )}
           </div>
-          <div className="flex justify-between items-center text-sm font-semibold py-3 px-2 rounded-lg mb-3 backdrop-blur-sm">
-            <div>
-              <div className="font-semibold tracking-tight">
-                {pass.secondaryFieldLabel || "Secondary Field Label"}
-              </div>
-              <div className="font-medium text-lg">
-                {pass.secondaryFieldValue || "secondaryFieldValue"}
-              </div>
+          <div className="text-right">
+            <div className="text-xs font-semibold tracking-tight">
+              {pass.headerFieldLabel || "Header Field Label"}
             </div>
-            {pass.auxiliaryFieldLabel || pass.auxiliaryFieldValue ? (
-              <div className="text-right">
-                <div className="font-semibold tracking-tight">
-                  {pass.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
-                </div>
-                <div className="font-medium text-lg">
-                  {pass.auxiliaryFieldValue || "auxiliaryFieldValue"}
-                </div>
-              </div>
-            ) : null}
+            <div className="text-md font-medium">
+              {pass.headerFieldValue || "Header Field Value"}
+            </div>
           </div>
-          {pass.barcodeFormat && (
-            <motion.div
-              className="flex items-center justify-center h-full"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <div className="flex flex-col items-center mb-[15rem] justify-center bg-white p-3 rounded-lg shadow-sm">
-                <QRCode pass={pass} />
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
+        </div>
+        <div>
+          <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center overflow-hidden">
+            {pass.thumbnailUrl ? (
+              <img
+                src={pass.thumbnailUrl}
+                alt="thumbnail"
+                width={144}
+                height={144}
+                className="w-full h-full object-cover object-center drop-shadow-sm"
+                style={{ imageRendering: "auto" }}
+              />
+            ) : (
+              <span className="text-white text-xs">[thumbnail image]</span>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-between items-center text-sm font-semibold rounded-lg backdrop-blur-sm px-[20px]">
+          <div>
+            <div className="font-semibold tracking-tight">
+              {pass.secondaryLeftLabel || "Secondary Left Label"}
+            </div>
+            <div className="font-medium text-lg">
+              {pass.secondaryLeftValue || "Left Value"}
+            </div>
+          </div>
+          <div>
+            <div className="font-semibold tracking-tight">
+              {pass.secondaryRightLabel || "Secondary Right Label"}
+            </div>
+            <div className="font-medium text-lg">
+              {pass.secondaryRightValue || "Right Value"}
+            </div>
+          </div>
+        </div>
+        {pass.barcodeFormat && (
+          <motion.div
+            className="flex items-center justify-center h-full"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="flex flex-col items-center mb-[14rem] justify-center bg-white p-3 rounded-lg shadow-sm">
+              <QRCode pass={pass as ApplePass} />
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </motion.div>
   );

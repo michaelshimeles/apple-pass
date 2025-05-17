@@ -18,21 +18,19 @@ export async function POST(req: NextRequest) {
   const {
     name,
     description,
-    logoText,
     headerFieldLabel,
     headerFieldValue,
     backgroundColor,
     logoUrl,
-    thumbnail,
+    thumbnailUrl,
     backgroundUrl,
-    primaryFieldLabel,
-    primaryFieldValue,
-    secondaryFieldLabel,
-    secondaryFieldValue,
-    auxiliaryFieldLabel,
-    auxiliaryFieldValue,
+    secondaryLeftLabel,
+    secondaryLeftValue,
+    secondaryRightLabel,
+    secondaryRightValue,
     barcodeValue,
     barcodeFormat,
+    websiteUrl,
   } = await req.json();
 
   if (!name || !description) {
@@ -45,7 +43,7 @@ export async function POST(req: NextRequest) {
   try {
     // Load pass template
     const template = await Template.load(
-      path.join(process.cwd(), "public/pass-models/generic.pass"),
+      path.join(process.cwd(), "public/pass-models/storecard.pass"),
     );
 
     // --- Fetch and convert logo image ---
@@ -73,7 +71,7 @@ export async function POST(req: NextRequest) {
     // --- Fetch and convert strip image ---
     let thumbnailBuffer: Buffer;
     try {
-      const imageResponse = await fetch(thumbnail);
+      const imageResponse = await fetch(thumbnailUrl);
       if (!imageResponse.ok) {
         throw new Error(
           `Failed to fetch strip image: ${imageResponse.statusText}`,
@@ -94,7 +92,7 @@ export async function POST(req: NextRequest) {
 
     // Add images to template
     await template.images.add("logo", logoImageBuffer, "1x");
-    await template.images.add("thumbnail", thumbnailBuffer, "1x");
+    await template.images.add("strip", thumbnailBuffer, "1x");
 
     // Load cert and key from base64 env vars
     const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
@@ -114,7 +112,6 @@ export async function POST(req: NextRequest) {
     });
 
     // Set visual + dynamic fields
-    pass.logoText = logoText;
     pass.backgroundColor = backgroundColor;
 
     if (barcodeFormat && barcodeValue) {
@@ -127,45 +124,30 @@ export async function POST(req: NextRequest) {
       ];
     }
 
-    pass.primaryFields.add({
-      key: primaryFieldLabel,
-      label: primaryFieldLabel,
-      value: primaryFieldValue,
-    });
-
-    if (secondaryFieldLabel && secondaryFieldValue) {
+    if (
+      secondaryLeftLabel &&
+      secondaryLeftValue &&
+      secondaryRightLabel &&
+      secondaryRightValue
+    ) {
       pass.secondaryFields.add({
-        key: secondaryFieldLabel + "_mike",
-        label: secondaryFieldLabel + "_mike",
-        value: secondaryFieldValue + "_mike",
+        key: secondaryLeftLabel,
+        label: secondaryLeftLabel,
+        value: secondaryLeftValue,
       });
 
       pass.secondaryFields.add({
-        key: secondaryFieldLabel,
-        label: secondaryFieldLabel,
-        value: secondaryFieldValue,
+        key: secondaryRightLabel,
+        label: secondaryRightLabel,
+        value: secondaryRightValue,
       });
     }
 
     pass.backFields.add({
       key: "website",
-      label: "Check my website",
-      value: "https://www.rasmic.xyz",
+      label: "Website",
+      value: websiteUrl,
     });
-
-    if (auxiliaryFieldLabel && auxiliaryFieldValue) {
-      pass.auxiliaryFields.add({
-        key: auxiliaryFieldLabel,
-        label: auxiliaryFieldLabel,
-        value: auxiliaryFieldValue,
-      });
-
-      pass.auxiliaryFields.add({
-        key: auxiliaryFieldLabel + "_mike",
-        label: auxiliaryFieldLabel + "_mike",
-        value: auxiliaryFieldValue + "_mike",
-      });
-    }
 
     if (headerFieldLabel && headerFieldValue) {
       pass.headerFields.add({
@@ -191,17 +173,14 @@ export async function POST(req: NextRequest) {
       fileUrl,
       userId: user.id,
       authenticationToken,
-      logoText,
       backgroundColor,
       logoUrl,
-      thumbnailUrl: thumbnail,
+      thumbnailUrl,
       backgroundUrl,
-      primaryFieldLabel,
-      primaryFieldValue,
-      secondaryFieldLabel,
-      secondaryFieldValue,
-      auxiliaryFieldLabel,
-      auxiliaryFieldValue,
+      primaryFieldLabel: secondaryLeftLabel,
+      primaryFieldValue: secondaryLeftValue,
+      secondaryFieldLabel: secondaryRightLabel,
+      secondaryFieldValue: secondaryRightValue,
       headerFieldLabel,
       headerFieldValue,
       barcodeValue,

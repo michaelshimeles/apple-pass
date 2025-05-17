@@ -37,11 +37,15 @@ export default function DeletePass({ passId }: { passId: string }) {
             <Button
               variant="destructive"
               type="submit"
-              onClick={() => {
+              onClick={async () => {
                 try {
-                  deletePass(passId);
-                  toast.success("Pass deleted successfully");
-                  router.refresh();
+                  const result = await deletePass(passId);
+                  if (result) {
+                    toast.success("Pass deleted successfully");
+                    router.refresh();
+                  } else {
+                    toast.error("Pass deleting failed");
+                  }
                 } catch (error) {
                   toast.error(JSON.stringify(error));
                 }

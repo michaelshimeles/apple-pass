@@ -1,0 +1,33 @@
+{
+  "backgroundColor": "rgb(255,255,255)",
+  "barcodes": [
+    {
+      "altText": "",
+      "format": "PKBarcodeFormatQR",
+      "message": "",
+      "messageEncoding": "UTF-8"
+    }
+  ],
+  "description": "Fabrika Membership Card",
+  "foregroundColor": "#ffffff",
+  "formatVersion": 1,
+  "labelColor": "#ffffff",
+  "maxDistance": 0,
+  "organizationName": "Fabrika",
+  "passTypeIdentifier": "pass.com.heyfabrika.pass",
+  "serialNumber": "SERIAL_PLACEHOLDER",
+  "sharingProhibited": false,
+  "storeCard": {
+    "backFields": [
+      {
+        "changeMessage": "%@",
+        "key": "",
+        "value": ""
+      }
+    ],
+    "headerFields": [],
+    "secondaryFields": []
+  },
+  "suppressStripShine": false,
+  "teamIdentifier": "5S3KCRYBD2"
+}

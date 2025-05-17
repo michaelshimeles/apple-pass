@@ -92,7 +92,8 @@ export async function GET(
       .limit(1)
       .then((rows) => rows[0]);
 
-    latestMessage = messageRecord?.message ?? "No messages yet";
+    latestMessage =
+      messageRecord?.message ?? "Welcome to " + pass.name + "'s Apple Pass";
     console.log("💬 Latest message for pass:", latestMessage);
   } catch (dbError) {
     console.error("❌ Database error fetching latest message:", dbError);
@@ -107,7 +108,7 @@ export async function GET(
 
   const templatePath = path.join(
     process.cwd(),
-    "public/pass-models/generic.pass",
+    "public/pass-models/storecard.pass",
   );
   let template: Template;
 
@@ -139,11 +140,7 @@ export async function GET(
       "thumbnailUrl",
     );
     if (thumbnailBuffer) {
-      await template.images.add(
-        "thumbnail",
-        Buffer.from(thumbnailBuffer),
-        "1x",
-      );
+      await template.images.add("strip", Buffer.from(thumbnailBuffer), "1x");
     }
     console.log("🖼️ Images processed and added to template (if available).");
   } catch (imageError) {
@@ -203,10 +200,6 @@ export async function GET(
     passTypeIdentifier,
   });
 
-  if (pass.logoText) {
-    instance.logoText = pass.logoText;
-  }
-
   if (pass.backgroundColor) {
     instance.backgroundColor = pass.backgroundColor;
   }
@@ -223,50 +216,36 @@ export async function GET(
     "PKBarcodeFormatCode128",
   ];
 
-  // Primary Field
-  if (pass.primaryFieldLabel && pass.primaryFieldValue) {
-    instance.primaryFields.add({
-      key: pass.primaryFieldLabel,
-      label: pass.primaryFieldLabel,
-      value: pass.primaryFieldValue,
-    });
-  }
-
-  // Secondary Field
-  if (pass.secondaryFieldLabel && pass.secondaryFieldValue) {
+  // Primary & Secondary Field
+  if (
+    pass?.primaryFieldValue &&
+    pass?.primaryFieldLabel &&
+    pass.secondaryFieldLabel &&
+    pass.secondaryFieldValue
+  ) {
     instance.secondaryFields.add({
-      key: pass.secondaryFieldLabel,
-      label: pass.secondaryFieldLabel,
-      value: pass.secondaryFieldValue,
+      key: pass?.primaryFieldLabel,
+      label: pass?.primaryFieldLabel,
+      value: pass?.primaryFieldValue,
     });
 
     instance.secondaryFields.add({
       key: "Michael",
-      label: pass.secondaryFieldLabel + "_" + "check",
-      value: pass.secondaryFieldValue + "_" + "answer",
-    });
-  }
-
-  // Aux Field
-  if (pass.auxiliaryFieldLabel && pass.auxiliaryFieldValue) {
-    instance.auxiliaryFields.add({
-      key:
-        pass.auxiliaryFieldLabel.replace(/\s+/g, "").toLowerCase() || "auxinfo",
-      label: pass.auxiliaryFieldLabel,
-      value: pass.auxiliaryFieldValue,
-    });
-
-    instance.auxiliaryFields.add({
-      key: "Shimeles",
-      label: pass.auxiliaryFieldLabel + "_" + "check",
-      value: pass.auxiliaryFieldValue + "_" + "answer",
+      label: pass.secondaryFieldLabel,
+      value: pass.secondaryFieldValue,
     });
   }
 
   // Back fields
   instance.backFields.add({
+    key: "website",
+    label: "Website",
+    value: pass.barcodeValue!,
+  });
+
+  instance.backFields.add({
     key: "msg",
-    label: "Message",
+    label: "Notification",
     value: latestMessage,
     changeMessage: "New message: %@",
   });

@@ -15,21 +15,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplePass } from "@/lib/types";
-import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import QRCode from "./qr-code";
-
+import Pass from "@/app/share/_components/pass";
 const formSchema = z.object({
   name: z
     .string()
@@ -39,10 +30,6 @@ const formSchema = z.object({
     .string()
     .min(1, "Description is required")
     .max(100, "Description cannot exceed 100 characters")
-    .optional(),
-  logoText: z
-    .string()
-    .max(20, "Logo text cannot exceed 20 characters")
     .optional(),
   headerFieldLabel: z
     .string()
@@ -57,28 +44,20 @@ const formSchema = z.object({
     .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color")
     .optional(),
   logoUrl: z.string().optional(),
-  thumbnail: z.string().optional(),
-  primaryFieldLabel: z
+  thumbnailUrl: z.string().optional(),
+  secondaryLeftLabel: z
     .string()
     .max(25, "Primary label cannot exceed 25 characters"),
-  primaryFieldValue: z
+  secondaryLeftValue: z
     .string()
     .max(25, "Primary value cannot exceed 30 characters"),
-  secondaryFieldLabel: z
+  secondaryRightLabel: z
     .string()
     .max(25, "Secondary label cannot exceed 25 characters")
     .optional(),
-  secondaryFieldValue: z
+  secondaryRightValue: z
     .string()
     .max(30, "Secondary value cannot exceed 30 characters")
-    .optional(),
-  auxiliaryFieldLabel: z
-    .string()
-    .max(25, "Auxiliary label cannot exceed 25 characters")
-    .optional(),
-  auxiliaryFieldValue: z
-    .string()
-    .max(30, "Auxiliary value cannot exceed 30 characters")
     .optional(),
   barcodeFormat: z
     .enum([
@@ -100,6 +79,7 @@ const formSchema = z.object({
     .string()
     .max(20, "Encoding cannot exceed 20 characters")
     .optional(),
+  websiteUrl: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -111,24 +91,22 @@ export function CreatePassForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "Pass Name",
-      description: "Virtual | Premium",
+      name: "Exodus Labs",
+      description: "A pass for the employees of Exodus Labs",
       logoUrl: "",
-      logoText: "",
-      headerFieldLabel: "Expiration Date",
-      headerFieldValue: "Mar 3, 2025",
-      backgroundColor: "#8ba5a2",
-      thumbnail: "",
-      primaryFieldLabel: "Chicken",
-      primaryFieldValue: "Fried",
-      secondaryFieldLabel: "Date",
-      secondaryFieldValue: "Mar 3, 2025",
-      auxiliaryFieldLabel: "Auxiliary Label",
-      auxiliaryFieldValue: "Auxiliary Value",
+      headerFieldLabel: "Special Offers",
+      headerFieldValue: "TAP ••• FOR OFFERS",
+      backgroundColor: "#000",
+      thumbnailUrl: "",
+      secondaryLeftLabel: "Team",
+      secondaryLeftValue: "Engineer",
+      secondaryRightLabel: "Status",
+      secondaryRightValue: "Active",
       barcodeFormat: "PKBarcodeFormatQR",
-      barcodeValue: "https://www.rasmic.xyz/",
-      barcodeAltText: "Apple Pass",
+      barcodeValue: "",
+      barcodeAltText: "",
       barcodeEncoding: "iso-8859-1",
+      websiteUrl: "https://google.com",
     },
   });
 
@@ -223,8 +201,7 @@ export function CreatePassForm() {
                         />
                       </FormControl>
                       <FormDescription>
-                        This will not be on the pass (for organizational
-                        purposes)
+                        This will be the pass name
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -266,7 +243,7 @@ export function CreatePassForm() {
                     {form.formState.errors.description?.message}
                   </p>
                 )}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
                     name="logoUrl"
@@ -430,34 +407,6 @@ export function CreatePassForm() {
                       {form.formState.errors.logoUrl?.message}
                     </p>
                   )}
-                  {!watched?.logoUrl && (
-                    <FormField
-                      control={form.control}
-                      name="logoText"
-                      render={({ field }) => (
-                        <FormItem className="mt-4">
-                          <div className="flex justify-between">
-                            <FormLabel>Logo Text</FormLabel>
-                            <span className="text-xs text-gray-500">
-                              {field.value?.length || 0}/20
-                            </span>
-                          </div>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="text"
-                              className="w-full border p-2 rounded-md"
-                              maxLength={20}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Text that appears next to the logo
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
                 <FormField
                   control={form.control}
@@ -489,75 +438,11 @@ export function CreatePassForm() {
 
             {step === 2 && (
               <>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="headerFieldLabel"
-                    render={({ field }) => (
-                      <FormItem className="mt-4">
-                        <div className="flex justify-between">
-                          <FormLabel>Header Field Label</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/25
-                          </span>
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            className="w-full border p-2 rounded-md"
-                            maxLength={25}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Label for the header field
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.headerFieldLabel?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.headerFieldLabel?.message}
-                    </p>
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="headerFieldValue"
-                    render={({ field }) => (
-                      <FormItem className="mt-4">
-                        <div className="flex justify-between">
-                          <FormLabel>Header Field Value</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/30
-                          </span>
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            className="w-full border p-2 rounded-md"
-                            maxLength={30}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Value for the header field
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.headerFieldValue?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.headerFieldValue?.message}
-                    </p>
-                  )}
-                </div>
                 {/* Images */}
                 <div className="grid grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
-                    name="thumbnail"
+                    name="thumbnailUrl"
                     render={({ field: { onChange, ...field } }) => (
                       <FormItem className="mt-4">
                         <FormLabel>Thumbnail Image</FormLabel>
@@ -664,7 +549,71 @@ export function CreatePassForm() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="primaryFieldLabel"
+                    name="headerFieldLabel"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <div className="flex justify-between">
+                          <FormLabel>Header Field Label</FormLabel>
+                          <span className="text-xs text-gray-500">
+                            {field.value?.length || 0}/25
+                          </span>
+                        </div>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="text"
+                            className="w-full border p-2 rounded-md"
+                            maxLength={25}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Label for the header field
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {form.formState.errors.headerFieldLabel?.message && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {form.formState.errors.headerFieldLabel?.message}
+                    </p>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="headerFieldValue"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <div className="flex justify-between">
+                          <FormLabel>Header Field Value</FormLabel>
+                          <span className="text-xs text-gray-500">
+                            {field.value?.length || 0}/30
+                          </span>
+                        </div>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="text"
+                            className="w-full border p-2 rounded-md"
+                            maxLength={30}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Value for the header field
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {form.formState.errors.headerFieldValue?.message && (
+                    <p className="text-red-500 text-sm mt-2">
+                      {form.formState.errors.headerFieldValue?.message}
+                    </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="secondaryLeftLabel"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -688,14 +637,14 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.primaryFieldLabel?.message && (
+                  {form.formState.errors.secondaryLeftLabel?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.primaryFieldLabel?.message}
+                      {form.formState.errors.secondaryLeftLabel?.message}
                     </p>
                   )}
                   <FormField
                     control={form.control}
-                    name="primaryFieldValue"
+                    name="secondaryLeftValue"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -719,16 +668,16 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.primaryFieldValue?.message && (
+                  {form.formState.errors.secondaryLeftValue?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.primaryFieldValue?.message}
+                      {form.formState.errors.secondaryLeftValue?.message}
                     </p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="secondaryFieldLabel"
+                    name="secondaryRightLabel"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -752,14 +701,14 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.secondaryFieldLabel?.message && (
+                  {form.formState.errors.secondaryRightLabel?.message && (
                     <p className="text-red-500 text-sm mt-2">
                       {form.formState.errors.secondaryFieldLabel?.message}
                     </p>
                   )}
                   <FormField
                     control={form.control}
-                    name="secondaryFieldValue"
+                    name="secondaryRightValue"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -783,73 +732,9 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.secondaryFieldValue?.message && (
+                  {form.formState.errors.secondaryRightValue?.message && (
                     <p className="text-red-500 text-sm mt-2">
                       {form.formState.errors.secondaryFieldValue?.message}
-                    </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="auxiliaryFieldLabel"
-                    render={({ field }) => (
-                      <FormItem className="mt-4">
-                        <div className="flex justify-between">
-                          <FormLabel>Auxiliary Field Label</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/25
-                          </span>
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            className="w-full border p-2 rounded-md"
-                            maxLength={25}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Label for the auxiliary field
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.auxiliaryFieldLabel?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.auxiliaryFieldLabel?.message}
-                    </p>
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="auxiliaryFieldValue"
-                    render={({ field }) => (
-                      <FormItem className="mt-4">
-                        <div className="flex justify-between">
-                          <FormLabel>Auxiliary Field Value</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/30
-                          </span>
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            className="w-full border p-2 rounded-md"
-                            maxLength={30}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Value for the auxiliary field
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.auxiliaryFieldValue?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.auxiliaryFieldValue?.message}
                     </p>
                   )}
                 </div>
@@ -861,130 +746,21 @@ export function CreatePassForm() {
                 <div className="space-y-2 pt-4 border-t mt-4">
                   <FormField
                     control={form.control}
-                    name="barcodeFormat"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Barcode Format</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a barcode format" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="PKBarcodeFormatQR">
-                              QR Code
-                            </SelectItem>
-                            <SelectItem value="PKBarcodeFormatPDF417">
-                              PDF417
-                            </SelectItem>
-                            <SelectItem value="PKBarcodeFormatAztec">
-                              Aztec
-                            </SelectItem>
-                            <SelectItem value="PKBarcodeFormatCode128">
-                              Code 128
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Choose the barcode format.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.barcodeFormat?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.barcodeFormat?.message}
-                    </p>
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="barcodeValue"
+                    name="websiteUrl"
                     render={({ field }) => (
                       <FormItem className="mt-2">
                         <div className="flex justify-between">
-                          <FormLabel>Barcode Message</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/500
-                          </span>
+                          <FormLabel>Website Url</FormLabel>
                         </div>
                         <FormControl>
                           <Input
                             {...field}
                             type="text"
                             className="w-full border p-2 rounded-md"
-                            maxLength={500}
                           />
                         </FormControl>
                         <FormDescription>
-                          The message to encode in the barcode.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.barcodeValue?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.barcodeValue?.message}
-                    </p>
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="barcodeAltText"
-                    render={({ field }) => (
-                      <FormItem className="mt-2">
-                        <div className="flex justify-between">
-                          <FormLabel>Barcode Alternate Text</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/30
-                          </span>
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            className="w-full border p-2 rounded-md"
-                            maxLength={30}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Text displayed near the barcode (e.g., for
-                          accessibility).
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {form.formState.errors.barcodeAltText?.message && (
-                    <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.barcodeAltText?.message}
-                    </p>
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="barcodeEncoding"
-                    render={({ field }) => (
-                      <FormItem className="mt-2">
-                        <div className="flex justify-between">
-                          <FormLabel>Barcode Message Encoding</FormLabel>
-                          <span className="text-xs text-gray-500">
-                            {field.value?.length || 0}/20
-                          </span>
-                        </div>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            className="w-full border p-2 rounded-md"
-                            maxLength={20}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          The encoding for the barcode message.
+                          This website will be linked on the back of the card.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -1025,7 +801,7 @@ export function CreatePassForm() {
         </form>
       </Form>
       {/* 🔍 Live Preview */}
-      <QuickView watched={watched as ApplePass} />
+      <Pass pass={watched as ApplePass} />
     </div>
   );
 }
@@ -1144,107 +920,4 @@ async function processImage(
     type: mime,
     lastModified: Date.now(),
   });
-}
-
-function QuickView({ watched }: { watched: ApplePass }) {
-  return (
-    <div className="flex items-center justify-center sticky top-4">
-      <motion.div
-        className="flex items-center justify-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <motion.div
-          className="rounded-md shadow-xl overflow-hidden text-black font-[-apple-system,BlinkMacSystemFont]"
-          style={{
-            backgroundColor: watched.backgroundColor!,
-            width: 350,
-            padding: 20,
-            height: 450,
-          }}
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <div className="flex justify-between items-center font-semibold mb-4">
-            <div className="flex items-center gap-2 text-xs">
-              {watched.logoUrl ? (
-                <img
-                  src={watched.logoUrl}
-                  alt="logo"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 object-contain"
-                />
-              ) : (
-                <span className="font-medium">
-                  {watched.logoText || "LOGO TEXT"}
-                </span>
-              )}
-            </div>
-            <div className="text-right">
-              <div className="text-xs font-semibold tracking-tight">
-                {watched.headerFieldLabel || "Header Field Label"}
-              </div>
-              <div className="text-md font-medium">
-                {watched.headerFieldValue || "Header Field Value"}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div>{watched.primaryFieldLabel || "Primary Field Label"}</div>
-              <div>{watched.primaryFieldValue || "Primary Field Value"}</div>
-            </div>
-            <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center rounded-lg overflow-hidden max-w-[144px]">
-              {watched.thumbnail ? (
-                <img
-                  src={watched.thumbnail}
-                  alt="thumbnail"
-                  width={144}
-                  height={144}
-                  className="w-full h-full object-cover object-center drop-shadow-sm"
-                  style={{ imageRendering: "auto" }}
-                />
-              ) : (
-                <span className="text-white text-xs">[thumbnail image]</span>
-              )}
-            </div>
-          </div>
-          <div className="flex justify-between items-center text-sm font-semibold py-3 px-2 rounded-lg mb-3 backdrop-blur-sm">
-            <div>
-              <div className="font-semibold tracking-tight">
-                {watched.secondaryFieldLabel || "Secondary Field Label"}
-              </div>
-              <div className="font-medium text-lg">
-                {watched.secondaryFieldValue || "secondaryFieldValue"}
-              </div>
-            </div>
-            {watched.auxiliaryFieldLabel || watched.auxiliaryFieldValue ? (
-              <div className="text-right">
-                <div className="font-semibold tracking-tight">
-                  {watched.auxiliaryFieldLabel || "auxiliaryFieldLabel"}
-                </div>
-                <div className="font-medium text-lg">
-                  {watched.auxiliaryFieldValue || "auxiliaryFieldValue"}
-                </div>
-              </div>
-            ) : null}
-          </div>
-          {watched.barcodeFormat && (
-            <motion.div
-              className="flex items-center justify-center h-full"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <div className="flex flex-col items-center mb-[15rem] justify-center bg-white p-3 rounded-lg shadow-sm">
-                <QRCode pass={watched as ApplePass} />
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-      </motion.div>
-    </div>
-  );
 }

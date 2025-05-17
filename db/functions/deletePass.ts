@@ -1,7 +1,12 @@
 "use server";
 import { db } from "../drizzle";
 import { eq, and } from "drizzle-orm";
-import { passes, passInstalls, passRegistrations } from "../schema"; // import passInstalls
+import {
+  passes,
+  passInstalls,
+  passMessages,
+  passRegistrations,
+} from "../schema"; // import passInstalls
 import { auth } from "@clerk/nextjs/server";
 
 export async function deletePass(id: string) {
@@ -17,6 +22,11 @@ export async function deletePass(id: string) {
     await db
       .delete(passRegistrations)
       .where(eq(passRegistrations.passId, parseInt(id)))
+      .returning();
+
+    await db
+      .delete(passMessages)
+      .where(eq(passMessages.passId, parseInt(id)))
       .returning();
 
     // Then delete from passes
