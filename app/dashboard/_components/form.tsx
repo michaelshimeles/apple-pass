@@ -830,7 +830,12 @@ export function CreatePassForm() {
               </Button>
             )}
             {step < 2 && (
-              <Button type="button" onClick={nextStep} className="w-24">
+              <Button
+                type="button"
+                disabled={!watched?.logoUrl || !watched?.stripImage}
+                onClick={nextStep}
+                className="w-24"
+              >
                 Next
               </Button>
             )}
