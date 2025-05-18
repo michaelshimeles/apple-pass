@@ -14,7 +14,7 @@ export default function Pass({ pass }: { pass: ApplePass }) {
     >
       <motion.div
         className={
-          "rounded shadow-xl overflow-hidden font-[-apple-system,BlinkMacSystemFont]"
+          "rounded-md shadow-xl overflow-hidden font-[-apple-system,BlinkMacSystemFont]"
         }
         style={{
           backgroundColor: pass.backgroundColor!,
