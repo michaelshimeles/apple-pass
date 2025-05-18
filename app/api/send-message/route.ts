@@ -8,7 +8,24 @@ import path from "path";
 import { Buffer } from "buffer";
 
 export async function POST(req: Request) {
-  const { passId, message } = await req.json();
+  const {
+    passId,
+    message,
+    textColor,
+    backgroundColor,
+    secondaryLeftLabel,
+    secondaryLeftValue,
+    secondaryRightLabel,
+    secondaryRightValue,
+    websiteUrl,
+    description,
+    headerFieldLabel,
+    headerFieldValue,
+    barcodeValue,
+    barcodeFormat,
+    logoUrl,
+    stripImage,
+  } = await req.json();
 
   if (!passId || !message) {
     return new Response("Missing fields", { status: 400 });
@@ -40,11 +57,18 @@ export async function POST(req: Request) {
   const template = await Template.load(
     path.join(process.cwd(), "public/pass-models/storecard.pass"),
   );
-  await template.images.add(
-    "logo",
-    path.join(process.cwd(), "public/logo.png"),
-    "1x",
-  );
+
+  const logoImageBuffer = await fetchImageBuffer(logoUrl, "logo image");
+  const stripImageBuffer = await fetchImageBuffer(stripImage, "strip image");
+
+  if (logoImageBuffer) {
+    await template.images.add("logo", Buffer.from(logoImageBuffer), "1x");
+    await template.images.add("icon", Buffer.from(logoImageBuffer), "1x");
+  }
+
+  if (stripImageBuffer) {
+    await template.images.add("strip", Buffer.from(stripImageBuffer), "1x");
+  }
 
   const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
   const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
@@ -55,7 +79,7 @@ export async function POST(req: Request) {
   // Create updated pass
   const passInstance = template.createPass({
     serialNumber: pass.serialNumber,
-    description: pass.description,
+    description: pass.name,
     organizationName: pass.name,
     webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
     authenticationToken: pass.authenticationToken,
@@ -63,18 +87,59 @@ export async function POST(req: Request) {
 
   console.log("💬 Updating message to:", message);
 
-  const logoImageBuffer = await fetchImageBuffer(pass.logoUrl, "logo image");
+  // Set visual + dynamic fields
+  passInstance.foregroundColor = textColor;
+  passInstance.labelColor = textColor;
+  passInstance.backgroundColor = backgroundColor;
 
-  if (logoImageBuffer) {
-    await passInstance.images.add("icon", Buffer.from(logoImageBuffer), "1x");
+  if (barcodeFormat && barcodeValue) {
+    passInstance.barcodes = [
+      {
+        format: barcodeFormat,
+        message: barcodeValue,
+        messageEncoding: "iso-8859-1",
+      },
+    ];
   }
 
-  passInstance.secondaryFields.add({
-    key: "msg",
-    label: "Message",
-    value: message,
-    changeMessage: "%@",
+  if (
+    secondaryLeftLabel &&
+    secondaryLeftValue &&
+    secondaryRightLabel &&
+    secondaryRightValue
+  ) {
+    passInstance.secondaryFields.add({
+      key: secondaryLeftLabel,
+      label: secondaryLeftLabel,
+      value: secondaryLeftValue,
+    });
+
+    passInstance.secondaryFields.add({
+      key: secondaryRightLabel,
+      label: secondaryRightLabel,
+      value: secondaryRightValue,
+    });
+  }
+
+  passInstance.backFields.add({
+    key: "website",
+    label: "Website",
+    value: websiteUrl,
   });
+
+  passInstance.backFields.add({
+    key: "description",
+    label: "Description",
+    value: description,
+  });
+
+  if (headerFieldLabel && headerFieldValue) {
+    passInstance.headerFields.add({
+      key: headerFieldLabel,
+      label: headerFieldLabel,
+      value: headerFieldValue,
+    });
+  }
 
   passInstance.relevantDate = new Date().toISOString();
 
