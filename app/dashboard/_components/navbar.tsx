@@ -12,7 +12,6 @@ import {
 import { UserButton } from "@clerk/nextjs";
 import {
   BookOpen,
-  BookPlus,
   Brush,
   HomeIcon,
   LucideGitBranchPlus,
