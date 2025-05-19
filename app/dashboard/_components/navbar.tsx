@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/sheet";
 import { UserButton } from "@clerk/nextjs";
 import {
+  BookOpen,
+  BookPlus,
   Brush,
   HomeIcon,
   LucideGitBranchPlus,
@@ -73,6 +75,11 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           </SheetContent>
         </Dialog>
         <div className="flex justify-center items-center gap-2 ml-auto">
+          <Link href="/onboarding">
+            <Button size="icon" variant="outline">
+              <BookOpen />
+            </Button>
+          </Link>
           <Link prefetch={true} href="/dashboard/create">
             <Button variant="outline" size="sm">
               Create Pass
