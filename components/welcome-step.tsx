@@ -1,49 +1,155 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion";
+import { ChevronRight, Bell, Smartphone, QrCode } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface WelcomeStepProps {
-  onNext: () => void
+  onNext: () => void;
 }
 
 export default function WelcomeStep({ onNext }: WelcomeStepProps) {
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    },
+  };
+
   return (
-    <div className="text-center space-y-8">
+    <div className="grid md:grid-cols-2 gap-8 items-center">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="flex flex-col"
       >
-        <div className="w-24 h-24 bg-primary rounded-full mx-auto mb-8 flex items-center justify-center">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-              fill="white"
-            />
-          </svg>
-        </div>
-        <h1 className="text-2xl font-medium tracking-tight mb-3">Welcome to Product</h1>
-        <p className="text-gray-500 text-sm max-w-md mx-auto">
-          Experience the future of digital productivity with our intuitive platform.
-        </p>
+        <motion.h1
+          variants={item}
+          className="text-3xl font-medium tracking-tight mb-3"
+        >
+          Welcome to the Lockscreen AI
+        </motion.h1>
+
+        <motion.p
+          variants={item}
+          className="text-muted-foreground text-sm mb-6"
+        >
+          Lockscreen AI is the most powerful way to reach your
+          customers—unlimited marketing impressions at a fraction of the cost.
+        </motion.p>
+
+        <motion.div
+          variants={item}
+          className="space-y-4 mb-6 border border-border rounded-lg p-4 bg-muted/30"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            className="flex items-start gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Smartphone className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">
+                Delivered on the Lock Screen
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                With our unique product, you can deliver your message on the
+                most important screen: the lock screen.
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+            className="flex items-start gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Bell className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">Instant, Direct Marketing</h3>
+              <p className="text-xs text-muted-foreground">
+                Reach your audience without middlemen or platform delays. Your
+                message is delivered instantly—no more waiting hours, days, or
+                weeks.
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.4 }}
+            className="flex items-start gap-3"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <QrCode className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium">
+                Personalized Branded Cards
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Create personalized branded cards with your logo, URLs, and QR
+                codes. Deliver unique messages at scale, effortlessly.
+              </p>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        <motion.div variants={item} className="flex justify-end">
+          <Button
+            onClick={onNext}
+            className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm w-fit"
+          >
+            Start Tutorial
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </motion.div>
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-        className="pt-8"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="flex justify-center items-center"
       >
-        <Button
-          onClick={onNext}
-          className="rounded-full px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 text-sm"
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="relative w-64 h-auto"
         >
-          Get Started
-          <ChevronRight className="ml-2 h-4 w-4" />
-        </Button>
+          <Image
+            src="/images/iphone-wallet.png"
+            alt="iPhone with Apple Wallet pass"
+            width={500}
+            height={700}
+            className="w-full h-auto"
+            priority
+          />
+        </motion.div>
       </motion.div>
     </div>
-  )
+  );
 }

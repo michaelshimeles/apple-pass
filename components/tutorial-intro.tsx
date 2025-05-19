@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion"
+import { ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface TutorialIntroProps {
-  onNext: () => void;
+  onNext: () => void
 }
 
 export default function TutorialIntro({ onNext }: TutorialIntroProps) {
@@ -18,44 +18,25 @@ export default function TutorialIntro({ onNext }: TutorialIntroProps) {
         delayChildren: 0.2,
       },
     },
-  };
+  }
 
   const item = {
     hidden: { opacity: 0, y: 20 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-    },
-  };
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+  }
 
   return (
     <div className="grid md:grid-cols-2 gap-8 items-center">
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="flex flex-col"
-      >
-        <motion.h1
-          variants={item}
-          className="text-3xl font-medium tracking-tight mb-3"
-        >
-          Welcome to the Lockscreen AI
+      <motion.div variants={container} initial="hidden" animate="show" className="flex flex-col">
+        <motion.h1 variants={item} className="text-3xl font-medium tracking-tight mb-3">
+          Welcome to the Product Tour
         </motion.h1>
 
-        <motion.p
-          variants={item}
-          className="text-muted-foreground text-sm mb-4"
-        >
-          This tutorial will guide you through the key features of our platform
-          and help you get started quickly.
+        <motion.p variants={item} className="text-muted-foreground text-sm mb-4">
+          This tutorial will guide you through the key features of our platform and help you get started quickly.
         </motion.p>
 
-        <motion.div
-          variants={item}
-          className="space-y-4 mb-6 border border-border rounded-lg p-4 bg-muted/30"
-        >
+        <motion.div variants={item} className="space-y-4 mb-6 border border-border rounded-lg p-4 bg-muted/30">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -67,9 +48,7 @@ export default function TutorialIntro({ onNext }: TutorialIntroProps) {
             </div>
             <div>
               <h3 className="text-sm font-medium">Powerful Workspaces</h3>
-              <p className="text-xs text-muted-foreground">
-                Organize your projects with customizable workspaces
-              </p>
+              <p className="text-xs text-muted-foreground">Organize your projects with customizable workspaces</p>
             </div>
           </motion.div>
 
@@ -84,9 +63,7 @@ export default function TutorialIntro({ onNext }: TutorialIntroProps) {
             </div>
             <div>
               <h3 className="text-sm font-medium">Seamless Collaboration</h3>
-              <p className="text-xs text-muted-foreground">
-                Work together with your team in real-time
-              </p>
+              <p className="text-xs text-muted-foreground">Work together with your team in real-time</p>
             </div>
           </motion.div>
 
@@ -101,9 +78,7 @@ export default function TutorialIntro({ onNext }: TutorialIntroProps) {
             </div>
             <div>
               <h3 className="text-sm font-medium">Personalized Experience</h3>
-              <p className="text-xs text-muted-foreground">
-                Customize the platform to match your workflow
-              </p>
+              <p className="text-xs text-muted-foreground">Customize the platform to match your workflow</p>
             </div>
           </motion.div>
         </motion.div>
@@ -123,10 +98,10 @@ export default function TutorialIntro({ onNext }: TutorialIntroProps) {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        // className="bg-muted rounded-xl p-6 aspect-square max-w-sm mx-auto flex items-center justify-center border border-border"
+        className="bg-muted rounded-xl p-6 aspect-square max-w-sm mx-auto flex items-center justify-center border border-border"
       >
-        <img src="/iphone.png" />
-        {/* <div className="relative w-full h-full">
+        <div className="relative w-full h-full">
+          {/* App UI Preview */}
           <div className="absolute inset-4 rounded-lg bg-background border border-border shadow-md overflow-hidden">
             <div className="h-6 bg-secondary flex items-center px-2 gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-destructive/70"></div>
@@ -190,8 +165,8 @@ export default function TutorialIntro({ onNext }: TutorialIntroProps) {
               </div>
             </div>
           </div>
-        </div> */}
+        </div>
       </motion.div>
     </div>
-  );
+  )
 }

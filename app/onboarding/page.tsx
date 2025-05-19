@@ -2,18 +2,15 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import TutorialIntro from "@/components/tutorial-intro";
-import FeatureOne from "@/components/feature-one";
-import FeatureTwo from "@/components/feature-two";
-import FeatureThree from "@/components/feature-three";
+import WelcomeStep from "@/components/welcome-step";
+import PassCreationStep from "@/components/pass-creation-step";
+import NotificationsStep from "@/components/notifications-step";
+import AnalyticsStep from "@/components/analytics-step";
 import TutorialCompletion from "@/components/tutorial-completion";
-import ProgressIndicator from "@/components/progress-indicator";
 import TutorialNav from "@/components/tutorial-nav";
 
 export default function TutorialFlow() {
   const [step, setStep] = useState(0);
-  const [preferences, setPreferences] = useState<string[]>([]);
-
   const totalSteps = 5;
 
   const nextStep = () => {
@@ -34,46 +31,40 @@ export default function TutorialFlow() {
     }
   };
 
-  const updatePreferences = (newPreferences: string[]) => {
-    setPreferences(newPreferences);
-  };
-
   const steps = [
-    <TutorialIntro key="intro" onNext={nextStep} />,
-    <FeatureOne key="feature1" onNext={nextStep} onBack={prevStep} />,
-    <FeatureTwo key="feature2" onNext={nextStep} onBack={prevStep} />,
-    <FeatureThree
-      key="feature3"
-      preferences={preferences}
-      updatePreferences={updatePreferences}
+    <WelcomeStep key="intro" onNext={nextStep} />,
+    <PassCreationStep
+      key="pass-creation"
       onNext={nextStep}
       onBack={prevStep}
     />,
-    <TutorialCompletion key="completion" preferences={preferences} />,
+    <NotificationsStep
+      key="notifications"
+      onNext={nextStep}
+      onBack={prevStep}
+    />,
+    <AnalyticsStep key="analytics" onNext={nextStep} onBack={prevStep} />,
+    <TutorialCompletion key="completion" />,
   ];
 
   const stepTitles = [
     "Welcome",
-    "Workspace",
-    "Collaboration",
-    "Personalization",
+    "Create Pass",
+    "Notifications",
+    "Analytics",
     "Complete",
   ];
 
   return (
-    <div
-      className={`flex justify-center items-start min-h-screen bg-background`}
-    >
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-8">
-        <ProgressIndicator currentStep={step} totalSteps={totalSteps - 1} />
-
+    <div className={`min-h-screen bg-background`}>
+      <div className="flex flex-col max-w-4xl mx-auto w-full h-screen px-4 py-8">
         <TutorialNav
           currentStep={step}
           steps={stepTitles}
           goToStep={goToStep}
         />
 
-        <div className="flex-1 flex items-center justify-center py-8">
+        <div className="flex-1 flex items-center justify-center pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={step}

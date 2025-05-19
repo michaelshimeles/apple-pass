@@ -1,16 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import {
+  CheckCircle,
+  ArrowRight,
+  Bell,
+  CreditCard,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-interface TutorialCompletionProps {
-  preferences: string[];
-}
-
-export default function TutorialCompletion({
-  preferences,
-}: TutorialCompletionProps) {
+export default function TutorialCompletion() {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -68,25 +69,42 @@ export default function TutorialCompletion({
           className="bg-muted/50 rounded-lg p-4 mb-6 border border-border"
         >
           <h3 className="text-sm font-medium mb-3">
-            Your Selected Preferences:
+            What You&apos;ve Learned:
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {preferences.map((preference, index) => (
-              <motion.span
-                key={preference}
-                className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
-              >
-                {preference}
-              </motion.span>
-            ))}
-            {preferences.length === 0 && (
-              <span className="text-muted-foreground text-sm">
-                No preferences selected
+          <div className="space-y-3">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+              className="flex items-start gap-2"
+            >
+              <CreditCard className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <span className="text-sm">
+                How to create a branded pass for your customers
               </span>
-            )}
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.3 }}
+              className="flex items-start gap-2"
+            >
+              <Bell className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <span className="text-sm">
+                How to send instant notifications to your audience
+              </span>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.3 }}
+              className="flex items-start gap-2"
+            >
+              <BarChart3 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <span className="text-sm">
+                How to track performance with detailed analytics
+              </span>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -103,7 +121,9 @@ export default function TutorialCompletion({
               className="flex items-start gap-2"
             >
               <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <span>Create your first project in the workspace</span>
+              <span>
+                Create your first pass and customize it with your branding
+              </span>
             </motion.li>
             <motion.li
               initial={{ opacity: 0, y: 10 }}
@@ -112,7 +132,9 @@ export default function TutorialCompletion({
               className="flex items-start gap-2"
             >
               <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <span>Invite team members to collaborate</span>
+              <span>
+                Share your pass with customers to start building your audience
+              </span>
             </motion.li>
             <motion.li
               initial={{ opacity: 0, y: 10 }}
@@ -121,15 +143,19 @@ export default function TutorialCompletion({
               className="flex items-start gap-2"
             >
               <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <span>Explore advanced features in the settings</span>
+              <span>
+                Send your first notification to engage with your audience
+              </span>
             </motion.li>
           </ul>
         </motion.div>
 
-        <motion.div variants={item}>
-          <Button className="rounded-full px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 text-sm w-fit mx-auto">
-            Get Started
-          </Button>
+        <motion.div variants={item} className="flex justify-end">
+          <Link href="/dashboard/create">
+            <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm w-fit mx-auto">
+              Get Started
+            </Button>
+          </Link>
         </motion.div>
       </motion.div>
 
@@ -148,7 +174,7 @@ export default function TutorialCompletion({
               transition={{ delay: 0.6, duration: 0.4 }}
               className="h-8 bg-secondary flex items-center px-3"
             >
-              <div className="text-xs font-medium">Dashboard</div>
+              <div className="text-xs font-medium">Lockscreen AI Dashboard</div>
             </motion.div>
 
             <div className="p-3">
@@ -174,8 +200,8 @@ export default function TutorialCompletion({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.4 }}
                 >
-                  <div className="h-2 w-12 bg-primary/30 rounded"></div>
-                  <div className="h-3 w-16 bg-primary/50 rounded"></div>
+                  <CreditCard className="h-4 w-4 text-primary/70" />
+                  <div className="text-xs font-medium">Passes</div>
                 </motion.div>
 
                 <motion.div
@@ -184,8 +210,8 @@ export default function TutorialCompletion({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9, duration: 0.4 }}
                 >
-                  <div className="h-2 w-12 bg-chart-2/30 rounded"></div>
-                  <div className="h-3 w-16 bg-chart-2/50 rounded"></div>
+                  <Bell className="h-4 w-4 text-chart-2/70" />
+                  <div className="text-xs font-medium">Notifications</div>
                 </motion.div>
 
                 <motion.div
@@ -194,8 +220,8 @@ export default function TutorialCompletion({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.0, duration: 0.4 }}
                 >
-                  <div className="h-2 w-12 bg-chart-3/30 rounded"></div>
-                  <div className="h-3 w-16 bg-chart-3/50 rounded"></div>
+                  <BarChart3 className="h-4 w-4 text-chart-3/70" />
+                  <div className="text-xs font-medium">Analytics</div>
                 </motion.div>
 
                 <motion.div
@@ -204,8 +230,10 @@ export default function TutorialCompletion({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.1, duration: 0.4 }}
                 >
-                  <div className="h-2 w-12 bg-chart-5/30 rounded"></div>
-                  <div className="h-3 w-16 bg-chart-5/50 rounded"></div>
+                  <div className="h-4 w-4 text-chart-5/70 flex items-center justify-center">
+                    ⚙️
+                  </div>
+                  <div className="text-xs font-medium">Settings</div>
                 </motion.div>
               </div>
 
@@ -215,11 +243,25 @@ export default function TutorialCompletion({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.2, duration: 0.4 }}
               >
-                <div className="h-3 w-24 bg-muted rounded mb-2"></div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs font-medium">Recent Activity</div>
+                  <div className="text-[10px] text-primary">View All</div>
+                </div>
                 <div className="space-y-1.5">
-                  <div className="h-2 bg-muted rounded w-full"></div>
-                  <div className="h-2 bg-muted rounded w-5/6"></div>
-                  <div className="h-2 bg-muted rounded w-4/6"></div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-[10px]">
+                      Pass created: My Brand Pass
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      Just now
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="text-[10px]">Tutorial completed</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      Just now
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
