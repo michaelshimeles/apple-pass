@@ -28,7 +28,10 @@ const formSchema = z.object({
     .string()
     .min(1, "Name is required")
     .max(50, "Name cannot exceed 50 characters"),
-  description: z.string().optional(),
+  description: z
+    .string()
+    .max(1150, "Description cannot exceed 150 cahracter")
+    .optional(),
   headerFieldLabel: z
     .string()
     .max(25, "Header label cannot exceed 25 characters")
@@ -225,11 +228,15 @@ export function CreatePassForm() {
                     <FormItem className="mt-4">
                       <div className="flex justify-between">
                         <FormLabel>Description</FormLabel>
+                        <span className="text-xs text-gray-500">
+                          {field.value?.length || 0}/1150
+                        </span>
                       </div>
                       <FormControl>
                         <Textarea
                           {...field}
                           className="w-full border p-2 rounded-md"
+                          maxLength={1150}
                         />
                       </FormControl>
                       <FormDescription>

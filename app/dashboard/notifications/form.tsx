@@ -65,7 +65,7 @@ export default function NotificationsForm({ passes }: any) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
+    <form onSubmit={handleSubmit} className="space-y-2 max-w-sm">
       <Select onValueChange={setPassId}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Choose a pass" />
@@ -80,14 +80,16 @@ export default function NotificationsForm({ passes }: any) {
           </SelectGroup>
         </SelectContent>
       </Select>
-
+      <div className="text-xs text-gray-400 text-right mb-1">
+        {message?.length || 0}/1150
+      </div>
       <Textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Enter your message"
         required
+        maxLength={1150}
       />
-
       <Button type="submit" variant="outline" disabled={loading}>
         {!loading ? "Send Notification" : "Sending..."}
       </Button>

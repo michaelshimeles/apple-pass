@@ -85,6 +85,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
             </Button>
           </Link>
           <UserButton />
+          {/* <OrganizationSwitcher /> */}
         </div>
       </header>
       {children}
