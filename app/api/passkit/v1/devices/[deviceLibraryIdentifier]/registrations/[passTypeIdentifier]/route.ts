@@ -1,5 +1,5 @@
 import { db } from "@/db/drizzle";
-import { passRegistrations, passes } from "@/db/schema";
+import { pass_registrations, passes } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,7 +10,7 @@ export async function GET(
       deviceLibraryIdentifier: string;
       passTypeIdentifier: string;
     };
-  }
+  },
 ): Promise<NextResponse> {
   const { deviceLibraryIdentifier, passTypeIdentifier } = await context.params;
 
@@ -20,27 +20,34 @@ export async function GET(
     .trim();
 
   console.log("📥 Authorization header:", authToken);
-  console.log("📥 passesUpdatedSince param:", req.nextUrl.searchParams.get("passesUpdatedSince"));
+  console.log(
+    "📥 passesUpdatedSince param:",
+    req.nextUrl.searchParams.get("passesUpdatedSince"),
+  );
 
   // Find all passes registered to this device
   const matches = await db
     .select()
-    .from(passRegistrations)
-    .innerJoin(passes, eq(passRegistrations.passId, passes.id))
+    .from(pass_registrations)
+    .innerJoin(passes, eq(pass_registrations.pass_id, passes.id))
     .where(
       and(
-        eq(passRegistrations.deviceLibraryIdentifier, deviceLibraryIdentifier),
-        eq(passRegistrations.passTypeIdentifier, passTypeIdentifier)
-      )
+        eq(
+          pass_registrations.device_library_identifier,
+          deviceLibraryIdentifier,
+        ),
+        eq(pass_registrations.pass_type_identifier, passTypeIdentifier),
+      ),
     );
-
 
   const passesUpdatedSince = req.nextUrl.searchParams.get("passesUpdatedSince");
 
   const updatedSerials = matches
-    .filter((p) => new Date(p.passes.updatedAt!) > new Date(passesUpdatedSince ?? 0))
-    .map((p) => p.passes.serialNumber);
-  
+    .filter(
+      (p) => new Date(p.passes.updated_at!) > new Date(passesUpdatedSince ?? 0),
+    )
+    .map((p) => p.passes.serial_number);
+
   return NextResponse.json({
     lastUpdated: new Date().toISOString(),
     serialNumbers: updatedSerials,

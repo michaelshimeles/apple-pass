@@ -1,8 +1,5 @@
-import { db } from "@/db/drizzle";
-import { userAnalytics } from "@/db/schema";
-
 export async function POST(req: Request) {
-  const { passId } = await req.json();
+  // const { pass_id } = await req.json();
   // const parsed = parse(ua);
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "";
 
@@ -13,15 +10,8 @@ export async function POST(req: Request) {
     .then((res) => res.json())
     .catch(() => ({ country: null, regionName: null, city: null }));
 
-  await db.insert(userAnalytics).values({
-    passId,
-    country: geo.country,
-    region: geo.regionName,
-    city: geo.city,
-    os: "",
-    browser: "",
-    deviceType: "",
+  console.log({
+    geo,
   });
-
   return new Response("ok", { status: 200 });
 }

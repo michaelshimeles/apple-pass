@@ -6,6 +6,8 @@ import { Template } from "@walletpass/pass-js";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
+import { organizations } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   await auth.protect();
@@ -18,19 +20,19 @@ export async function POST(req: NextRequest) {
   const {
     name,
     description,
-    headerFieldLabel,
-    headerFieldValue,
-    backgroundColor,
-    textColor,
-    logoUrl,
-    stripImage,
-    secondaryLeftLabel,
-    secondaryLeftValue,
-    secondaryRightLabel,
-    secondaryRightValue,
-    barcodeValue,
-    barcodeFormat,
-    websiteUrl,
+    header_field_label,
+    header_field_value,
+    background_color,
+    text_color,
+    logo_url,
+    strip_image,
+    secondary_left_label,
+    secondary_left_value,
+    secondary_right_label,
+    secondary_right_value,
+    barcode_value,
+    barcode_format,
+    website_url,
   } = await req.json();
 
   if (!name || !description) {
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
     // --- Fetch and convert logo image ---
     let logoImageBuffer: Buffer;
     try {
-      const imageResponse = await fetch(logoUrl);
+      const imageResponse = await fetch(logo_url);
       if (!imageResponse.ok) {
         throw new Error(
           `Failed to fetch logo image: ${imageResponse.statusText}`,
@@ -71,7 +73,7 @@ export async function POST(req: NextRequest) {
     // --- Fetch and convert strip image ---
     let stripImageBuffer: Buffer;
     try {
-      const imageResponse = await fetch(stripImage);
+      const imageResponse = await fetch(strip_image);
       if (!imageResponse.ok) {
         throw new Error(
           `Failed to fetch strip image: ${imageResponse.statusText}`,
@@ -114,43 +116,43 @@ export async function POST(req: NextRequest) {
     });
 
     // Set visual + dynamic fields
-    pass.foregroundColor = textColor;
-    pass.labelColor = textColor;
-    pass.backgroundColor = backgroundColor;
+    pass.foregroundColor = text_color;
+    pass.labelColor = text_color;
+    pass.backgroundColor = background_color;
 
-    if (barcodeFormat && barcodeValue) {
+    if (barcode_format && barcode_value) {
       pass.barcodes = [
         {
-          format: barcodeFormat,
-          message: barcodeValue,
+          format: barcode_format,
+          message: barcode_value,
           messageEncoding: "iso-8859-1",
         },
       ];
     }
 
     if (
-      secondaryLeftLabel &&
-      secondaryLeftValue &&
-      secondaryRightLabel &&
-      secondaryRightValue
+      secondary_left_label &&
+      secondary_left_value &&
+      secondary_right_label &&
+      secondary_right_value
     ) {
       pass.secondaryFields.add({
-        key: secondaryLeftLabel,
-        label: secondaryLeftLabel,
-        value: secondaryLeftValue,
+        key: secondary_left_label,
+        label: secondary_left_label,
+        value: secondary_left_value,
       });
 
       pass.secondaryFields.add({
-        key: secondaryRightLabel,
-        label: secondaryRightLabel,
-        value: secondaryRightValue,
+        key: secondary_right_label,
+        label: secondary_right_label,
+        value: secondary_right_value,
       });
     }
 
     pass.backFields.add({
       key: "website",
       label: "Website",
-      value: websiteUrl,
+      value: website_url,
     });
 
     pass.backFields.add({
@@ -159,11 +161,11 @@ export async function POST(req: NextRequest) {
       value: description,
     });
 
-    if (headerFieldLabel && headerFieldValue) {
+    if (header_field_label && header_field_value) {
       pass.headerFields.add({
-        key: headerFieldLabel,
-        label: headerFieldLabel,
-        value: headerFieldValue,
+        key: header_field_label,
+        label: header_field_label,
+        value: header_field_value,
       });
     }
 
@@ -174,29 +176,44 @@ export async function POST(req: NextRequest) {
 
     const passShareId = nanoid(12).toLowerCase();
 
+    const result = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.admin_user_id, user.id));
+
+    // after fetching:
+    const [org] = result;
+    if (!org) {
+      return NextResponse.json(
+        { message: "Organization not found" },
+        { status: 400 },
+      );
+    }
+
     // Save to DB
     await db.insert(passes).values({
       name,
       description,
       slug,
-      serialNumber: serial,
-      fileUrl,
-      userId: user.id,
-      authenticationToken,
-      textColor,
-      backgroundColor,
-      logoUrl,
-      websiteUrl,
-      stripImage,
-      secondaryLeftLabel,
-      secondaryLeftValue,
-      secondaryRightLabel,
-      secondaryRightValue,
-      headerFieldLabel,
-      headerFieldValue,
-      barcodeValue,
-      barcodeFormat,
-      passShareId,
+      serial_number: serial,
+      file_url: fileUrl,
+      user_id: user.id,
+      authentication_token: authenticationToken,
+      text_color: text_color,
+      background_color: background_color,
+      logo_url: logo_url,
+      website_url: website_url,
+      strip_image: strip_image,
+      secondary_left_label: secondary_left_label,
+      secondary_left_value: secondary_left_value,
+      secondary_right_label: secondary_right_label,
+      secondary_right_value: secondary_right_value,
+      header_field_label: header_field_label,
+      header_field_value: header_field_value,
+      barcode_value: barcode_value,
+      barcode_format: barcode_format,
+      pass_share_id: passShareId,
+      organization_id: org.id,
     });
 
     return new NextResponse(JSON.stringify({ url: fileUrl }), {

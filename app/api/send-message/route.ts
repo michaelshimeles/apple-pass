@@ -1,5 +1,5 @@
 import { db } from "@/db/drizzle";
-import { passMessages, passRegistrations, passes } from "@/db/schema";
+import { pass_messages, pass_registrations, passes } from "@/db/schema";
 import { uploadPkpassToR2 } from "@/lib/r2";
 import { sendPassPushNotification } from "@/lib/sendPushPass";
 import { eq } from "drizzle-orm";
@@ -43,14 +43,14 @@ export async function POST(req: Request) {
   }
 
   // Save the message
-  await db.insert(passMessages).values({
-    passId: pass.id,
+  await db.insert(pass_messages).values({
+    pass_id: pass.id,
     message,
   });
 
   await db
     .update(passes)
-    .set({ updatedAt: new Date() })
+    .set({ updated_at: new Date() })
     .where(eq(passes.id, pass.id));
 
   // Load pass template
@@ -78,11 +78,11 @@ export async function POST(req: Request) {
 
   // Create updated pass
   const passInstance = template.createPass({
-    serialNumber: pass.serialNumber,
+    serialNumber: pass.serial_number,
     description: pass.name,
     organizationName: pass.name,
     webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
-    authenticationToken: pass.authenticationToken,
+    authenticationToken: pass.authentication_token,
   });
 
   console.log("💬 Updating message to:", message);
@@ -150,8 +150,8 @@ export async function POST(req: Request) {
 
   const registration = await db
     .select()
-    .from(passRegistrations)
-    .where(eq(passRegistrations.passId, pass.id))
+    .from(pass_registrations)
+    .where(eq(pass_registrations.pass_id, pass.id))
     .limit(1)
     .then((r) => r[0]);
 
@@ -164,7 +164,7 @@ export async function POST(req: Request) {
   // Push silent update
   await sendPassPushNotification(
     process.env.PASS_TYPE_IDENTIFIER!,
-    registration.pushToken,
+    registration.push_token,
   );
 
   return new Response(JSON.stringify({ fileUrl }), {

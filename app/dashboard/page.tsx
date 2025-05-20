@@ -26,11 +26,11 @@ export default async function Dashboard() {
           {response?.length > 0 ? (
             response
               ?.sort((a, b) => {
-                const dateA = a?.createdAt
-                  ? new Date(a.createdAt).getTime()
+                const dateA = a?.created_at
+                  ? new Date(a.created_at).getTime()
                   : -Infinity;
-                const dateB = b?.createdAt
-                  ? new Date(b.createdAt).getTime()
+                const dateB = b?.created_at
+                  ? new Date(b.created_at).getTime()
                   : -Infinity;
                 return dateB - dateA;
               })
@@ -44,7 +44,7 @@ export default async function Dashboard() {
                   <div className="flex items-center justify-start w-full gap-2 mt-4">
                     <Link
                       prefetch={true}
-                      href={pass?.fileUrl}
+                      href={pass?.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full"

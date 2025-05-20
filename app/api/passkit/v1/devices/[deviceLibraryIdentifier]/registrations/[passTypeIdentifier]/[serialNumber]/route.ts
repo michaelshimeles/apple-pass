@@ -1,7 +1,7 @@
 // app/api/passkit/v1/devices/[deviceLibraryIdentifier]/registrations/[passTypeIdentifier]/[serialNumber]/route.ts
 
 import { db } from "@/db/drizzle";
-import { passRegistrations, passes } from "@/db/schema";
+import { pass_registrations, passes } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -36,32 +36,35 @@ export async function POST(
   const pass = await db
     .select()
     .from(passes)
-    .where(eq(passes.serialNumber, serialNumber))
+    .where(eq(passes.serial_number, serialNumber))
     .then((rows) => rows[0]);
 
-  if (!pass || pass.authenticationToken !== authToken) {
+  if (!pass || pass.authentication_token !== authToken) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   const existing = await db
     .select()
-    .from(passRegistrations)
+    .from(pass_registrations)
     .where(
       and(
-        eq(passRegistrations.deviceLibraryIdentifier, deviceLibraryIdentifier),
-        eq(passRegistrations.serialNumber, serialNumber),
+        eq(
+          pass_registrations.device_library_identifier,
+          deviceLibraryIdentifier,
+        ),
+        eq(pass_registrations.serial_number, serialNumber),
       ),
     )
     .then((rows) => rows[0]);
 
   if (!existing) {
-    await db.insert(passRegistrations).values({
-      deviceLibraryIdentifier,
-      pushToken,
-      passTypeIdentifier,
-      serialNumber,
-      passId: pass.id,
-      authenticationToken: authToken,
+    await db.insert(pass_registrations).values({
+      device_library_identifier: deviceLibraryIdentifier,
+      push_token: pushToken,
+      pass_type_identifier: passTypeIdentifier,
+      serial_number: serialNumber,
+      pass_id: pass.id,
+      authentication_token: authToken,
     });
 
     return new Response(null, { status: 201 }); // Created

@@ -122,7 +122,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             onClick={onNext}
             className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm w-fit"
           >
-            Start Tutorial
+            Start Onboarding
             <ChevronRight className="h-4 w-4" />
           </Button>
         </motion.div>

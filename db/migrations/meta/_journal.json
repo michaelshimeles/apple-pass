@@ -127,6 +127,41 @@
       "when": 1747524617043,
       "tag": "0017_watery_doorman",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1747692766708,
+      "tag": "0018_odd_gamora",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1747766596815,
+      "tag": "0019_long_veda",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1747766678371,
+      "tag": "0020_skinny_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1747767138441,
+      "tag": "0021_daffy_tag",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1747767589658,
+      "tag": "0022_goofy_blade",
+      "breakpoints": true
     }
   ]
 }

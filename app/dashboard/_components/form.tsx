@@ -32,39 +32,39 @@ const formSchema = z.object({
     .string()
     .max(1150, "Description cannot exceed 150 cahracter")
     .optional(),
-  headerFieldLabel: z
+  header_field_label: z
     .string()
     .max(25, "Header label cannot exceed 25 characters")
     .optional(),
-  headerFieldValue: z
+  header_field_value: z
     .string()
     .max(30, "Header value cannot exceed 30 characters")
     .optional(),
-  textColor: z
+  text_color: z
     .string()
     .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color")
     .optional(),
-  backgroundColor: z
+  background_color: z
     .string()
     .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, "Invalid hex color")
     .optional(),
-  logoUrl: z.string().optional(),
-  stripImage: z.string().optional(),
-  secondaryLeftLabel: z
+  logo_url: z.string().optional(),
+  strip_image: z.string().optional(),
+  secondary_left_label: z
     .string()
     .max(25, "Primary label cannot exceed 25 characters"),
-  secondaryLeftValue: z
+  secondary_left_value: z
     .string()
     .max(25, "Primary value cannot exceed 30 characters"),
-  secondaryRightLabel: z
+  secondary_right_label: z
     .string()
     .max(25, "Secondary label cannot exceed 25 characters")
     .optional(),
-  secondaryRightValue: z
+  secondary_right_value: z
     .string()
     .max(30, "Secondary value cannot exceed 30 characters")
     .optional(),
-  barcodeFormat: z
+  barcode_format: z
     .enum([
       "PKBarcodeFormatQR",
       "PKBarcodeFormatPDF417",
@@ -72,19 +72,19 @@ const formSchema = z.object({
       "PKBarcodeFormatCode128",
     ])
     .optional(),
-  barcodeValue: z
+  barcode_value: z
     .string()
     .max(500, "Barcode message cannot exceed 500 characters")
     .optional(),
-  barcodeAltText: z
+  barcode_alt_text: z
     .string()
     .max(30, "Barcode alt text cannot exceed 30 characters")
     .optional(),
-  barcodeEncoding: z
+  barcode_encoding: z
     .string()
     .max(20, "Encoding cannot exceed 20 characters")
     .optional(),
-  websiteUrl: z.string(),
+  website_url: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -98,21 +98,21 @@ export function CreatePassForm() {
     defaultValues: {
       name: "Exodus Labs",
       description: "A pass for the employees of Exodus Labs",
-      logoUrl: "",
-      headerFieldLabel: "SPECIAL OFFERS",
-      headerFieldValue: "TAP ••• FOR OFFERS",
-      textColor: "#FFFFFF",
-      backgroundColor: "#000000",
-      stripImage: "",
-      secondaryLeftLabel: "Team",
-      secondaryLeftValue: "Engineer",
-      secondaryRightLabel: "Status",
-      secondaryRightValue: "Active",
-      barcodeFormat: "PKBarcodeFormatQR",
-      barcodeValue: "",
-      barcodeAltText: "",
-      barcodeEncoding: "iso-8859-1",
-      websiteUrl: "https://google.com",
+      logo_url: "",
+      header_field_label: "SPECIAL OFFERS",
+      header_field_value: "TAP ••• FOR OFFERS",
+      text_color: "#FFFFFF",
+      background_color: "#000000",
+      strip_image: "",
+      secondary_left_label: "Team",
+      secondary_left_value: "Engineer",
+      secondary_right_label: "Status",
+      secondary_right_value: "Active",
+      barcode_format: "PKBarcodeFormatQR",
+      barcode_value: "",
+      barcode_alt_text: "",
+      barcode_encoding: "iso-8859-1",
+      website_url: "https://google.com",
     },
   });
 
@@ -255,7 +255,7 @@ export function CreatePassForm() {
                   <>
                     <FormField
                       control={form.control}
-                      name="logoUrl"
+                      name="logo_url"
                       render={({ field: { onChange, ...field } }) => (
                         <FormItem className="mt-4">
                           <FormLabel>Logo</FormLabel>
@@ -419,16 +419,16 @@ export function CreatePassForm() {
                         </FormItem>
                       )}
                     />
-                    {form.formState.errors.logoUrl?.message && (
+                    {form.formState.errors.logo_url?.message && (
                       <p className="text-red-500 text-sm mt-2">
-                        {form.formState.errors.logoUrl?.message}
+                        {form.formState.errors.logo_url?.message}
                       </p>
                     )}
                   </>
                   <>
                     <FormField
                       control={form.control}
-                      name="stripImage"
+                      name="strip_image"
                       render={({ field: { onChange, ...field } }) => (
                         <FormItem className="mt-4">
                           <FormLabel>Thumbnail Image</FormLabel>
@@ -513,7 +513,7 @@ export function CreatePassForm() {
                                   console.error(err);
                                   toast.error(
                                     "Image processing/upload failed: " +
-                                      err.message,
+                                      (err as Error).message,
                                   );
                                 }
                               }}
@@ -528,9 +528,9 @@ export function CreatePassForm() {
                         </FormItem>
                       )}
                     />
-                    {form.formState.errors.stripImage?.message && (
+                    {form.formState.errors.strip_image?.message && (
                       <p className="text-red-500 text-sm mt-2">
-                        {form.formState.errors.stripImage?.message}
+                        {form.formState.errors.strip_image?.message}
                       </p>
                     )}
                   </>
@@ -538,7 +538,7 @@ export function CreatePassForm() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="backgroundColor"
+                    name="background_color"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <FormLabel>Background Color</FormLabel>
@@ -556,14 +556,14 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.backgroundColor?.message && (
+                  {form.formState.errors.background_color?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.backgroundColor?.message}
+                      {form.formState.errors.background_color?.message}
                     </p>
                   )}
                   <FormField
                     control={form.control}
-                    name="textColor"
+                    name="text_color"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <FormLabel>Text Color</FormLabel>
@@ -581,9 +581,9 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.textColor?.message && (
+                  {form.formState.errors.text_color?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.textColor?.message}
+                      {form.formState.errors.text_color?.message}
                     </p>
                   )}
                 </div>
@@ -595,7 +595,7 @@ export function CreatePassForm() {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="headerFieldLabel"
+                    name="header_field_label"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -619,14 +619,14 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.headerFieldLabel?.message && (
+                  {form.formState.errors.header_field_label?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.headerFieldLabel?.message}
+                      {form.formState.errors.header_field_label?.message}
                     </p>
                   )}
                   <FormField
                     control={form.control}
-                    name="headerFieldValue"
+                    name="header_field_value"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -650,16 +650,16 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.headerFieldValue?.message && (
+                  {form.formState.errors.header_field_value?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.headerFieldValue?.message}
+                      {form.formState.errors.header_field_value?.message}
                     </p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="secondaryLeftLabel"
+                    name="secondary_left_label"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -683,14 +683,14 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.secondaryLeftLabel?.message && (
+                  {form.formState.errors.secondary_left_label?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.secondaryLeftLabel?.message}
+                      {form.formState.errors.secondary_left_label?.message}
                     </p>
                   )}
                   <FormField
                     control={form.control}
-                    name="secondaryLeftValue"
+                    name="secondary_left_value"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -714,16 +714,16 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.secondaryLeftValue?.message && (
+                  {form.formState.errors.secondary_left_value?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.secondaryLeftValue?.message}
+                      {form.formState.errors.secondary_left_value?.message}
                     </p>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="secondaryRightLabel"
+                    name="secondary_right_label"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -747,14 +747,14 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.secondaryRightLabel?.message && (
+                  {form.formState.errors.secondary_right_label?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.secondaryFieldLabel?.message}
+                      {form.formState.errors.secondary_right_label?.message}
                     </p>
                   )}
                   <FormField
                     control={form.control}
-                    name="secondaryRightValue"
+                    name="secondary_right_value"
                     render={({ field }) => (
                       <FormItem className="mt-4">
                         <div className="flex justify-between">
@@ -778,16 +778,16 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.secondaryRightValue?.message && (
+                  {form.formState.errors.secondary_right_value?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.secondaryRightValue?.message}
+                      {form.formState.errors.secondary_right_value?.message}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2 pt-4 border-t mt-4">
                   <FormField
                     control={form.control}
-                    name="websiteUrl"
+                    name="website_url"
                     render={({ field }) => (
                       <FormItem className="mt-2">
                         <div className="flex justify-between">
@@ -807,9 +807,9 @@ export function CreatePassForm() {
                       </FormItem>
                     )}
                   />
-                  {form.formState.errors.barcodeEncoding?.message && (
+                  {form.formState.errors.barcode_encoding?.message && (
                     <p className="text-red-500 text-sm mt-2">
-                      {form.formState.errors.barcodeEncoding?.message}
+                      {form.formState.errors.barcode_encoding?.message}
                     </p>
                   )}
                 </div>
@@ -831,7 +831,7 @@ export function CreatePassForm() {
             {step < 2 && (
               <Button
                 type="button"
-                disabled={!watched?.logoUrl || !watched?.stripImage}
+                disabled={!watched?.logo_url || !watched?.strip_image}
                 onClick={nextStep}
                 className="w-24"
               >

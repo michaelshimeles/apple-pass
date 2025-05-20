@@ -74,7 +74,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           </SheetContent>
         </Dialog>
         <div className="flex justify-center items-center gap-2 ml-auto">
-          <Link href="/onboarding">
+          <Link href="/tutorial">
             <Button size="icon" variant="outline">
               <BookOpen />
             </Button>

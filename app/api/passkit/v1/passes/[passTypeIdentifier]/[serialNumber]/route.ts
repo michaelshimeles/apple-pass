@@ -1,5 +1,5 @@
 import { db } from "@/db/drizzle";
-import { passMessages, passes } from "@/db/schema";
+import { pass_messages, passes } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Template } from "@walletpass/pass-js";
 import { NextRequest, NextResponse } from "next/server";
@@ -54,7 +54,7 @@ export async function GET(
     pass = await db
       .select()
       .from(passes)
-      .where(eq(passes.serialNumber, serialNumber))
+      .where(eq(passes.serial_number, serialNumber))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -68,8 +68,8 @@ export async function GET(
     console.log("📦 Found pass in DB:", {
       id: pass.id,
       name: pass.name,
-      updatedAt: pass.updatedAt,
-      serialNumber: pass.serialNumber,
+      updatedAt: pass.updated_at,
+      serialNumber: pass.serial_number,
     });
   } catch (dbError) {
     console.error("❌ Database error fetching pass:", dbError);
@@ -85,10 +85,10 @@ export async function GET(
   let latestMessage;
   try {
     const messageRecord = await db
-      .select({ message: passMessages.message })
-      .from(passMessages)
-      .where(eq(passMessages.passId, pass.id))
-      .orderBy(desc(passMessages.createdAt))
+      .select({ message: pass_messages.message })
+      .from(pass_messages)
+      .where(eq(pass_messages.pass_id, pass.id))
+      .orderBy(desc(pass_messages.created_at))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -130,14 +130,14 @@ export async function GET(
   }
 
   try {
-    const logoImageBuffer = await fetchImageBuffer(pass.logoUrl, "logo image");
+    const logoImageBuffer = await fetchImageBuffer(pass.logo_url, "logo image");
     if (logoImageBuffer) {
       await template.images.add("logo", Buffer.from(logoImageBuffer), "1x");
       await template.images.add("icon", Buffer.from(logoImageBuffer), "1x");
     }
 
     const stripImageBuffer = await fetchImageBuffer(
-      pass.stripImage,
+      pass.strip_image,
       "strip image",
     );
     if (stripImageBuffer) {
@@ -194,20 +194,20 @@ export async function GET(
   }
 
   const instance = template.createPass({
-    serialNumber: pass.serialNumber,
+    serialNumber: pass.serial_number,
     description: pass.name,
     webServiceURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/passkit`,
-    authenticationToken: pass.authenticationToken,
+    authenticationToken: pass.authentication_token,
     passTypeIdentifier,
   });
 
-  if (pass.backgroundColor) {
-    instance.backgroundColor = pass.backgroundColor;
+  if (pass.background_color) {
+    instance.backgroundColor = pass.background_color;
   }
 
-  if (pass.textColor) {
-    instance.foregroundColor = pass.textColor;
-    instance.labelColor = pass.textColor;
+  if (pass.text_color) {
+    instance.foregroundColor = pass.text_color;
+    instance.labelColor = pass.text_color;
   }
 
   type PKBarcodeFormat =
@@ -224,21 +224,21 @@ export async function GET(
 
   // Primary & Secondary Field
   if (
-    pass?.secondaryLeftLabel &&
-    pass?.secondaryLeftValue &&
-    pass.secondaryRightLabel &&
-    pass.secondaryRightValue
+    pass?.secondary_left_label &&
+    pass?.secondary_left_value &&
+    pass.secondary_right_label &&
+    pass.secondary_right_value
   ) {
     instance.secondaryFields.add({
-      key: pass?.secondaryLeftLabel,
-      label: pass?.secondaryLeftLabel,
-      value: pass?.secondaryLeftValue,
+      key: pass?.secondary_left_label,
+      label: pass?.secondary_left_label,
+      value: pass?.secondary_right_value,
     });
 
     instance.secondaryFields.add({
-      key: pass.secondaryRightLabel,
-      label: pass.secondaryRightLabel,
-      value: pass.secondaryRightValue,
+      key: pass.secondary_right_label,
+      label: pass.secondary_right_label,
+      value: pass.secondary_right_value,
     });
   }
 
@@ -247,7 +247,7 @@ export async function GET(
   instance.backFields.add({
     key: "website_link",
     label: "Website",
-    value: pass.websiteUrl!,
+    value: pass.website_url!,
   });
 
   instance.backFields.add({
@@ -264,38 +264,38 @@ export async function GET(
   });
 
   // Header
-  if (pass.headerFieldLabel && pass.headerFieldValue) {
+  if (pass.header_field_label && pass.header_field_value) {
     instance.headerFields.add({
-      key: pass.headerFieldLabel,
-      label: pass.headerFieldLabel,
-      value: pass.headerFieldValue,
+      key: pass.header_field_label,
+      label: pass.header_field_label,
+      value: pass.header_field_value,
     });
   }
 
   // Barcode
-  if (pass.barcodeFormat && pass.barcodeValue) {
-    if (validBarcodeFormats.includes(pass.barcodeFormat as PKBarcodeFormat)) {
+  if (pass.barcode_format && pass.barcode_value) {
+    if (validBarcodeFormats.includes(pass.barcode_format as PKBarcodeFormat)) {
       instance.barcodes = [
         {
-          format: pass.barcodeFormat as PKBarcodeFormat,
-          message: pass.barcodeValue,
+          format: pass.barcode_format as PKBarcodeFormat,
+          message: pass.barcode_value,
           messageEncoding: "iso-8859-1",
         },
       ];
     } else {
       console.warn(
-        `⚠️ Invalid or unsupported barcode format: ${pass.barcodeFormat}. Barcode will not be added.`,
+        `⚠️ Invalid or unsupported barcode format: ${pass.barcode_format}. Barcode will not be added.`,
       );
     }
   }
 
-  instance.relevantDate = pass.updatedAt
-    ? new Date(pass.updatedAt).toISOString()
+  instance.relevantDate = pass.updated_at
+    ? new Date(pass.updated_at).toISOString()
     : new Date().toISOString();
   console.log("🕒 Set relevantDate to:", instance.relevantDate);
 
   console.log(
-    `🔁 Returning updated pass (Serial: ${pass.serialNumber}, Message: "${latestMessage}", RelevantDate: ${instance.relevantDate})`,
+    `🔁 Returning updated pass (Serial: ${pass.serial_number}, Message: "${latestMessage}", RelevantDate: ${instance.relevantDate})`,
   );
   try {
     const buffer = await instance.asBuffer();
@@ -308,8 +308,8 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": "application/vnd.apple.pkpass",
-        "Last-Modified": new Date(pass.updatedAt || Date.now()).toUTCString(),
-        "Content-Disposition": `attachment; filename="${pass.serialNumber}.pkpass"`,
+        "Last-Modified": new Date(pass.updated_at || Date.now()).toUTCString(),
+        "Content-Disposition": `attachment; filename="${pass.serial_number}.pkpass"`,
       },
     });
   } catch (bufferError) {

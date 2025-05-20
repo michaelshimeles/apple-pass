@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { ApplePass } from "@/lib/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function NotificationsForm({ passes }: any) {
@@ -27,8 +28,9 @@ export default function NotificationsForm({ passes }: any) {
       toast.error("Please fill out both fields.");
       return;
     }
+    const selectedPass: ApplePass = passes?.[0];
 
-    console.log("passes", passes);
+    console.log("selectedPass", selectedPass);
 
     const res = await fetch("/api/send-message", {
       method: "POST",
@@ -36,20 +38,20 @@ export default function NotificationsForm({ passes }: any) {
       body: JSON.stringify({
         passId: Number(passId),
         message,
-        textColor: passes?.[0]?.textColor,
-        backgroundColor: passes?.[0]?.backgroundColor,
-        secondaryLeftLabel: passes?.[0]?.secondaryLeftLabel,
-        secondaryLeftValue: passes?.[0]?.secondaryLeftValue,
-        secondaryRightLabel: passes?.[0]?.secondaryRightLabel,
-        secondaryRightValue: passes?.[0]?.secondaryRightValue,
-        websiteUrl: passes?.[0]?.websiteUrl,
-        description: passes?.[0]?.description,
-        headerFieldLabel: passes?.[0]?.headerFieldLabel,
-        headerFieldValue: passes?.[0]?.headerFieldValue,
-        barcodeValue: passes?.[0]?.barcodeValue,
-        barcodeFormat: passes?.[0]?.barcodeFormat,
-        logoUrl: passes?.[0]?.logoUrl,
-        stripImage: passes?.[0]?.stripImage,
+        textColor: selectedPass?.text_color,
+        backgroundColor: selectedPass?.background_color,
+        secondaryLeftLabel: selectedPass?.secondary_left_label,
+        secondaryLeftValue: selectedPass?.secondary_left_value,
+        secondaryRightLabel: selectedPass?.secondary_right_label,
+        secondaryRightValue: selectedPass?.secondary_right_value,
+        websiteUrl: selectedPass?.website_url,
+        description: selectedPass?.description,
+        headerFieldLabel: selectedPass?.header_field_label,
+        headerFieldValue: selectedPass?.header_field_value,
+        barcodeValue: selectedPass?.barcode_value,
+        barcodeFormat: selectedPass?.barcode_format,
+        logoUrl: selectedPass?.logo_url,
+        stripImage: selectedPass?.strip_image,
       }),
     });
 
@@ -72,7 +74,7 @@ export default function NotificationsForm({ passes }: any) {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {passes.map((p) => (
+            {passes.map((p: ApplePass) => (
               <SelectItem key={p.id} value={p.id.toString()}>
                 {p.name}
               </SelectItem>

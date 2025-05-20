@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 // import Chatbot from "./_components/chatbot";
 import DashboardTopNav from "./_components/navbar";
 import DashboardSideBar from "./_components/sidebar";
+import getOrgId from "@/db/functions/getOrgId";
 
 export default async function DashboardLayout({
   children,
@@ -14,6 +15,11 @@ export default async function DashboardLayout({
 
   const hasBasicPlan = has({ plan: "basic_plan" });
   const hasPremiumPlan = has({ plan: "premium_plan" });
+  const org = await getOrgId();
+
+  if (org?.result?.length === 0) {
+    redirect("/onboarding");
+  }
 
   if (!hasBasicPlan && !hasPremiumPlan) {
     redirect("/pricing");

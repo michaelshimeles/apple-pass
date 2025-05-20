@@ -1,0 +1,1 @@
+ALTER TABLE "passes" ALTER COLUMN "organization_id" SET DATA TYPE uuid;

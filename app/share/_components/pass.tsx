@@ -5,6 +5,7 @@ import QRCode from "@/app/dashboard/_components/qr-code";
 import { ApplePass } from "@/lib/types";
 
 export default function Pass({ pass }: { pass: ApplePass }) {
+  console.log("Pass", pass);
   return (
     <motion.div
       className={`flex items-center justify-center`}
@@ -17,19 +18,19 @@ export default function Pass({ pass }: { pass: ApplePass }) {
           "rounded-md shadow-xl overflow-hidden font-[-apple-system,BlinkMacSystemFont]"
         }
         style={{
-          backgroundColor: pass.backgroundColor!,
+          backgroundColor: pass.background_color!,
           width: 350,
           height: 450,
-          color: pass?.textColor,
+          color: pass?.text_color,
         }}
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="flex justify-between items-start font-semibold mb-4 pt-[6px] px-[10px]">
           <div className="flex items-center justify-start">
-            {pass.logoUrl && (
+            {pass.logo_url && (
               <img
-                src={pass.logoUrl}
+                src={pass.logo_url}
                 alt="logo"
                 width={32}
                 height={32}
@@ -39,18 +40,18 @@ export default function Pass({ pass }: { pass: ApplePass }) {
           </div>
           <div className="flex flex-col text-right">
             <div className="text-[10px] font-semibold tracking-tight">
-              {pass.headerFieldLabel || "Header Field Label"}
+              {pass.header_field_label || "Header Field Label"}
             </div>
             <div className="text-[12px] font-medium">
-              {pass.headerFieldValue || "Header Field Value"}
+              {pass.header_field_value || "Header Field Value"}
             </div>
           </div>
         </div>
         <div>
           <div className="w-full h-28 bg-zinc-900 mb-4 flex items-center justify-center overflow-hidden">
-            {pass.stripImage ? (
+            {pass.strip_image ? (
               <img
-                src={pass.stripImage}
+                src={pass.strip_image}
                 alt="thumbnail"
                 width={144}
                 height={144}
@@ -65,22 +66,22 @@ export default function Pass({ pass }: { pass: ApplePass }) {
         <div className="flex justify-between items-center text-sm font-semibold rounded-lg backdrop-blur-sm px-[10px]">
           <div>
             <div className="font-semibold text-xs tracking-tight">
-              {pass.secondaryLeftLabel || "Secondary Left Label"}
+              {pass.secondary_left_label || "Secondary Left Label"}
             </div>
             <div className="font-normal text-xl">
-              {pass.secondaryLeftValue || "Left Value"}
+              {pass.secondary_left_value || "Left Value"}
             </div>
           </div>
           <div>
             <div className="font-semibold text-xs tracking-tight">
-              {pass.secondaryRightLabel || "Secondary Right Label"}
+              {pass.secondary_right_label || "Secondary Right Label"}
             </div>
             <div className="font-normal text-xl">
-              {pass.secondaryRightValue || "Right Value"}
+              {pass.secondary_right_value || "Right Value"}
             </div>
           </div>
         </div>
-        {pass.barcodeFormat && (
+        {pass.barcode_format && (
           <motion.div
             className="flex items-center justify-center h-full"
             initial={{ opacity: 0, scale: 0.95 }}

@@ -3,9 +3,9 @@ import { db } from "../drizzle";
 import { eq, and } from "drizzle-orm";
 import {
   passes,
-  passInstalls,
-  passMessages,
-  passRegistrations,
+  pass_installs,
+  pass_messages,
+  pass_registrations,
 } from "../schema"; // import passInstalls
 import { auth } from "@clerk/nextjs/server";
 
@@ -15,24 +15,24 @@ export async function deletePass(id: string) {
   try {
     // First delete from pass_installs
     await db
-      .delete(passInstalls)
-      .where(eq(passInstalls.passId, parseInt(id)))
+      .delete(pass_installs)
+      .where(eq(pass_installs.pass_id, parseInt(id)))
       .returning();
 
     await db
-      .delete(passRegistrations)
-      .where(eq(passRegistrations.passId, parseInt(id)))
+      .delete(pass_registrations)
+      .where(eq(pass_registrations.pass_id, parseInt(id)))
       .returning();
 
     await db
-      .delete(passMessages)
-      .where(eq(passMessages.passId, parseInt(id)))
+      .delete(pass_messages)
+      .where(eq(pass_messages.pass_id, parseInt(id)))
       .returning();
 
     // Then delete from passes
     await db
       .delete(passes)
-      .where(and(eq(passes.id, parseInt(id)), eq(passes.userId, userId!)));
+      .where(and(eq(passes.id, parseInt(id)), eq(passes.user_id, userId!)));
 
     return true;
   } catch (error) {

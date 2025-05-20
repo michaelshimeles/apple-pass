@@ -1,59 +1,68 @@
 import { z } from "zod";
 
+// Full Pass schema based on the `passes` table
 export const PassSchema = z.object({
-  id: z.number().optional(), // Optional for creation, auto-generated
+  // Auto-generated
+  id: z.number().int().positive(),
 
-  name: z.string().nonempty("Name is required"),
-  description: z.string().nonempty("Description is required"),
-  passShareId: z.string().nonempty("Pass share ID is required"),
+  // Core fields
+  pass_share_id: z.string().min(1, "Pass share ID is required"),
+  organization_id: z.number().int().positive("Organization ID must be a positive integer"),
+  name: z.string().min(1, "Name is required"),
+  description: z.string().min(1, "Description is required"),
 
-  fileUrl: z.string().url("Must be a valid URL"),
-  authenticationToken: z.string().nonempty("Authentication token is required"),
-  slug: z.string().nonempty("Slug is required"),
-  serialNumber: z.string().nonempty("Serial number is required"),
+  // URLs and tokens
+  file_url: z.string().url("Must be a valid URL"),
+  authentication_token: z.string().min(1, "Authentication token is required"),
+  slug: z.string().min(1, "Slug is required"),
+  serial_number: z.string().min(1, "Serial number is required"),
+  user_id: z.string().min(1, "User ID is required"),
 
-  userId: z.string().nonempty("User ID is required"),
+  // Optional visual fields
+  logo_text: z.string().optional(),
+  background_color: z.string().optional(),
+  text_color: z.string().optional(),
 
-  // Custom visual fields (optional)
-  logoText: z.string().optional(),
-  backgroundColor: z.string().optional(),
-  textColor: z.string().optional(),
-  // Images (optional)
-  logoUrl: z.string().url("Must be a valid URL").optional(),
-  stripImage: z.string().url("Must be a valid URL").optional(),
+  // Optional images
+  logo_url: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  strip_image: z.string().url("Must be a valid URL").optional().or(z.literal('')),
 
-  // Pass fields (optional)
-  secondaryLeftLabel: z.string().optional(),
-  secondaryLeftValue: z.string().optional(),
-  secondaryRightLabel: z.string().optional(),
-  secondaryRightValue: z.string().optional(),
-  // Barcode and links (optional)
-  barcodeValue: z.string().optional(),
-  barcodeFormat: z.string().optional(),
-  url: z.string().url("Must be a valid URL").optional(),
-  headerFieldLabel: z.string().optional(),
-  headerFieldValue: z.string().optional(),
+  // Optional pass-specific fields
+  secondary_left_label: z.string().optional(),
+  secondary_left_value: z.string().optional(),
+  secondary_right_label: z.string().optional(),
+  secondary_right_value: z.string().optional(),
+
+  barcode_value: z.string().optional(),
+  barcode_format: z.string().optional(),
+
+  website_url: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  header_field_label: z.string().optional(),
+  header_field_value: z.string().optional(),
 
   // Timestamps
-  createdAt: z.date().optional(), // Optional for creation, auto-generated
-  updatedAt: z.date().optional(), // Optional for creation, auto-generated
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
-// Type definition derived from the schema
+// TypeScript types
 export type ApplePass = z.infer<typeof PassSchema>;
 
-// Schema for creating a new pass (without id and timestamps)
+// Schema for creating a new pass (omit auto-generated fields)
 export const CreatePassSchema = PassSchema.omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
+  created_at: true,
+  updated_at: true,
 });
-
 export type CreatePass = z.infer<typeof CreatePassSchema>;
 
-// Schema for updating an existing pass
-export const UpdatePassSchema = PassSchema.partial().omit({
-  id: true,
-});
-
+// Schema for updating an existing pass (all fields optional, except id)
+export const UpdatePassSchema = PassSchema.omit({
+  created_at: true,
+  updated_at: true,
+})
+  .partial()
+  .refine((data) => data.id !== undefined, {
+    message: "ID is required for update",
+  });
 export type UpdatePass = z.infer<typeof UpdatePassSchema>;
