@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   }
 
   if (stripImageBuffer) {
-    await template.images.add("strip", Buffer.from(stripImageBuffer), "1x");
+    await template.images.add("strip", Buffer.from(stripImageBuffer), "2x");
   }
 
   const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();

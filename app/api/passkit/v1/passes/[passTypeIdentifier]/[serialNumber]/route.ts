@@ -141,7 +141,7 @@ export async function GET(
       "strip image",
     );
     if (stripImageBuffer) {
-      await template.images.add("strip", Buffer.from(stripImageBuffer), "1x");
+      await template.images.add("strip", Buffer.from(stripImageBuffer), "2x");
     }
     console.log("🖼️ Images processed and added to template (if available).");
   } catch (imageError) {

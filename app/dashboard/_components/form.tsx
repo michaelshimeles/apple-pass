@@ -465,20 +465,19 @@ export function CreatePassForm() {
                                   },
                                 );
 
-                                // Configure per-mode
-                                const config = isThumbnail
-                                  ? {
-                                      height: 90,
-                                      width: 90,
-                                      enforceSquare: true,
-                                      minRatio: 2 / 3,
-                                      maxRatio: 3 / 2,
-                                    }
-                                  : {
-                                      height: 144,
-                                      idealWidth: 750,
-                                      enforceSquare: false,
-                                    };
+                                // Always use strip image configuration for this upload
+                                // (this is the strip image upload section)
+                                const config = {
+                                  // Strip image config - exact dimensions required by Apple
+                                  height: 144, // Exact height required for 1x density
+                                  width: 360,  // Recommended width for strip images
+                                  enforceSquare: false,
+                                  quality: 1.0, // Maximum quality for best results
+                                  isStripImage: true, // Flag to indicate this is a strip image
+                                  scale: window.devicePixelRatio || 1, // Use device pixel ratio for better quality
+                                  minRatio: 0.5,  // Very wide images allowed
+                                  maxRatio: 3.0   // Very tall images allowed
+                                };
 
                                 try {
                                   toast.info(
@@ -879,6 +878,8 @@ async function processImage(
     enforceSquare: boolean;
     minRatio?: number;
     maxRatio?: number;
+    padding?: number;
+    quality?: number;
   },
 ): Promise<File> {
   const { height, idealWidth, enforceSquare, minRatio, maxRatio } = cfg;
@@ -889,51 +890,100 @@ async function processImage(
       idealWidth || Infinity,
     );
 
-  // Thumbnail ratio check
-  if (enforceSquare && minRatio != null && maxRatio != null) {
-    const ratio = img.width / img.height;
+  // Aspect ratio validation
+  const isThumbnail = !!cfg.width; // If width is specified, it's a thumbnail
+  const ratio = img.width / img.height;
+  
+  if (isThumbnail && enforceSquare && minRatio != null && maxRatio != null) {
+    // Only enforce aspect ratio for thumbnails
     if (ratio < minRatio || ratio > maxRatio) {
       throw new Error(
-        `Image aspect ratio ${ratio.toFixed(2)} is out of allowed range.`,
+        `Thumbnail image aspect ratio ${ratio.toFixed(2)} is out of allowed range (${minRatio.toFixed(2)}-${maxRatio.toFixed(2)}).`,
       );
     }
-    width = height; // force square
+    width = height; // force square for thumbnails
+  } else if (isThumbnail) {
+    // For thumbnails without strict ratio, ensure it's square
+    width = height;
   }
 
-  // Set up canvas
+  // Set up canvas with high quality settings
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d", { alpha: true })!;
+  const ctx = canvas.getContext("2d", { 
+    alpha: true,
+    willReadFrequently: true,
+    colorSpace: 'display-p3', // Better color support
+    desynchronized: true // Better performance for large images
+  })!;
+  
+  // High quality rendering settings
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
+  // Use a higher resolution for better quality
+  const scale = window.devicePixelRatio || 1;
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  ctx.scale(scale, scale);
 
-  // Progressive downsampling (similar to your original)
+  // High quality downsampling with better interpolation
   const downsample = (source: HTMLCanvasElement) => {
+    // Create a temporary canvas for the downsampling
     const tmp = document.createElement("canvas");
-    const tctx = tmp.getContext("2d", { alpha: true })!;
-    let cw = source.width,
-      ch = source.height;
+    const tctx = tmp.getContext("2d", { 
+      alpha: true,
+      willReadFrequently: true,
+      colorSpace: 'display-p3'
+    })!;
+    
+    // Start with original dimensions
+    let cw = source.width;
+    let ch = source.height;
+    
+    // Set initial size
     tmp.width = cw;
     tmp.height = ch;
+    
+    // Draw source to temp canvas
+    tctx.imageSmoothingEnabled = true;
+    tctx.imageSmoothingQuality = "high";
     tctx.drawImage(source, 0, 0);
-
-    // halve size until close to target
-    while (cw / 2 > width && ch / 2 > height) {
-      cw = Math.floor(cw / 2);
-      ch = Math.floor(ch / 2);
+    
+    // Calculate target size with scale
+    const targetWidth = width * (window.devicePixelRatio || 1);
+    const targetHeight = height * (window.devicePixelRatio || 1);
+    
+    // Use a more gradual downsampling approach
+    while (cw > targetWidth * 2 || ch > targetHeight * 2) {
+      // Calculate next size (no more than 2/3 reduction at a time)
+      cw = Math.max(targetWidth, Math.floor(cw * 0.66));
+      ch = Math.max(targetHeight, Math.floor(ch * 0.66));
+      
+      // Create a step canvas
       const step = document.createElement("canvas");
-      const sctx = step.getContext("2d", { alpha: true })!;
       step.width = cw;
       step.height = ch;
+      const sctx = step.getContext("2d", { 
+        alpha: true,
+        willReadFrequently: true,
+        colorSpace: 'display-p3'
+      })!;
+      
+      // High quality scaling
       sctx.imageSmoothingEnabled = true;
       sctx.imageSmoothingQuality = "high";
       sctx.drawImage(tmp, 0, 0, cw, ch);
+      
+      // Update temp canvas
       tmp.width = cw;
       tmp.height = ch;
       tctx.clearRect(0, 0, cw, ch);
-      tctx.drawImage(step, 0, 0);
+      tctx.drawImage(step, 0, 0, cw, ch);
     }
+    
     return tmp;
   };
 
@@ -955,11 +1005,40 @@ async function processImage(
     );
   }
 
-  // final draw to main canvas
-  ctx.drawImage(sourceCanvas, 0, 0, width, height);
+  // For strip images, ensure exact dimensions are met
+  if (!isThumbnail) {
+    // Clear the canvas with white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Calculate aspect ratio of source and target
+    const sourceAspect = sourceCanvas.width / sourceCanvas.height;
+    const targetAspect = width / height;
+    
+    let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+    
+    if (sourceAspect > targetAspect) {
+      // Source is wider than target, fit to height
+      drawHeight = height;
+      drawWidth = height * sourceAspect;
+      offsetX = (width - drawWidth) / 2; // Center horizontally
+    } else {
+      // Source is taller than target, fit to width
+      drawWidth = width;
+      drawHeight = width / sourceAspect;
+      offsetY = (height - drawHeight) / 2; // Center vertically
+    }
+    
+    // Draw the image centered and scaled to fit
+    ctx.drawImage(sourceCanvas, offsetX, offsetY, drawWidth, drawHeight);
+  } else {
+    // For thumbnails, use the original behavior
+    ctx.drawImage(sourceCanvas, 0, 0, width, height);
+  }
 
-  // to PNG blob
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, mime, 1));
+  // to PNG blob with configurable quality
+  const quality = cfg.quality ?? 1.0;
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, mime, quality));
   if (!blob) throw new Error("Canvas toBlob failed");
 
   return new File([blob], `${name}.png`, {
