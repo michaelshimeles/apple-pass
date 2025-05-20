@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+// import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 // import Chatbot from "./_components/chatbot";
@@ -11,19 +11,19 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  const { has } = await auth();
+  // const { has } = await auth();
 
-  const hasBasicPlan = has({ plan: "basic_plan" });
-  const hasPremiumPlan = has({ plan: "premium_plan" });
+  // const hasBasicPlan = has({ plan: "basic_plan" });
+  // const hasPremiumPlan = has({ plan: "premium_plan" });
   const org = await getOrgId();
 
   if (org?.result?.length === 0) {
     redirect("/onboarding");
   }
 
-  if (!hasBasicPlan && !hasPremiumPlan) {
-    redirect("/pricing");
-  }
+  // if (!hasBasicPlan && !hasPremiumPlan) {
+  //   redirect("/pricing");
+  // }
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
