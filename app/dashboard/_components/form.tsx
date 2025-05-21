@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ApplePass } from "@/lib/types";
 import { balloons, textBalloons } from "balloons-js";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -92,7 +92,34 @@ type FormValues = z.infer<typeof formSchema>;
 export function CreatePassForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [logoImage, setLogoImage] = useState(false);
+  const [stripImage, setStripImage] = useState(false);
   const [step, setStep] = useState<number>(1);
+
+  useEffect(() => {
+    if (logoImage) {
+      toast.loading('Processing image...', {
+        id: 'image-upload',
+        position: 'bottom-right',
+        duration: Infinity, // Don't auto-dismiss
+      });
+    } else {
+      toast.dismiss('image-upload');
+    }
+  }, [logoImage]);
+
+  useEffect(() => {
+    if (stripImage) {
+      toast.loading('Processing image...', {
+        id: 'image-upload',
+        position: 'bottom-right',
+        duration: Infinity, // Don't auto-dismiss
+      });
+    } else {
+      toast.dismiss('image-upload');
+    }
+  }, [stripImage]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -265,6 +292,7 @@ export function CreatePassForm() {
                               accept="image/*"
                               ref={field.ref}
                               onChange={async (e) => {
+                                setLogoImage(true)
                                 const file = e.target.files?.[0];
 
                                 if (!file) return;
@@ -387,12 +415,14 @@ export function CreatePassForm() {
                                     const errorText = await res.text();
                                     console.error("Upload failed:", errorText);
                                     toast.error("Upload failed: " + (errorText || 'Unknown error'));
+                                    setLogoImage(false)
                                     return;
                                   }
                                   
                                   const { url } = await res.json();
                                   toast.success("Upload successful");
                                   onChange(url);
+                                  setLogoImage(false)
                                 } catch (error) {
                                   console.error("Upload error:", error);
                                   toast.error(
@@ -401,6 +431,7 @@ export function CreatePassForm() {
                                         ? error.message
                                         : String(error)),
                                   );
+                                  setLogoImage(false)
                                 }
                               }}
                               className="w-full border rounded-md"
@@ -433,6 +464,7 @@ export function CreatePassForm() {
                               accept="image/*"
                               ref={field.ref}
                               onChange={async (e) => {
+                                setStripImage(true);
                                 const file = e.target.files?.[0];
                                 if (!file) return;
 
@@ -486,6 +518,7 @@ export function CreatePassForm() {
                                 try {
                                   // Validate file type
                                   if (!file.type.includes('image/')) {
+                                    setStripImage(false);
                                     toast.error('Please upload a valid image file');
                                     return;
                                   }
@@ -514,6 +547,7 @@ export function CreatePassForm() {
                                       canvas.height = img.height;
                                       const ctx = canvas.getContext('2d');
                                       if (!ctx) {
+                                        setStripImage(false);
                                         throw new Error('Could not create canvas context');
                                       }
                                       
@@ -542,11 +576,13 @@ export function CreatePassForm() {
                                         const { url } = await res.json();
                                         toast.success('Image uploaded successfully');
                                         onChange(url);
+                                        setStripImage(false);
                                       }, 'image/png');
                                       
                                     } catch (err) {
                                       console.error('Image processing error:', err);
                                       toast.error(`Upload failed: ${(err as Error).message}`);
+                                      setStripImage(false);
                                     }
                                   };
                                   
