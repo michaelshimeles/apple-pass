@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
 
+import Pass from "@/app/share/_components/pass";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,11 +18,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplePass } from "@/lib/types";
+import { balloons, textBalloons } from "balloons-js";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import Pass from "@/app/share/_components/pass";
-import { balloons, textBalloons } from "balloons-js";
 
 const formSchema = z.object({
   name: z
@@ -375,26 +375,21 @@ export function CreatePassForm() {
                                 }
 
                                 try {
-                                  // read raw bytes from the potentially processed file
-                                  const buf = await processedFile.arrayBuffer();
-                                  // send to your endpoint
+                                  const formData = new FormData();
+                                  formData.append('file', processedFile);
+                                  
                                   const res = await fetch("/api/upload-image", {
                                     method: "POST",
-                                    headers: {
-                                      "Content-Type":
-                                        "application/octet-stream", // Server expects raw bytes
-                                      "x-file-name": processedFile.name,
-                                    },
-                                    body: buf,
+                                    body: formData,
                                   });
+                                  
                                   if (!res.ok) {
-                                    console.error(
-                                      "Upload failed",
-                                      await res.text(),
-                                    );
-                                    toast.error("Upload failed");
+                                    const errorText = await res.text();
+                                    console.error("Upload failed:", errorText);
+                                    toast.error("Upload failed: " + (errorText || 'Unknown error'));
                                     return;
                                   }
+                                  
                                   const { url } = await res.json();
                                   toast.success("Upload successful");
                                   onChange(url);
@@ -441,87 +436,205 @@ export function CreatePassForm() {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
 
-                                const isThumbnail = true;
-                                const targetMimeType = "image/png";
-                                const originalName = file.name.replace(
-                                  /\.[^/.]+$/,
-                                  "",
-                                );
-
-                                // Load image
+                                // Load image and validate dimensions
                                 const img = await new Promise<HTMLImageElement>(
                                   (res, rej) => {
                                     const url = URL.createObjectURL(file);
                                     const img = new Image();
                                     img.onload = () => {
                                       URL.revokeObjectURL(url);
+                                      
+                                      // For strip images, we'll verify dimensions
+                                      if (file.name.includes('strip')) {
+                                        // Just verify, we'll handle the success message later
+                                      }
+                                      // Check thumbnail dimensions (90x90 minimum)
+                                      else if (file.name.includes('thumbnail') && (img.width < 90 || img.height < 90)) {
+                                        toast.error(
+                                          `Thumbnail image must be at least 90x90 pixels. Your image is ${img.width}x${img.height}px`,
+                                          {
+                                            duration: 5000,
+                                            position: 'top-center',
+                                            style: { maxWidth: '500px' },
+                                          },
+                                        );
+                                        rej(new Error('Thumbnail dimensions too small'));
+                                        return;
+                                      }
+                                      
                                       res(img);
                                     };
                                     img.onerror = () => {
                                       URL.revokeObjectURL(url);
-                                      rej(new Error("Failed to load"));
+                                      rej(new Error("Failed to load image"));
                                     };
                                     img.src = url;
                                   },
                                 );
+                                
+                                // If we get here, the image loaded successfully and meets size requirements
 
-                                // Always use strip image configuration for this upload
-                                // (this is the strip image upload section)
-                                const config = {
-                                  // Strip image config - exact dimensions required by Apple
-                                  height: 144, // Exact height required for 1x density
-                                  width: 360,  // Recommended width for strip images
-                                  enforceSquare: false,
-                                  quality: 1.0, // Maximum quality for best results
-                                  isStripImage: true, // Flag to indicate this is a strip image
-                                  scale: window.devicePixelRatio || 1, // Use device pixel ratio for better quality
-                                  minRatio: 0.5,  // Very wide images allowed
-                                  maxRatio: 3.0   // Very tall images allowed
-                                };
+                                // Configuration for strip image (375x144) or thumbnail (90x90)
+                                const isStripImage = file.name.includes('strip');
+                                const isAlreadyPerfectSize = isStripImage && 
+                                                         img.width === 375 && 
+                                                         img.height === 144;
 
+                                console.log('isStripImage', isStripImage)
+                                console.log('isAlreadyPerfectSize', isAlreadyPerfectSize)
+                                // If it's a strip image with perfect dimensions, skip processing
                                 try {
-                                  toast.info(
-                                    "Optimizing image for best quality…",
-                                  );
-                                  const processedFile = await processImage(
-                                    img,
-                                    file,
-                                    originalName,
-                                    targetMimeType,
-                                    config,
-                                  );
-                                  toast.success("Image processed successfully");
+                                  // Validate file type
+                                  if (!file.type.includes('image/')) {
+                                    toast.error('Please upload a valid image file');
+                                    return;
+                                  }
 
-                                  // Upload
-                                  const buf = await processedFile.arrayBuffer();
-                                  const res = await fetch("/api/upload-image", {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type":
-                                        "application/octet-stream",
-                                      "x-file-name": processedFile.name,
-                                    },
-                                    body: buf,
-                                  });
-                                  if (!res.ok)
-                                    throw new Error(await res.text());
-                                  const { url } = await res.json();
-                                  toast.success("Upload successful");
-                                  onChange(url);
+                                  // Create image element to check dimensions
+                                  const img = new Image();
+                                  const objectUrl = URL.createObjectURL(file);
+                                  
+                                  img.onload = async () => {
+                                    // Clean up object URL
+                                    URL.revokeObjectURL(objectUrl);
+
+                                    // Check dimensions (1x for retina)
+                                    const minWidth = 312;
+                                    const minHeight = 110;
+                                    
+                                    if (img.width < minWidth || img.height < minHeight) {
+                                      toast.error(`Image must be at least ${minWidth}x${minHeight}px`);
+                                      return;
+                                    }
+
+                                    try {
+                                      // Convert to canvas to ensure PNG format
+                                      const canvas = document.createElement('canvas');
+                                      canvas.width = img.width;
+                                      canvas.height = img.height;
+                                      const ctx = canvas.getContext('2d');
+                                      if (!ctx) {
+                                        throw new Error('Could not create canvas context');
+                                      }
+                                      
+                                      // Draw image to canvas
+                                      ctx.drawImage(img, 0, 0, img.width, img.height);
+                                      
+                                      // Convert to blob and upload
+                                      canvas.toBlob(async (blob) => {
+                                        if (!blob) {
+                                          throw new Error('Failed to process image');
+                                        }
+                                        
+                                        const formData = new FormData();
+                                        formData.append('file', blob, 'strip.png');
+                                        
+                                        const res = await fetch('/api/upload-image', {
+                                          method: 'POST',
+                                          body: formData,
+                                        });
+                                        
+                                        if (!res.ok) {
+                                          const error = await res.text();
+                                          throw new Error(error || 'Upload failed');
+                                        }
+                                        
+                                        const { url } = await res.json();
+                                        toast.success('Image uploaded successfully');
+                                        onChange(url);
+                                      }, 'image/png');
+                                      
+                                    } catch (err) {
+                                      console.error('Image processing error:', err);
+                                      toast.error(`Upload failed: ${(err as Error).message}`);
+                                    }
+                                  };
+                                  
+                                  img.onerror = () => {
+                                    URL.revokeObjectURL(objectUrl);
+                                    toast.error('Failed to load image');
+                                  };
+                                  
+                                  img.src = objectUrl;
+                                  
                                 } catch (err) {
-                                  console.error(err);
-                                  toast.error(
-                                    "Image processing/upload failed: " +
-                                      (err as Error).message,
-                                  );
+                                  console.error('Upload error:', err);
+                                  toast.error(`Upload failed: ${(err as Error).message}`);
                                 }
+
+                                // const config = isStripImage 
+                                //   ? {
+                                //       // Strip image configuration
+                                //       width: 375,  // Exact width for strip
+                                //       height: 144, // Exact height for strip
+                                //       enforceSquare: false,
+                                //       quality: 1.0,
+                                //       isStripImage: true,
+                                //       scale: 1,
+                                //       minRatio: 375/144,
+                                //       maxRatio: 375/144,
+                                //       cover: true
+                                //     }
+                                //   : {
+                                //       // Thumbnail configuration
+                                //       width: 90,
+                                //       height: 90,
+                                //       enforceSquare: true,
+                                //       quality: 1.0,
+                                //       isStripImage: false,
+                                //       scale: 1,
+                                //       // Allow any aspect ratio as long as both dimensions are at least 90px
+                                //       minRatio: 0.1,  // Very wide
+                                //       maxRatio: 10,   // Very tall
+                                //       cover: true,
+                                //       // Ensure minimum dimensions are met
+                                //       minWidth: 90,
+                                //       minHeight: 90
+                                //     };
+
+                                // try {
+                                //   toast.info(
+                                //     "Optimizing image for best quality…",
+                                //   );
+                                //   const processedFile = await processImage(
+                                //     img,
+                                //     file,
+                                //     originalName,
+                                //     targetMimeType,
+                                //     config,
+                                //   );
+                                //   toast.success("Image processed successfully");
+
+                                //   // Upload
+                                //   const buf = await processedFile.arrayBuffer();
+                                //   const res = await fetch("/api/upload-image", {
+                                //     method: "POST",
+                                //     headers: {
+                                //       "Content-Type":
+                                //         "application/octet-stream",
+                                //       "x-file-name": processedFile.name,
+                                //     },
+                                //     body: buf,
+                                //   });
+                                //   if (!res.ok)
+                                //     throw new Error(await res.text());
+                                //   const { url } = await res.json();
+                                //   toast.success("Upload successful");
+                                //   onChange(url);
+                                // } catch (err) {
+                                //   console.error(err);
+                                //   toast.error(
+                                //     "Image processing/upload failed: " +
+                                //       (err as Error).message,
+                                //   );
+                                // }
                               }}
                               className="w-full border rounded-md"
                             />
                           </FormControl>
                           <FormDescription>
                             Upload front strip image (Required: 144px height,
-                            recommended width 750px, PNG format)
+                            recommended width 375px, PNG format)
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -849,200 +962,4 @@ export function CreatePassForm() {
       <Pass pass={watched as ApplePass} />
     </div>
   );
-}
-
-/**
- * processImage
- * - img: loaded HTMLImageElement
- * - file: original File
- * - name: base filename without extension
- * - mime: target mime (always "image/png")
- * - cfg: {
- *    height: number,
- *    idealWidth?: number,
- *    width?: number,        // for thumbnails: fixed square
- *    enforceSquare: boolean,
- *    minRatio?: number,     // for thumbnails
- *    maxRatio?: number      // for thumbnails
- * }
- */
-async function processImage(
-  img: HTMLImageElement,
-  file: File,
-  name: string,
-  mime: string,
-  cfg: {
-    height: number;
-    idealWidth?: number;
-    width?: number;
-    enforceSquare: boolean;
-    minRatio?: number;
-    maxRatio?: number;
-    padding?: number;
-    quality?: number;
-  },
-): Promise<File> {
-  const { height, idealWidth, enforceSquare, minRatio, maxRatio } = cfg;
-  let width =
-    cfg.width ??
-    Math.min(
-      Math.round((img.width / img.height) * height),
-      idealWidth || Infinity,
-    );
-
-  // Aspect ratio validation
-  const isThumbnail = !!cfg.width; // If width is specified, it's a thumbnail
-  const ratio = img.width / img.height;
-  
-  if (isThumbnail && enforceSquare && minRatio != null && maxRatio != null) {
-    // Only enforce aspect ratio for thumbnails
-    if (ratio < minRatio || ratio > maxRatio) {
-      throw new Error(
-        `Thumbnail image aspect ratio ${ratio.toFixed(2)} is out of allowed range (${minRatio.toFixed(2)}-${maxRatio.toFixed(2)}).`,
-      );
-    }
-    width = height; // force square for thumbnails
-  } else if (isThumbnail) {
-    // For thumbnails without strict ratio, ensure it's square
-    width = height;
-  }
-
-  // Set up canvas with high quality settings
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d", { 
-    alpha: true,
-    willReadFrequently: true,
-    colorSpace: 'display-p3', // Better color support
-    desynchronized: true // Better performance for large images
-  })!;
-  
-  // High quality rendering settings
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  // Use a higher resolution for better quality
-  const scale = window.devicePixelRatio || 1;
-  canvas.width = width * scale;
-  canvas.height = height * scale;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-  ctx.scale(scale, scale);
-
-  // High quality downsampling with better interpolation
-  const downsample = (source: HTMLCanvasElement) => {
-    // Create a temporary canvas for the downsampling
-    const tmp = document.createElement("canvas");
-    const tctx = tmp.getContext("2d", { 
-      alpha: true,
-      willReadFrequently: true,
-      colorSpace: 'display-p3'
-    })!;
-    
-    // Start with original dimensions
-    let cw = source.width;
-    let ch = source.height;
-    
-    // Set initial size
-    tmp.width = cw;
-    tmp.height = ch;
-    
-    // Draw source to temp canvas
-    tctx.imageSmoothingEnabled = true;
-    tctx.imageSmoothingQuality = "high";
-    tctx.drawImage(source, 0, 0);
-    
-    // Calculate target size with scale
-    const targetWidth = width * (window.devicePixelRatio || 1);
-    const targetHeight = height * (window.devicePixelRatio || 1);
-    
-    // Use a more gradual downsampling approach
-    while (cw > targetWidth * 2 || ch > targetHeight * 2) {
-      // Calculate next size (no more than 2/3 reduction at a time)
-      cw = Math.max(targetWidth, Math.floor(cw * 0.66));
-      ch = Math.max(targetHeight, Math.floor(ch * 0.66));
-      
-      // Create a step canvas
-      const step = document.createElement("canvas");
-      step.width = cw;
-      step.height = ch;
-      const sctx = step.getContext("2d", { 
-        alpha: true,
-        willReadFrequently: true,
-        colorSpace: 'display-p3'
-      })!;
-      
-      // High quality scaling
-      sctx.imageSmoothingEnabled = true;
-      sctx.imageSmoothingQuality = "high";
-      sctx.drawImage(tmp, 0, 0, cw, ch);
-      
-      // Update temp canvas
-      tmp.width = cw;
-      tmp.height = ch;
-      tctx.clearRect(0, 0, cw, ch);
-      tctx.drawImage(step, 0, 0, cw, ch);
-    }
-    
-    return tmp;
-  };
-
-  let sourceCanvas: HTMLCanvasElement;
-  if (img.width > width * 2) {
-    // start from an offscreen canvas
-    const off = document.createElement("canvas");
-    off.width = img.width;
-    off.height = img.height;
-    off.getContext("2d")!.drawImage(img, 0, 0);
-    sourceCanvas = downsample(off);
-  } else {
-    sourceCanvas = downsample(
-      Object.assign(document.createElement("canvas"), {
-        width: img.width,
-        height: img.height,
-        getContext: () => img.getContext,
-      }),
-    );
-  }
-
-  // For strip images, ensure exact dimensions are met
-  if (!isThumbnail) {
-    // Clear the canvas with white background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-    
-    // Calculate aspect ratio of source and target
-    const sourceAspect = sourceCanvas.width / sourceCanvas.height;
-    const targetAspect = width / height;
-    
-    let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
-    
-    if (sourceAspect > targetAspect) {
-      // Source is wider than target, fit to height
-      drawHeight = height;
-      drawWidth = height * sourceAspect;
-      offsetX = (width - drawWidth) / 2; // Center horizontally
-    } else {
-      // Source is taller than target, fit to width
-      drawWidth = width;
-      drawHeight = width / sourceAspect;
-      offsetY = (height - drawHeight) / 2; // Center vertically
-    }
-    
-    // Draw the image centered and scaled to fit
-    ctx.drawImage(sourceCanvas, offsetX, offsetY, drawWidth, drawHeight);
-  } else {
-    // For thumbnails, use the original behavior
-    ctx.drawImage(sourceCanvas, 0, 0, width, height);
-  }
-
-  // to PNG blob with configurable quality
-  const quality = cfg.quality ?? 1.0;
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, mime, quality));
-  if (!blob) throw new Error("Canvas toBlob failed");
-
-  return new File([blob], `${name}.png`, {
-    type: mime,
-    lastModified: Date.now(),
-  });
 }

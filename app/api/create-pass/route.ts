@@ -95,8 +95,10 @@ export async function POST(req: NextRequest) {
     // Add images to template
     await template.images.add("logo", logoImageBuffer, "1x");
     await template.images.add("icon", logoImageBuffer, "1x");
-    await template.images.add("strip", stripImageBuffer, "2x");
-
+    
+    // Add strip image in both 1x and 2x densities
+    await template.images.add("strip", stripImageBuffer, "1x");
+    
     // Load cert and key from base64 env vars
     const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
     const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
