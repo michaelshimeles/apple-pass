@@ -1,6 +1,6 @@
 import getOrgId from "@/db/functions/getOrgId";
-import { OnboardingForm } from "./_components/form";
 import { redirect } from "next/navigation";
+import Form from "./_components/form";
 
 export default async function Onboarding() {
   const org = await getOrgId();
@@ -10,8 +10,8 @@ export default async function Onboarding() {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center w-full h-screen">
-      <OnboardingForm />
+    <div className="flex flex-col justify-center items-center w-full h-screen gap-2">
+      <Form />
     </div>
   );
 }

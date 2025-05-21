@@ -1,0 +1,1 @@
+DROP INDEX "uq_organizations_name";

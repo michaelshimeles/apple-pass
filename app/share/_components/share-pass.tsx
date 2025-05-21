@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,10 +8,18 @@ import { ApplePass } from "@/lib/types";
 export default function SharePass({
   children,
   pass,
+  passName,
 }: {
   children: ReactNode;
   pass: ApplePass;
+  passName?: string;
 }) {
+  const [passNameEdit, setPassNameEdit] = useState(passName);
+  
+  useEffect(() => {
+    setPassNameEdit(passName);
+  }, [passName]);
+
   return (
     <motion.div
       className="flex flex-col justify-center items-center w-full p-6 h-screen animate-fadeInPage"
@@ -25,7 +33,7 @@ export default function SharePass({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
       >
-        {pass.name}
+        {passNameEdit ? passNameEdit : pass.name}
       </motion.h1>
       <motion.div
         initial={{ opacity: 0, y: 20 }}

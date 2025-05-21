@@ -162,6 +162,34 @@
       "when": 1747767589658,
       "tag": "0022_goofy_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1747859032066,
+      "tag": "0023_mushy_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1747859823781,
+      "tag": "0024_unique_wither",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1747860204925,
+      "tag": "0025_stiff_tomorrow_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1747860378267,
+      "tag": "0026_glorious_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }

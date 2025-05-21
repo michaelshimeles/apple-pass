@@ -31,7 +31,7 @@ export const organizations = pgTable(
   },
   (table) => ({
     uniqueOrgId: uniqueIndex("uq_organizations_org_id").on(table.org_id),
-    uniqueName: uniqueIndex("uq_organizations_name").on(table.name),
+    uniqueUserId: uniqueIndex("uq_user_id").on(table.admin_user_id),
   }),
 );
 
@@ -164,4 +164,16 @@ export const user_analytics = pgTable("user_analytics", {
   created_at: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
+});
+
+export const onboarding_info = pgTable("onboarding_info", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  user_id: text("user_id").notNull(),
+  name: text("name").notNull(),
+  position: text("position").notNull(),
+  company_url: text("company_url").notNull(),
+  total_visitors: text("total_visitors").notNull(),
+  organization_id: integer("organization_id").references(
+    () => organizations.id,
+  ),
 });
