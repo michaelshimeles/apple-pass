@@ -225,9 +225,9 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err: unknown) {
-    console.error("Error creating pass:", err);
+    console.log(err);
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { message: (err as Error).message },
       { status: 500 },
     );
   }
