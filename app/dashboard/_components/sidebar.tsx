@@ -5,7 +5,7 @@ import {
   Brush,
   GitGraph,
   HomeIcon,
-  Image,
+  Settings,
   LucideIcon,
   MonitorSmartphone,
   Share,
@@ -87,18 +87,18 @@ export default function DashboardSideBar() {
               </div>
             ))}
           </div>
-          {/* <div
+          <div
             onClick={() => router.push("/dashboard/settings")}
             className={clsx(
               "flex items-center w-full gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:cursor-pointer",
               pathname === "/dashboard/settings"
-                  ? "bg-primary/10 text-primary hover:bg-primary/20"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              )}
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </div> */}
+                ? "bg-primary/10 text-primary hover:bg-primary/20"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </div>
         </nav>
       </div>
     </div>

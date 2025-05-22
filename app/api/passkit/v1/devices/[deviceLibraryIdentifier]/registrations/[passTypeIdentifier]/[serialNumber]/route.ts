@@ -94,6 +94,11 @@ export async function DELETE(
   });
 
   // Your DB cleanup logic here
+  await db.delete(pass_registrations).where(and(
+    eq(pass_registrations.device_library_identifier, deviceLibraryIdentifier),
+    eq(pass_registrations.pass_type_identifier, passTypeIdentifier),
+    eq(pass_registrations.serial_number, serialNumber),
+  ));
 
   return new Response(null, { status: 200 });
 }

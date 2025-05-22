@@ -4,8 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 
 export default async function SettingsPage() {
   const { userId } = await auth();
-  const {result} = await getOrgInfo(userId!);
-
+  const { result } = await getOrgInfo(userId!);
 
   console.log(result);
   return (
@@ -13,12 +12,9 @@ export default async function SettingsPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your account settings and preferences</p>
-      </div>
-      
-      {/* Organization Section */}
-      <div className="space-y-8">
-        {result && <OrganizationSection org={result} />}
+        <p className="text-muted-foreground mt-2">
+          Manage your account settings and preferences
+        </p>
       </div>
     </div>
   );

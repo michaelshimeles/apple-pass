@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/db/drizzle";
 import { listAllPasses } from "@/db/functions/listAllPasses";
+import { showMessages } from "@/db/functions/showMessages";
 import {
   pass_installs,
   pass_messages,
@@ -13,6 +14,7 @@ import PassSelector from "../notifications/pass-selector";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 // Icons removed with View All sections
+import { formatDistanceToNow } from "date-fns";
 
 export default async function Analytics({
   searchParams,
@@ -37,6 +39,8 @@ export default async function Analytics({
         ? await getPassMetrics(intialPassId)
         : null;
 
+  const messages = await showMessages(Number(params?.passId));
+
   return (
     <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
@@ -57,7 +61,7 @@ export default async function Analytics({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           <Card>
             <CardHeader>
-              <CardTitle>Total Install(s)</CardTitle>
+              <CardTitle>Total Active Install(s)</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xl font-medium">{metrics?.installs ?? 0}</p>
@@ -95,6 +99,31 @@ export default async function Analytics({
           </Link>
         </div>
       )}
+      {userPasses?.length && messages?.length > 0 && (
+  <Card>
+    <CardHeader>
+      <CardTitle>Recent Messages</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-4">
+        {messages.map((message) => (
+          <div key={message.id} className="p-4 border rounded-lg">
+            <div className="flex justify-between items-start">
+              <p className="font-medium">{message.message}</p>
+              <span className="text-sm text-muted-foreground">
+                {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Pass ID: {message.pass_id}
+            </p>
+          </div>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+)}
+
     </div>
   );
 }
