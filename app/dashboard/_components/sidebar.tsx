@@ -26,6 +26,11 @@ const navItems: NavItem[] = [
     icon: HomeIcon,
   },
   {
+    label: "Create Pass",
+    href: "/dashboard/create",
+    icon: Brush,
+  },
+  {
     label: "Notifications",
     href: "/dashboard/notifications",
     icon: MonitorSmartphone,
@@ -36,20 +41,15 @@ const navItems: NavItem[] = [
     icon: Share,
   },
   {
-    label: "Create Pass",
-    href: "/dashboard/create",
-    icon: Brush,
-  },
-  {
-    label: "Image Studio",
-    href: "/dashboard/image",
-    icon: Image,
-  },
-  {
     label: "Analytics",
     href: "/dashboard/analytics",
     icon: GitGraph,
   },
+  // {
+  //   label: "Image Studio",
+  //   href: "/dashboard/image",
+  //   icon: Image,
+  // },
 ];
 
 export default function DashboardSideBar() {
