@@ -19,7 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 export default async function Analytics({
   searchParams,
 }: {
-  searchParams: { passId?: string };
+  searchParams: Promise<{ passId?: string }>;
 }) {
   // Get the passId from the URL query parameters
   const params = await searchParams;
@@ -39,7 +39,9 @@ export default async function Analytics({
         ? await getPassMetrics(intialPassId)
         : null;
 
-  const messages = await showMessages(Number(params?.passId));
+  const messages = await showMessages(
+    params?.passId ? Number(params?.passId) : null,
+  );
 
   return (
     <div className="p-6 space-y-4">
@@ -99,31 +101,33 @@ export default async function Analytics({
           </Link>
         </div>
       )}
-      {userPasses?.length && messages?.length > 0 && (
-  <Card>
-    <CardHeader>
-      <CardTitle>Recent Messages</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-4">
-        {messages.map((message) => (
-          <div key={message.id} className="p-4 border rounded-lg">
-            <div className="flex justify-between items-start">
-              <p className="font-medium">{message.message}</p>
-              <span className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Pass ID: {message.pass_id}
-            </p>
-          </div>
+      {!messages ||
+        (userPasses?.length && messages?.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <div key={message.id} className="p-4 border rounded-lg">
+                    <div className="flex justify-between items-start">
+                      <p className="font-medium">{message.message}</p>
+                      <span className="text-sm text-muted-foreground">
+                        {formatDistanceToNow(new Date(message.created_at), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Pass ID: {message.pass_id}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         ))}
-      </div>
-    </CardContent>
-  </Card>
-)}
-
     </div>
   );
 }

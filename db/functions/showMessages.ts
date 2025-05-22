@@ -5,11 +5,11 @@ import { db } from "../drizzle";
 import { pass_messages } from "../schema";
 import { auth } from "@clerk/nextjs/server";
 
-export const showMessages = async (passId: number) => {
+export const showMessages = async (passId: number | null) => {
   await auth.protect();
 
   if (!passId) {
-    return null
+    return;
   }
 
   try {
