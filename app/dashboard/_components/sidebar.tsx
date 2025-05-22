@@ -5,6 +5,7 @@ import {
   Brush,
   GitGraph,
   HomeIcon,
+  Image,
   LucideIcon,
   MonitorSmartphone,
   Share,
@@ -30,7 +31,7 @@ const navItems: NavItem[] = [
     icon: MonitorSmartphone,
   },
   {
-    label: "Share",
+    label: "Share Pass",
     href: "/dashboard/share",
     icon: Share,
   },
@@ -38,6 +39,11 @@ const navItems: NavItem[] = [
     label: "Create Pass",
     href: "/dashboard/create",
     icon: Brush,
+  },
+  {
+    label: "Image Studio",
+    href: "/dashboard/image",
+    icon: Image,
   },
   {
     label: "Analytics",

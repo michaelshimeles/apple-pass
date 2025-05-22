@@ -15,15 +15,15 @@ export default async function DashboardLayout({
 
   // const hasBasicPlan = has({ plan: "basic_plan" });
   // const hasPremiumPlan = has({ plan: "premium_plan" });
+
+  // if (!hasBasicPlan && !hasPremiumPlan) {
+  //   redirect("/pricing");
+  // }
   const org = await getOrgId();
 
   if (org?.result?.length === 0) {
     redirect("/onboarding");
   }
-
-  // if (!hasBasicPlan && !hasPremiumPlan) {
-  //   redirect("/pricing");
-  // }
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
@@ -31,7 +31,6 @@ export default async function DashboardLayout({
       <main className="flex-1 overflow-y-auto">
         <DashboardTopNav>{children}</DashboardTopNav>
       </main>
-      {/* <Chatbot /> */}
     </div>
   );
 }
