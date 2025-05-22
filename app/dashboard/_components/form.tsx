@@ -98,25 +98,25 @@ export function CreatePassForm() {
 
   useEffect(() => {
     if (logoImage) {
-      toast.loading('Processing image...', {
-        id: 'image-upload',
-        position: 'bottom-right',
+      toast.loading("Processing image...", {
+        id: "image-upload",
+        position: "bottom-right",
         duration: Infinity, // Don't auto-dismiss
       });
     } else {
-      toast.dismiss('image-upload');
+      toast.dismiss("image-upload");
     }
   }, [logoImage]);
 
   useEffect(() => {
     if (stripImage) {
-      toast.loading('Processing image...', {
-        id: 'image-upload',
-        position: 'bottom-right',
+      toast.loading("Processing image...", {
+        id: "image-upload",
+        position: "bottom-right",
         duration: Infinity, // Don't auto-dismiss
       });
     } else {
-      toast.dismiss('image-upload');
+      toast.dismiss("image-upload");
     }
   }, [stripImage]);
 
@@ -292,7 +292,7 @@ export function CreatePassForm() {
                               accept="image/*"
                               ref={field.ref}
                               onChange={async (e) => {
-                                setLogoImage(true)
+                                setLogoImage(true);
                                 const file = e.target.files?.[0];
 
                                 if (!file) return;
@@ -404,25 +404,28 @@ export function CreatePassForm() {
 
                                 try {
                                   const formData = new FormData();
-                                  formData.append('file', processedFile);
-                                  
+                                  formData.append("file", processedFile);
+
                                   const res = await fetch("/api/upload-image", {
                                     method: "POST",
                                     body: formData,
                                   });
-                                  
+
                                   if (!res.ok) {
                                     const errorText = await res.text();
                                     console.error("Upload failed:", errorText);
-                                    toast.error("Upload failed: " + (errorText || 'Unknown error'));
-                                    setLogoImage(false)
+                                    toast.error(
+                                      "Upload failed: " +
+                                        (errorText || "Unknown error"),
+                                    );
+                                    setLogoImage(false);
                                     return;
                                   }
-                                  
+
                                   const { url } = await res.json();
                                   toast.success("Upload successful");
                                   onChange(url);
-                                  setLogoImage(false)
+                                  setLogoImage(false);
                                 } catch (error) {
                                   console.error("Upload error:", error);
                                   toast.error(
@@ -431,7 +434,7 @@ export function CreatePassForm() {
                                         ? error.message
                                         : String(error)),
                                   );
-                                  setLogoImage(false)
+                                  setLogoImage(false);
                                 }
                               }}
                               className="w-full border rounded-md"
@@ -475,25 +478,32 @@ export function CreatePassForm() {
                                     const img = new Image();
                                     img.onload = () => {
                                       URL.revokeObjectURL(url);
-                                      
+
                                       // For strip images, we'll verify dimensions
-                                      if (file.name.includes('strip')) {
+                                      if (file.name.includes("strip")) {
                                         // Just verify, we'll handle the success message later
                                       }
                                       // Check thumbnail dimensions (90x90 minimum)
-                                      else if (file.name.includes('thumbnail') && (img.width < 90 || img.height < 90)) {
+                                      else if (
+                                        file.name.includes("thumbnail") &&
+                                        (img.width < 90 || img.height < 90)
+                                      ) {
                                         toast.error(
                                           `Thumbnail image must be at least 90x90 pixels. Your image is ${img.width}x${img.height}px`,
                                           {
                                             duration: 5000,
-                                            position: 'top-center',
-                                            style: { maxWidth: '500px' },
+                                            position: "top-center",
+                                            style: { maxWidth: "500px" },
                                           },
                                         );
-                                        rej(new Error('Thumbnail dimensions too small'));
+                                        rej(
+                                          new Error(
+                                            "Thumbnail dimensions too small",
+                                          ),
+                                        );
                                         return;
                                       }
-                                      
+
                                       res(img);
                                     };
                                     img.onerror = () => {
@@ -503,30 +513,37 @@ export function CreatePassForm() {
                                     img.src = url;
                                   },
                                 );
-                                
+
                                 // If we get here, the image loaded successfully and meets size requirements
 
                                 // Configuration for strip image (375x144) or thumbnail (90x90)
-                                const isStripImage = file.name.includes('strip');
-                                const isAlreadyPerfectSize = isStripImage && 
-                                                         img.width === 375 && 
-                                                         img.height === 144;
+                                const isStripImage =
+                                  file.name.includes("strip");
+                                const isAlreadyPerfectSize =
+                                  isStripImage &&
+                                  img.width === 375 &&
+                                  img.height === 144;
 
-                                console.log('isStripImage', isStripImage)
-                                console.log('isAlreadyPerfectSize', isAlreadyPerfectSize)
+                                console.log("isStripImage", isStripImage);
+                                console.log(
+                                  "isAlreadyPerfectSize",
+                                  isAlreadyPerfectSize,
+                                );
                                 // If it's a strip image with perfect dimensions, skip processing
                                 try {
                                   // Validate file type
-                                  if (!file.type.includes('image/')) {
+                                  if (!file.type.includes("image/")) {
                                     setStripImage(false);
-                                    toast.error('Please upload a valid image file');
+                                    toast.error(
+                                      "Please upload a valid image file",
+                                    );
                                     return;
                                   }
 
                                   // Create image element to check dimensions
                                   const img = new Image();
                                   const objectUrl = URL.createObjectURL(file);
-                                  
+
                                   img.onload = async () => {
                                     // Clean up object URL
                                     URL.revokeObjectURL(objectUrl);
@@ -534,71 +551,103 @@ export function CreatePassForm() {
                                     // Check dimensions (1x for retina)
                                     const minWidth = 312;
                                     const minHeight = 110;
-                                    
-                                    if (img.width < minWidth || img.height < minHeight) {
-                                      toast.error(`Image must be at least ${minWidth}x${minHeight}px`);
+
+                                    if (
+                                      img.width < minWidth ||
+                                      img.height < minHeight
+                                    ) {
+                                      toast.error(
+                                        `Image must be at least ${minWidth}x${minHeight}px`,
+                                      );
                                       return;
                                     }
 
                                     try {
                                       // Convert to canvas to ensure PNG format
-                                      const canvas = document.createElement('canvas');
+                                      const canvas =
+                                        document.createElement("canvas");
                                       canvas.width = img.width;
                                       canvas.height = img.height;
-                                      const ctx = canvas.getContext('2d');
+                                      const ctx = canvas.getContext("2d");
                                       if (!ctx) {
                                         setStripImage(false);
-                                        throw new Error('Could not create canvas context');
+                                        throw new Error(
+                                          "Could not create canvas context",
+                                        );
                                       }
-                                      
+
                                       // Draw image to canvas
-                                      ctx.drawImage(img, 0, 0, img.width, img.height);
-                                      
+                                      ctx.drawImage(
+                                        img,
+                                        0,
+                                        0,
+                                        img.width,
+                                        img.height,
+                                      );
+
                                       // Convert to blob and upload
                                       canvas.toBlob(async (blob) => {
                                         if (!blob) {
-                                          throw new Error('Failed to process image');
+                                          throw new Error(
+                                            "Failed to process image",
+                                          );
                                         }
-                                        
+
                                         const formData = new FormData();
-                                        formData.append('file', blob, 'strip.png');
-                                        
-                                        const res = await fetch('/api/upload-image', {
-                                          method: 'POST',
-                                          body: formData,
-                                        });
-                                        
+                                        formData.append(
+                                          "file",
+                                          blob,
+                                          "strip.png",
+                                        );
+
+                                        const res = await fetch(
+                                          "/api/upload-image",
+                                          {
+                                            method: "POST",
+                                            body: formData,
+                                          },
+                                        );
+
                                         if (!res.ok) {
                                           const error = await res.text();
-                                          throw new Error(error || 'Upload failed');
+                                          throw new Error(
+                                            error || "Upload failed",
+                                          );
                                         }
-                                        
+
                                         const { url } = await res.json();
-                                        toast.success('Image uploaded successfully');
+                                        toast.success(
+                                          "Image uploaded successfully",
+                                        );
                                         onChange(url);
                                         setStripImage(false);
-                                      }, 'image/png');
-                                      
+                                      }, "image/png");
                                     } catch (err) {
-                                      console.error('Image processing error:', err);
-                                      toast.error(`Upload failed: ${(err as Error).message}`);
+                                      console.error(
+                                        "Image processing error:",
+                                        err,
+                                      );
+                                      toast.error(
+                                        `Upload failed: ${(err as Error).message}`,
+                                      );
                                       setStripImage(false);
                                     }
                                   };
-                                  
+
                                   img.onerror = () => {
                                     URL.revokeObjectURL(objectUrl);
-                                    toast.error('Failed to load image');
+                                    toast.error("Failed to load image");
                                   };
-                                  
+
                                   img.src = objectUrl;
-                                  
                                 } catch (err) {
-                                  console.error('Upload error:', err);
-                                  toast.error(`Upload failed: ${(err as Error).message}`);
+                                  console.error("Upload error:", err);
+                                  toast.error(
+                                    `Upload failed: ${(err as Error).message}`,
+                                  );
                                 }
 
-                                // const config = isStripImage 
+                                // const config = isStripImage
                                 //   ? {
                                 //       // Strip image configuration
                                 //       width: 375,  // Exact width for strip
@@ -740,7 +789,7 @@ export function CreatePassForm() {
 
             {step === 2 && (
               <>
-                <div className="grid grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="header_field_label"
@@ -803,7 +852,7 @@ export function CreatePassForm() {
                       {form.formState.errors.header_field_value?.message}
                     </p>
                   )}
-                </div>
+                </div> */}
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}

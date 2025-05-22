@@ -1,9 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ChevronRight, Bell, Smartphone, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { motion } from "framer-motion";
+import { Bell, ChevronRight, QrCode, Smartphone } from "lucide-react";
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -31,7 +30,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-8 items-center">
+    <div className="flex flex-col gap-8 justify-center items-center max-w-[500px]">
       <motion.div
         variants={container}
         initial="hidden"
@@ -128,7 +127,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
         </motion.div>
       </motion.div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -149,7 +148,7 @@ export default function WelcomeStep({ onNext }: WelcomeStepProps) {
             priority
           />
         </motion.div>
-      </motion.div>
+      </motion.div> */}
     </div>
   );
 }

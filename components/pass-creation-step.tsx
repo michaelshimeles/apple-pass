@@ -115,8 +115,8 @@ export default function PassCreationStep({
               transition={{ delay: 0.7, duration: 0.4 }}
             >
               <p className="text-sm">
-                Images must be in PNG format. Logos should be sized X:X, and
-                thumbnails Y:Y. Any other formats or aspect ratios will be
+                Images must be in PNG format. Logos should be sized 160x160, and
+                thumbnails 375x144. Any other formats or aspect ratios will be
                 rejected.
               </p>
             </motion.div>
