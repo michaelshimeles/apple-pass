@@ -1,4 +1,3 @@
-import { OrganizationSection } from "./organization-section";
 import { getOrgInfo } from "@/db/functions/getOrgInfo";
 import { auth } from "@clerk/nextjs/server";
 
