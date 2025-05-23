@@ -3,7 +3,7 @@ import { Step1 } from "./step1form";
 import { Step2 } from "./step2form";
 import { useState } from "react";
 
-export default function Form() {
+export default function Form({ userId }: { userId: string }) {
   const [step, setStep] = useState(0);
   const totalSteps = 3;
 
@@ -20,8 +20,8 @@ export default function Form() {
   };
 
   const steps = [
-    <Step1 key="intro" onNext={nextStep} />,
-    <Step2 key="complete" prevStep={prevStep} />,
+    <Step1 key="intro" onNext={nextStep} userId={userId} />,
+    <Step2 key="complete" prevStep={prevStep} userId={userId} />,
   ];
 
   return <>{steps[step]}</>;

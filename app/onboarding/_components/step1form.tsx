@@ -32,9 +32,6 @@ import { BarChart3, Briefcase, Building2, User } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { storeOnboardingInfo } from "./action";
-import { authClient } from "@/lib/auth/auth-client";
-import { redirect } from "next/navigation";
 // Define the form schema with Zod
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -50,17 +47,14 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface Step1Props {
   onNext: () => void;
+  userId: string;
 }
 
-export function Step1({ onNext }: Step1Props) {
-  const { data: info } = authClient.useSession();
-
-  if (!info) {
-    redirect("/sign-in");
-  }
-
+export function Step1({ onNext, userId }: Step1Props) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  console.log("userId", userId);
+  console.log("onNext", onNext);
   // Initialize React Hook Form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -76,16 +70,9 @@ export function Step1({ onNext }: Step1Props) {
     setIsSubmitting(true);
 
     try {
-      const result = await storeOnboardingInfo({
-        name: data?.name,
-        user_id: info?.session.userId,
-        position: data?.position,
-        company_url: data?.companyUrl,
-        total_visitors: data?.visitors,
-      });
-
+      console.log("data", data);
       toast.success("Information submitted successfully!");
-      console.log("result:", result);
+      // console.log("result:", result);
 
       // Reset form
       onNext();

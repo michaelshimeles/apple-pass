@@ -14,58 +14,12 @@ export enum OrganizationRole {
   MEMBER = "member",
 }
 
-// Organizations table
-export const organizations = pgTable(
-  "organizations",
-  {
-    id: serial("id").primaryKey(),
-    org_id: uuid("org_id").defaultRandom().notNull(),
-    name: text("name").notNull(),
-    admin_user_id: text("admin_user_id").notNull(),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updated_at: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => ({
-    uniqueOrgId: uniqueIndex("uq_organizations_org_id").on(table.org_id),
-    uniqueUserId: uniqueIndex("uq_user_id").on(table.admin_user_id),
-  }),
-);
-
-// Organization members (many-to-many)
-export const organization_members = pgTable(
-  "organization_members",
-  {
-    id: serial("id").primaryKey(),
-    organization_id: integer("organization_id")
-      .notNull()
-      .references(() => organizations.id),
-    user_id: text("user_id").notNull(),
-    role: text("role").default(OrganizationRole.MEMBER).notNull(),
-    created_at: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => ({
-    uniqueMember: uniqueIndex("uq_org_members_org_user").on(
-      table.organization_id,
-      table.user_id,
-    ),
-  }),
-);
-
 // Passes table
 export const passes = pgTable(
   "passes",
   {
     id: serial("id").primaryKey(),
     pass_share_id: text("pass_share_id").notNull(),
-    organization_id: integer("organization_id")
-      .notNull()
-      .references(() => organizations.id),
     name: text("name").notNull(),
     description: text("description").notNull(),
     file_url: text("file_url").notNull(),
@@ -99,10 +53,7 @@ export const passes = pgTable(
     uniqueSerial: uniqueIndex("uq_passes_serial_number").on(
       table.serial_number,
     ),
-    uniqueSlugPerOrg: uniqueIndex("uq_passes_org_slug").on(
-      table.organization_id,
-      table.slug,
-    ),
+    uniqueSlugPerOrg: uniqueIndex("uq_passes_org_slug").on(table.slug),
   }),
 );
 
@@ -147,25 +98,6 @@ export const pass_messages = pgTable("pass_messages", {
     .notNull(),
 });
 
-// User analytics
-export const user_analytics = pgTable("user_analytics", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  pass_id: integer("pass_id")
-    .notNull()
-    .references(() => passes.id),
-  os: text("os"),
-  browser: text("browser"),
-  device_type: text("device_type"),
-  country: text("country"),
-  region: text("region"),
-  city: text("city"),
-  screen_size: text("screen_size"),
-  timezone: text("timezone"),
-  created_at: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
 export const onboarding_info = pgTable("onboarding_info", {
   id: uuid("id").defaultRandom().primaryKey(),
   user_id: text("user_id").notNull(),
@@ -173,7 +105,4 @@ export const onboarding_info = pgTable("onboarding_info", {
   position: text("position").notNull(),
   company_url: text("company_url").notNull(),
   total_visitors: text("total_visitors").notNull(),
-  organization_id: integer("organization_id").references(
-    () => organizations.id,
-  ),
 });

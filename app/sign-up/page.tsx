@@ -157,17 +157,16 @@ export default function SignUp() {
                   image: image ? await convertImageToBase64(image) : "",
                   callbackURL: "/dashboard",
                   fetchOptions: {
-                    onResponse: () => {
-                      setLoading(false);
-                    },
                     onRequest: () => {
                       setLoading(true);
                     },
+                    onResponse: () => {},
                     onError: (ctx) => {
                       toast.error(ctx.error.message);
                     },
                     onSuccess: async () => {
-                      router.push("/dashboard");
+                      router.push("/onboarding");
+                      setLoading(false);
                     },
                   },
                 });

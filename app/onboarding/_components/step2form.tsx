@@ -18,14 +18,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { createOrg } from "./action";
 
 // only validate companyName here
 const formSchema = z.object({
@@ -40,10 +39,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function Step2({ prevStep }) {
-  const [invites, setInvites] = useState<string[]>([]);
+export function Step2({ prevStep, userId }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log("userId", userId);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { companyName: "", email: "" },
@@ -52,7 +51,7 @@ export function Step2({ prevStep }) {
   const {
     handleSubmit,
     control,
-    reset,
+    // reset,
     // setValue,
     // watch,
     // formState: { errors },
@@ -60,7 +59,7 @@ export function Step2({ prevStep }) {
 
   // const currentEmail = watch("email");
 
-  const router = useRouter();
+  // const router = useRouter();
 
   // const handleAddEmail = () => {
   //   if (!currentEmail) return;
@@ -81,25 +80,14 @@ export function Step2({ prevStep }) {
   //   setInvites((prev) => prev.filter((e) => e !== email));
 
   const onSubmit = async (data: FormValues) => {
-    // if (invites.length === 0) {
-    //   toast("Add at least one invite");
-    //   return;
-    // }
     setIsSubmitting(true);
     try {
-      const result = await createOrg({
+      await authClient.organization.create({
         name: data?.companyName,
-        invites: [],
+        slug: "my-org",
+        logo: "https://example.com/logo.png",
+        metadata: data,
       });
-
-      console.log("result", result);
-      if (result?.statusSuccess) {
-        toast.success("Organization created!");
-        console.log({ ...data, invites });
-        reset();
-        setInvites([]);
-        router.push("/dashboard");
-      }
     } catch (error) {
       toast.error("Oops, something went wrong");
       console.log("error", error);
