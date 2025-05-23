@@ -13,11 +13,7 @@ export default async function Dashboard() {
     headers: await headers(), // you need to pass the headers object.
   });
 
-  if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
-  }
-
-  const response = await listAllPasses(result?.session?.userId);
+  const response = await listAllPasses(result?.session?.userId || "");
 
   return (
     <section className="flex flex-col items-start justify-start p-6 w-full">

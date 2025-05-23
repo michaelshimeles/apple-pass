@@ -1,18 +1,20 @@
-import getOrgId from "@/db/functions/getOrgId";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
 import DashboardTopNav from "./_components/navbar";
 import DashboardSideBar from "./_components/sidebar";
-
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 export default async function DashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const org = await getOrgId();
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (org?.result?.length === 0) {
-    redirect("/onboarding");
+  if (!result?.session.userId) {
+    redirect("/sign-in");
   }
 
   return (

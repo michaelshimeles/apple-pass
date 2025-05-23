@@ -9,6 +9,7 @@ import {
 } from "../schema"; // import passInstalls
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function deletePass(id: string) {
   const result = await auth.api.getSession({
@@ -16,7 +17,7 @@ export async function deletePass(id: string) {
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
   try {
     // First delete from pass_installs

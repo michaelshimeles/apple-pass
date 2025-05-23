@@ -10,7 +10,11 @@ export default async function getOrgId() {
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    return {
+      statusSuccess: false,
+      result: [],
+      error: "User not authenticated",
+    };
   }
 
   try {
@@ -24,9 +28,10 @@ export default async function getOrgId() {
       result: response,
     };
   } catch (error) {
-    console.error("Error deleting pass:", error);
+    console.error("Error fetching organization:", error);
     return {
       statusSuccess: false,
+      result: [],
       error,
     };
   }

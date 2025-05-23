@@ -4,6 +4,7 @@ import { onboarding_info, organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 interface Org {
   name: string;
@@ -16,7 +17,7 @@ export async function createOrg({ name }: Org) {
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
 
   try {
@@ -66,7 +67,7 @@ export async function storeOnboardingInfo({
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
   try {
     const data = await db

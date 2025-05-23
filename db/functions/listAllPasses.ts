@@ -5,6 +5,7 @@ import { db } from "../drizzle";
 import { passes } from "../schema";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const listAllPasses = async (userId: string) => {
   const result = await auth.api.getSession({
@@ -12,7 +13,7 @@ export const listAllPasses = async (userId: string) => {
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
 
   if (!userId) {

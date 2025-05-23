@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getOrgInfo } from "@/db/functions/getOrgInfo";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function GET() {
   try {
@@ -9,10 +10,10 @@ export async function GET() {
       headers: await headers(), // you need to pass the headers object.
     });
 
-    if (!result?.session?.userId) {
-      throw new Error("Unauthorized");
+    if (!info?.session?.userId) {
+      redirect("/sign-in");
     }
-    const result = await getOrgInfo(info?.session.userId!);
+    const result = await getOrgInfo(info?.session.userId);
 
     if (!result.statusSuccess) {
       return NextResponse.json(

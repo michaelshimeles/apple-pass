@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function SharePreview({
   searchParams,
@@ -17,7 +18,7 @@ export default async function SharePreview({
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
   const userPasses = await listAllPasses(result.session.userId);
 

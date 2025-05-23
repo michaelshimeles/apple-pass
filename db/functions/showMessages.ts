@@ -5,6 +5,7 @@ import { db } from "../drizzle";
 import { pass_messages } from "../schema";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const showMessages = async (passId: number | null) => {
   const result = await auth.api.getSession({
@@ -12,7 +13,7 @@ export const showMessages = async (passId: number | null) => {
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
 
   if (!passId) {

@@ -146,7 +146,6 @@ export function CreatePassForm() {
   const watched = useWatch({ control: form.control });
 
   const onSubmit = async (data: FormValues) => {
-    console.log("data", data);
     try {
       setLoading(true);
       const response = await fetch("/api/create-pass", {

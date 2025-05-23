@@ -9,14 +9,15 @@ import { organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function POST(req: NextRequest) {
-  const result = await auth.api.getSession({
+  const info = await auth.api.getSession({
     headers: await headers(), // you need to pass the headers object.
   });
 
-  if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+  if (!info?.session?.userId) {
+    redirect("/sign-in");
   }
 
   const {
@@ -183,7 +184,7 @@ export async function POST(req: NextRequest) {
     const result = await db
       .select()
       .from(organizations)
-      .where(eq(organizations.admin_user_id, result.session.userId));
+      .where(eq(organizations.admin_user_id, info.session.userId));
 
     // after fetching:
     const [org] = result;
@@ -201,7 +202,7 @@ export async function POST(req: NextRequest) {
       slug,
       serial_number: serial,
       file_url: fileUrl,
-      user_id: result.session.userId,
+      user_id: info.session.userId,
       authentication_token: authenticationToken,
       text_color: text_color,
       background_color: background_color,

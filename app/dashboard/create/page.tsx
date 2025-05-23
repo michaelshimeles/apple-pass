@@ -1,6 +1,6 @@
 import { CreatePassForm } from "../_components/form";
 
-export default async function Dashboard() {
+export default async function Create() {
   return (
     <div className="flex flex-col justify-center items-start w-full p-6">
       <div className="flex items-center justify-start w-full">

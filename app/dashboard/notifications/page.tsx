@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function NotificationsPage() {
   const result = await auth.api.getSession({
@@ -13,7 +14,7 @@ export default async function NotificationsPage() {
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
   const allPasses = await db
     .select()

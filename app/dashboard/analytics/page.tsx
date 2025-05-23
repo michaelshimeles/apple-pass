@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Analytics({
   searchParams,
@@ -30,7 +31,7 @@ export default async function Analytics({
   });
 
   if (!result?.session?.userId) {
-    throw new Error("Unauthorized");
+    redirect("/sign-in");
   }
   const userPasses = await listAllPasses(result.session?.userId);
 

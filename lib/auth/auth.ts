@@ -3,6 +3,10 @@ import { betterAuth } from "better-auth";
 import { organization } from "better-auth/plugins";
 
 export const auth = betterAuth({
+  cookieCache: {
+    enabled: true,
+    maxAge: 5 * 60, // Cache duration in seconds
+  },
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
   }),
