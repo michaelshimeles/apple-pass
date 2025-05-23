@@ -8,13 +8,14 @@ import {
   pass_registrations,
   passes,
 } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
 import { count, eq } from "drizzle-orm";
 import PassSelector from "../notifications/pass-selector";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 // Icons removed with View All sections
 import { formatDistanceToNow } from "date-fns";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export default async function Analytics({
   searchParams,
@@ -24,10 +25,14 @@ export default async function Analytics({
   // Get the passId from the URL query parameters
   const params = await searchParams;
 
-  const { userId } = await auth();
-  if (!userId) return null;
+  const result = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
 
-  const userPasses = await listAllPasses(userId);
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
+  const userPasses = await listAllPasses(result.session?.userId);
 
   const intialPassId = userPasses?.[0]?.id;
 

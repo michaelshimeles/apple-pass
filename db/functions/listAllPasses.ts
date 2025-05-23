@@ -3,13 +3,20 @@
 import { eq } from "drizzle-orm";
 import { db } from "../drizzle";
 import { passes } from "../schema";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export const listAllPasses = async (userId: string) => {
-  await auth.protect();
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
 
   if (!userId) {
-    throw new Error("User ID is required");
+    return;
   }
 
   try {

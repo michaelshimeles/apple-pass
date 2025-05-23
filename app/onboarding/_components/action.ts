@@ -1,8 +1,9 @@
 "use server";
 import { db } from "@/db/drizzle";
 import { onboarding_info, organizations } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 interface Org {
   name: string;
@@ -10,10 +11,12 @@ interface Org {
 }
 
 export async function createOrg({ name }: Org) {
-  const userId = (await auth()).userId;
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!userId) {
-    throw Error("Not authenticated");
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
   }
 
   try {
@@ -21,14 +24,14 @@ export async function createOrg({ name }: Org) {
       .insert(organizations)
       .values({
         name,
-        admin_user_id: userId,
+        admin_user_id: result.session.userId,
       })
       .returning();
 
     await db
       .update(onboarding_info)
       .set({ organization_id: data?.[0]?.id })
-      .where(eq(onboarding_info?.user_id, userId));
+      .where(eq(onboarding_info?.user_id, result.session.userId));
     // Handle invites
 
     return {
@@ -58,18 +61,19 @@ export async function storeOnboardingInfo({
   position,
   total_visitors,
 }: Info) {
-  const userId = (await auth()).userId;
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!userId) {
-    throw Error("Not authenticated");
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
   }
-
   try {
     const data = await db
       .insert(onboarding_info)
       .values({
         name,
-        user_id,
+        user_id: user_id ?? result.session.userId,
         company_url,
         position,
         total_visitors,

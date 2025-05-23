@@ -1,20 +1,22 @@
 import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
 import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Template } from "@walletpass/pass-js";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { organizations } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export async function POST(req: NextRequest) {
-  await auth.protect();
-  const user = await currentUser();
+  const result = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
 
-  if (!user?.id) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
   }
 
   const {
@@ -95,10 +97,10 @@ export async function POST(req: NextRequest) {
     // Add images to template
     await template.images.add("logo", logoImageBuffer, "1x");
     await template.images.add("icon", logoImageBuffer, "1x");
-    
+
     // Add strip image in both 1x and 2x densities
     await template.images.add("strip", stripImageBuffer, "1x");
-    
+
     // Load cert and key from base64 env vars
     const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
     const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
@@ -181,7 +183,7 @@ export async function POST(req: NextRequest) {
     const result = await db
       .select()
       .from(organizations)
-      .where(eq(organizations.admin_user_id, user.id));
+      .where(eq(organizations.admin_user_id, result.session.userId));
 
     // after fetching:
     const [org] = result;
@@ -199,7 +201,7 @@ export async function POST(req: NextRequest) {
       slug,
       serial_number: serial,
       file_url: fileUrl,
-      user_id: user.id,
+      user_id: result.session.userId,
       authentication_token: authenticationToken,
       text_color: text_color,
       background_color: background_color,

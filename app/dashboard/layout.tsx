@@ -1,24 +1,14 @@
-// import { auth } from "@clerk/nextjs/server";
+import getOrgId from "@/db/functions/getOrgId";
 import { redirect } from "next/navigation";
 import { ReactNode } from "react";
-// import Chatbot from "./_components/chatbot";
 import DashboardTopNav from "./_components/navbar";
 import DashboardSideBar from "./_components/sidebar";
-import getOrgId from "@/db/functions/getOrgId";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  // const { has } = await auth();
-
-  // const hasBasicPlan = has({ plan: "basic_plan" });
-  // const hasPremiumPlan = has({ plan: "premium_plan" });
-
-  // if (!hasBasicPlan && !hasPremiumPlan) {
-  //   redirect("/pricing");
-  // }
   const org = await getOrgId();
 
   if (org?.result?.length === 0) {

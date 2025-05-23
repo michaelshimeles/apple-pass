@@ -3,10 +3,17 @@
 import { eq, desc } from "drizzle-orm";
 import { db } from "../drizzle";
 import { pass_messages } from "../schema";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export const showMessages = async (passId: number | null) => {
-  await auth.protect();
+  const result = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
+
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
 
   if (!passId) {
     return;

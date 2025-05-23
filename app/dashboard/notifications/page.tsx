@@ -2,16 +2,23 @@ import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
 import NotificationsForm from "./form";
 import { eq } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export default async function NotificationsPage() {
-  const { userId } = await auth();
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
   const allPasses = await db
     .select()
     .from(passes)
-    .where(eq(passes.user_id, userId!));
+    .where(eq(passes.user_id, result.session.userId!));
 
   return (
     <div className="p-6 w-full space-y-4">

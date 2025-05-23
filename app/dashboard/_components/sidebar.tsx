@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import UserProfile from "@/components/user-profile";
 
 interface NavItem {
   label: string;
@@ -69,8 +70,8 @@ export default function DashboardSideBar() {
           </Link>
         </div>
 
-        <nav className="flex flex-col h-full justify-between items-start w-full space-y-1 p-4">
-          <div className="w-full space-y-1">
+        <nav className="flex flex-col h-full justify-between items-start w-full space-y-1">
+          <div className="w-full space-y-1 p-4">
             {navItems.map((item) => (
               <div
                 key={item.href}
@@ -87,17 +88,22 @@ export default function DashboardSideBar() {
               </div>
             ))}
           </div>
-          <div
-            onClick={() => router.push("/dashboard/settings")}
-            className={clsx(
-              "flex items-center w-full gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:cursor-pointer",
-              pathname === "/dashboard/settings"
-                ? "bg-primary/10 text-primary hover:bg-primary/20"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Settings className="h-4 w-4" />
-            Settings
+          <div className="flex flex-col gap-2 w-full">
+            <div className="px-4">
+              <div
+                onClick={() => router.push("/dashboard/settings")}
+                className={clsx(
+                  "flex items-center w-full gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:cursor-pointer",
+                  pathname === "/dashboard/settings"
+                    ? "bg-primary/10 text-primary hover:bg-primary/20"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                )}
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </div>
+            </div>
+            <UserProfile />
           </div>
         </nav>
       </div>

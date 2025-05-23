@@ -1,7 +1,6 @@
+import Form from "./_components/form";
 import getOrgId from "@/db/functions/getOrgId";
 import { redirect } from "next/navigation";
-import Form from "./_components/form";
-
 export default async function Onboarding() {
   const org = await getOrgId();
 

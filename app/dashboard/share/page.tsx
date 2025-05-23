@@ -1,27 +1,32 @@
 import { ApplePass } from "@/lib/types";
 import { getPassById } from "@/db/functions/getPassById";
-import { auth } from "@clerk/nextjs/server";
 import { listAllPasses } from "@/db/functions/listAllPasses";
 import { SharePreviewClient } from "./client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export default async function SharePreview({
   searchParams,
 }: {
-  searchParams: { passId?: string };
+  searchParams: Promise<{ passId?: string }>;
 }) {
-  const { userId } = await auth();
-  if (!userId) return null;
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  const userPasses = await listAllPasses(userId);
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
+  const userPasses = await listAllPasses(result.session.userId);
 
   // Get the initial pass ID (either from params or use the first one)
   const initialPassShareId = userPasses?.[0]?.pass_share_id;
-  const selectedShareId = searchParams?.passId;
+  const selectedShareId = (await searchParams)?.passId;
 
   // Get the pass by share ID
-  const pass = await getPassById(selectedShareId || initialPassShareId);
+  const pass = await getPassById(selectedShareId! || initialPassShareId!);
 
   return userPasses?.length ? (
     <SharePreviewClient pass={pass as ApplePass} userPasses={userPasses} />

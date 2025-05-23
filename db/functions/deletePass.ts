@@ -7,11 +7,17 @@ import {
   pass_messages,
   pass_registrations,
 } from "../schema"; // import passInstalls
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export async function deletePass(id: string) {
-  const userId = (await auth()).userId;
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
   try {
     // First delete from pass_installs
     await db
@@ -32,7 +38,12 @@ export async function deletePass(id: string) {
     // Then delete from passes
     await db
       .delete(passes)
-      .where(and(eq(passes.id, parseInt(id)), eq(passes.user_id, userId!)));
+      .where(
+        and(
+          eq(passes.id, parseInt(id)),
+          eq(passes.user_id, result.session.userId),
+        ),
+      );
 
     return true;
   } catch (error) {

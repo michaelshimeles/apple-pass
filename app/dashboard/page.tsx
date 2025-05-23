@@ -1,15 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { listAllPasses } from "@/db/functions/listAllPasses";
 import { ApplePass } from "@/lib/types";
-import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import DeletePass from "./_components/delete-pass";
 import ShareModal from "./_components/share-modal";
 import Pass from "../share/_components/pass";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 export default async function Dashboard() {
-  const user = await currentUser();
-  const response = await listAllPasses(user?.id || "");
+  const result = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
+
+  if (!result?.session?.userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const response = await listAllPasses(result?.session?.userId);
 
   return (
     <section className="flex flex-col items-start justify-start p-6 w-full">
@@ -23,7 +31,7 @@ export default async function Dashboard() {
           </p>
         </div>
         <div className="flex gap-4 flex-wrap justify-start items-center mt-4">
-          {response?.length > 0 ? (
+          {response && response?.length > 0 ? (
             response
               ?.sort((a, b) => {
                 const dateA = a?.created_at
