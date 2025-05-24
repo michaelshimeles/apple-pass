@@ -1,12 +1,11 @@
-import { ApplePass } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import { getPassById } from "@/db/functions/getPassById";
 import { listAllPasses } from "@/db/functions/listAllPasses";
-import { SharePreviewClient } from "./client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth/auth";
+import { ApplePass } from "@/lib/types";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { SharePreviewClient } from "./client";
 
 export default async function SharePreview({
   searchParams,
@@ -17,9 +16,6 @@ export default async function SharePreview({
     headers: await headers(),
   });
 
-  if (!result?.session?.userId) {
-    redirect("/sign-in");
-  }
   const userPasses = await listAllPasses(result.session.userId);
 
   // Get the initial pass ID (either from params or use the first one)

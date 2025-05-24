@@ -1,25 +1,20 @@
+import { Button } from "@/components/ui/button";
 import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
-import NotificationsForm from "./form";
-import { eq } from "drizzle-orm";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { auth } from "@/lib/auth/auth";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import NotificationsForm from "./form";
 
 export default async function NotificationsPage() {
   const result = await auth.api.getSession({
     headers: await headers(),
   });
-
-  if (!result?.session?.userId) {
-    redirect("/sign-in");
-  }
   const allPasses = await db
     .select()
     .from(passes)
-    .where(eq(passes.user_id, result.session.userId!));
+    .where(eq(passes.user_id, result.session.userId));
 
   return (
     <div className="p-6 w-full space-y-4">

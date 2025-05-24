@@ -21,14 +21,19 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2 } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import slug from "slug";
 import { toast } from "sonner";
 import * as z from "zod";
+import { Mail, PlusCircle, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // only validate companyName here
 const formSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
+  companySlug: z.string(),
   email: z
     .string()
     .optional()
@@ -39,55 +44,62 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function Step2({ prevStep, userId }) {
+export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [invites, setInvites] = useState<string[]>([]);
 
-  console.log("userId", userId);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { companyName: "", email: "" },
+    defaultValues: { companyName: "", companySlug: "", email: "" },
   });
 
   const {
     handleSubmit,
     control,
-    // reset,
-    // setValue,
-    // watch,
-    // formState: { errors },
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
   } = form;
 
-  // const currentEmail = watch("email");
+  const companyName = watch("companyName");
+  const router = useRouter();
 
-  // const router = useRouter();
+  useEffect(() => {
+    const slugified = slug(companyName || "");
+    form.setValue("companySlug", slugified);
+  }, [companyName, form]);
 
-  // const handleAddEmail = () => {
-  //   if (!currentEmail) return;
-  //   // simple regex
-  //   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEmail)) {
-  //     toast("Invalid email");
-  //     return;
-  //   }
-  //   if (invites.includes(currentEmail)) {
-  //     toast.error("That email’s already invited");
-  //     return;
-  //   }
-  //   setInvites((prev) => [...prev, currentEmail]);
-  //   setValue("email", "");
-  // };
+  const currentEmail = watch("email");
+  const handleAddEmail = () => {
+    if (!currentEmail) return;
+    // simple regex
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEmail)) {
+      toast("Invalid email");
+      return;
+    }
+    if (invites.includes(currentEmail)) {
+      toast.error("That email’s already invited");
+      return;
+    }
+    setInvites((prev) => [...prev, currentEmail]);
+    setValue("email", "");
+  };
 
-  // const handleRemoveEmail = (email: string) =>
-  //   setInvites((prev) => prev.filter((e) => e !== email));
+  const handleRemoveEmail = (email: string) =>
+    setInvites((prev) => prev.filter((e) => e !== email));
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
       await authClient.organization.create({
         name: data?.companyName,
-        slug: "my-org",
-        logo: "https://example.com/logo.png",
+        slug: data?.companySlug,
         metadata: data,
       });
+
+      router.push("/dashboard");
+      reset();
     } catch (error) {
       toast.error("Oops, something went wrong");
       console.log("error", error);
@@ -130,9 +142,30 @@ export function Step2({ prevStep, userId }) {
                 </FormItem>
               )}
             />
-
+            <FormField
+              control={control}
+              name="companySlug"
+              render={({ field }) => (
+                <FormItem className="mt-4">
+                  <FormLabel>Company Slug</FormLabel>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground pointer-events-none">
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <FormControl>
+                      <Input
+                        placeholder="acme-inc"
+                        className="pl-10"
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {/* invite emails */}
-            {/* <FormField
+            <FormField
               control={control}
               name="email"
               render={({ field }) => (
@@ -192,10 +225,10 @@ export function Step2({ prevStep, userId }) {
                   )}
                 </FormItem>
               )}
-            /> */}
+            />
           </CardContent>
           <CardFooter className="mt-3 flex justify-between items-center">
-            <Button variant="outline" onClick={prevStep}>
+            <Button variant="outline" onClick={prevStepAction}>
               Back
             </Button>
             <Button type="submit" disabled={isSubmitting}>

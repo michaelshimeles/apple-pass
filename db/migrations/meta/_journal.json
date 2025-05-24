@@ -190,6 +190,13 @@
       "when": 1747860378267,
       "tag": "0026_glorious_lady_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1748032196408,
+      "tag": "0027_sparkling_human_cannonball",
+      "breakpoints": true
     }
   ]
 }

@@ -1,51 +1,9 @@
 "use server";
 import { db } from "@/db/drizzle";
-import { onboarding_info, organizations } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { onboarding_info } from "@/db/schema";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-interface Org {
-  name: string;
-  invites: string[] | null;
-}
-
-export async function createOrg({ name }: Org) {
-  const result = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!result?.session?.userId) {
-    redirect("/sign-in");
-  }
-
-  try {
-    const data = await db
-      .insert(organizations)
-      .values({
-        name,
-        admin_user_id: result.session.userId,
-      })
-      .returning();
-
-    await db
-      .update(onboarding_info)
-      .set({ organization_id: data?.[0]?.id })
-      .where(eq(onboarding_info?.user_id, result.session.userId));
-    // Handle invites
-
-    return {
-      statusSuccess: true,
-      createdOrg: data,
-    };
-  } catch (error) {
-    return {
-      statusSuccess: false,
-      error,
-    };
-  }
-}
 
 interface Info {
   name: string;

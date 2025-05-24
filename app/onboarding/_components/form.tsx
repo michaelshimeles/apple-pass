@@ -20,8 +20,8 @@ export default function Form({ userId }: { userId: string }) {
   };
 
   const steps = [
-    <Step1 key="intro" onNext={nextStep} userId={userId} />,
-    <Step2 key="complete" prevStep={prevStep} userId={userId} />,
+    <Step1 key="intro" onNextAction={nextStep} userId={userId} />,
+    <Step2 key="complete" prevStepAction={prevStep} />,
   ];
 
   return <>{steps[step]}</>;

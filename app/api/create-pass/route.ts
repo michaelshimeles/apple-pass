@@ -1,15 +1,13 @@
 import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
+import { auth } from "@/lib/auth/auth";
 import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
 import { Template } from "@walletpass/pass-js";
 import { nanoid } from "nanoid";
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import { organizations } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { NextRequest, NextResponse } from "next/server";
+import path from "path";
 
 export async function POST(req: NextRequest) {
   const info = await auth.api.getSession({
@@ -181,20 +179,6 @@ export async function POST(req: NextRequest) {
 
     const passShareId = nanoid(12).toLowerCase();
 
-    const result = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.admin_user_id, info.session.userId));
-
-    // after fetching:
-    const [org] = result;
-    if (!org) {
-      return NextResponse.json(
-        { message: "Organization not found" },
-        { status: 400 },
-      );
-    }
-
     // Save to DB
     await db.insert(passes).values({
       name,
@@ -218,7 +202,6 @@ export async function POST(req: NextRequest) {
       barcode_value: barcode_value,
       barcode_format: barcode_format,
       pass_share_id: passShareId,
-      organization_id: org.id,
     });
 
     return new NextResponse(JSON.stringify({ url: fileUrl }), {

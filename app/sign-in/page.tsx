@@ -15,7 +15,6 @@ import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -24,8 +23,6 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
-  const router = useRouter();
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-screen">
@@ -105,7 +102,7 @@ export default function SignIn() {
                       toast.error(ctx.error.message);
                     },
                     onSuccess: async () => {
-                      router.push("/dashboard");
+                      // router.push("/dashboard");
                       setLoading(false);
                     },
                   },
