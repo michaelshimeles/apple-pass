@@ -71,7 +71,8 @@ export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
   }, [companyName, form]);
 
   const currentEmail = watch("email");
-  const handleAddEmail = () => {
+
+  const handleAddEmail = async () => {
     if (!currentEmail) return;
     // simple regex
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEmail)) {
@@ -82,15 +83,20 @@ export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
       toast.error("That email’s already invited");
       return;
     }
+
     setInvites((prev) => [...prev, currentEmail]);
     setValue("email", "");
   };
+
+  console.log("invites", invites);
 
   const handleRemoveEmail = (email: string) =>
     setInvites((prev) => prev.filter((e) => e !== email));
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
+    let success = false;
+    
     try {
       await authClient.organization.create({
         name: data?.companyName,
@@ -98,13 +104,27 @@ export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
         metadata: data,
       });
 
-      router.push("/dashboard");
-      reset();
+      await Promise.all(
+        invites?.map(async (invite) => {
+          console.log("invite", invite);
+          return await authClient.organization.inviteMember({
+            email: invite,
+            role: "member", //this can also be an array for multiple roles (e.g. ["admin", "sale"])
+          });
+        }) || [],
+      );
+
+      success = true;
     } catch (error) {
       toast.error("Oops, something went wrong");
       console.log("error", error);
     } finally {
       setIsSubmitting(false);
+    }
+
+    if (success) {
+      reset();
+      router.push("/dashboard");
     }
   };
 

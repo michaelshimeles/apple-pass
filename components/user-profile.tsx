@@ -11,9 +11,24 @@ import {
 import { authClient } from "@/lib/auth/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarImage } from "./ui/avatar";
 export default function UserProfile({ mini }: { mini?: boolean }) {
+  const [userInfo, setUserInfo] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const result = await authClient.getSession();
+
+        setUserInfo(result.data?.user);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -29,17 +44,13 @@ export default function UserProfile({ mini }: { mini?: boolean }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div
-          className={`flex gap-2 justify-start items-center w-full rounded shadow ${mini ? "" : "px-4 pt-2 pb-3"}`}
+          className={`flex gap-2 justify-start items-center w-full rounded ${mini ? "" : "px-4 pt-2 pb-3"}`}
         >
           <Avatar>
-            <AvatarImage
-              src="https://pbs.twimg.com/profile_images/1924190237040762880/mNC9xVfq_400x400.jpg"
-              alt="User Avatar"
-            />
-            <AvatarFallback className="text-md">MS</AvatarFallback>
+            <AvatarImage src={userInfo?.image} alt="User Avatar" />
           </Avatar>
           {mini ? null : (
-            <p className="font-medium text-md">Michael Shimeles</p>
+            <p className="font-medium text-md">{userInfo?.name}</p>
           )}
         </div>
       </DropdownMenuTrigger>

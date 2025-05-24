@@ -16,7 +16,7 @@ export default async function SharePreview({
     headers: await headers(),
   });
 
-  const userPasses = await listAllPasses(result.session.userId);
+  const userPasses = await listAllPasses(result?.session.userId);
 
   // Get the initial pass ID (either from params or use the first one)
   const initialPassShareId = userPasses?.[0]?.pass_share_id;

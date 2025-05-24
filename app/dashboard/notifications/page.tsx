@@ -11,10 +11,13 @@ export default async function NotificationsPage() {
   const result = await auth.api.getSession({
     headers: await headers(),
   });
+
   const allPasses = await db
     .select()
     .from(passes)
-    .where(eq(passes.user_id, result.session.userId));
+    .where(
+      eq(passes.organization_id, String(result.session.activeOrganizationId)),
+    );
 
   return (
     <div className="p-6 w-full space-y-4">

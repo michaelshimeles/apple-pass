@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     barcode_value,
     barcode_format,
     website_url,
+    organization_id,
   } = await req.json();
 
   if (!name || !description) {
@@ -202,6 +203,7 @@ export async function POST(req: NextRequest) {
       barcode_value: barcode_value,
       barcode_format: barcode_format,
       pass_share_id: passShareId,
+      organization_id: organization_id,
     });
 
     return new NextResponse(JSON.stringify({ url: fileUrl }), {

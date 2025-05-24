@@ -85,11 +85,12 @@ const formSchema = z.object({
     .max(20, "Encoding cannot exceed 20 characters")
     .optional(),
   website_url: z.string(),
+  organization_id: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export function CreatePassForm() {
+export function CreatePassForm({ organizationId }: { organizationId: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [logoImage, setLogoImage] = useState(false);
@@ -140,6 +141,7 @@ export function CreatePassForm() {
       barcode_alt_text: "",
       barcode_encoding: "iso-8859-1",
       website_url: "https://google.com",
+      organization_id: organizationId,
     },
   });
 

@@ -13,16 +13,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
 
-export default function SignIn() {
+function SignInContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-screen">
@@ -60,24 +65,53 @@ export default function SignIn() {
                 </Link>
               </div>
 
-              <Input
-                id="password"
-                type="password"
-                placeholder="password"
-                autoComplete="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="password"
+                  autoComplete="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="remember"
-                onClick={() => {
-                  setRememberMe(!rememberMe);
-                }}
-              />
-              <Label htmlFor="remember">Remember me</Label>
+            <div className="flex justify-between items-center w-full">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="remember"
+                  onClick={() => {
+                    setRememberMe(!rememberMe);
+                  }}
+                />
+                <Label htmlFor="remember">Remember me</Label>
+              </div>
+              <div>
+                <Link
+                  href={
+                    returnTo
+                      ? `/sign-up?returnTo=${encodeURIComponent(returnTo)}`
+                      : "/sign-up"
+                  }
+                >
+                  <p className="text-gray-900 hover:cursor-pointer hover:underline text-sm">
+                    Sign up
+                  </p>
+                </Link>
+              </div>
             </div>
 
             <Button
@@ -100,10 +134,15 @@ export default function SignIn() {
                     },
                     onError: (ctx) => {
                       toast.error(ctx.error.message);
+                      setLoading(false);
                     },
                     onSuccess: async () => {
-                      // router.push("/dashboard");
                       setLoading(false);
+                      if (returnTo) {
+                        router.push(returnTo);
+                      } else {
+                        router.push("/dashboard");
+                      }
                     },
                   },
                 );
@@ -130,7 +169,7 @@ export default function SignIn() {
                   await authClient.signIn.social(
                     {
                       provider: "google",
-                      callbackURL: "/dashboard",
+                      callbackURL: returnTo || "/dashboard",
                     },
                     {
                       onRequest: () => {
@@ -173,5 +212,17 @@ export default function SignIn() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center w-full h-screen">
+        <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg h-96"></div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }

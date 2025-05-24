@@ -11,13 +11,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/auth-client";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
 
-export default function SignUp() {
+function SignUpContent() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,6 +27,10 @@ export default function SignUp() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -92,25 +96,53 @@ export default function SignUp() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                placeholder="Password"
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  placeholder="Password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Confirm Password</Label>
-              <Input
-                id="password_confirmation"
-                type="password"
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                autoComplete="new-password"
-                placeholder="Confirm Password"
-              />
+              <div className="relative">
+                <Input
+                  id="password_confirmation"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  autoComplete="new-password"
+                  placeholder="Confirm Password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="image">Profile Image (optional)</Label>
@@ -155,7 +187,7 @@ export default function SignUp() {
                   password,
                   name: `${firstName} ${lastName}`,
                   image: image ? await convertImageToBase64(image) : "",
-                  callbackURL: "/dashboard",
+                  callbackURL: returnTo || "/dashboard",
                   fetchOptions: {
                     onRequest: () => {
                       setLoading(true);
@@ -165,8 +197,12 @@ export default function SignUp() {
                       toast.error(ctx.error.message);
                     },
                     onSuccess: async () => {
-                      router.push("/onboarding");
                       setLoading(false);
+                      if (returnTo) {
+                        router.push(returnTo);
+                      } else {
+                        router.push("/onboarding");
+                      }
                     },
                   },
                 });
@@ -178,10 +214,31 @@ export default function SignUp() {
                 "Create an account"
               )}
             </Button>
+            <div className="text-center text-sm">
+              Already have an account?{" "}
+              <a
+                href={returnTo ? `/sign-in?returnTo=${encodeURIComponent(returnTo)}` : "/sign-in"}
+                className="underline"
+              >
+                Sign in
+              </a>
+            </div>
           </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function SignUp() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center w-full h-screen">
+        <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg h-96"></div>
+      </div>
+    }>
+      <SignUpContent />
+    </Suspense>
   );
 }
 
