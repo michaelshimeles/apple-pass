@@ -66,37 +66,38 @@ export const auth = betterAuth({
           inviteLink,
         });
       },
-      // allowUserToCreateOrganization: async (user) => {
-      //   // const subscription = await getSubscription(user.id);
-      //   // return subscription.plan === "pro";
-      // },
-      // organizationCreation: {
-      // disabled: false, // Set to true to disable organization creation
-      // beforeCreate: async ({ organization, user }, request) => {
-      // console.log("organization", organization);
-      // console.log("user", user);
-      // console.log("request", request);
-      // Run custom logic before organization is created
-      // Optionally modify the organization data
-      // return {
-      //   data: {
-      //     ...organization,
-      //     metadata: {
-      //       customField: "value",
-      //     },
-      //   },
-      // };
-      // },
-      // afterCreate: async ({ organization, member, user }, request) => {
-      // console.log("organization", organization);
-      // console.log("member", member);
-      // console.log("user", user);
-      // console.log("request", request);
-      // Run custom logic after organization is created
-      // e.g., create default resources, send notifications
-      // await setupDefaultResources(organization.id);
-      // },
-      // },
+      allowUserToCreateOrganization: async (user) => {
+        // const subscription = await getSubscription(user.id);
+        // return subscription.plan === "pro";
+        return user;
+      },
+      organizationCreation: {
+        disabled: false, // Set to true to disable organization creation
+        beforeCreate: async ({ organization, user }, request) => {
+          console.log("organization", organization);
+          console.log("user", user);
+          console.log("request", request);
+          // Run custom logic before organization is created
+          // Optionally modify the organization data
+          return {
+            data: {
+              ...organization,
+              metadata: {
+                customField: "value",
+              },
+            },
+          };
+        },
+        afterCreate: async ({ organization, member, user }, request) => {
+          console.log("organization", organization);
+          console.log("member", member);
+          console.log("user", user);
+          console.log("request", request);
+          // Run custom logic after organization is created
+          // e.g., create default resources, send notifications
+          // await setupDefaultResources(organization.id);
+        },
+      },
     }),
     polar({
       client: polarClient,
@@ -188,7 +189,7 @@ export const auth = betterAuth({
                 console.error("Error processing subscription webhook:", error);
               }
             }
-          }, // Catch-all for all events
+          },
         }),
       ],
     }),

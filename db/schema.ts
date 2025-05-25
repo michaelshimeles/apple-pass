@@ -34,6 +34,10 @@ export const session = pgTable("session", {
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
+  activeOrganizationId: text("activeOrganizationId").references(
+    () => organization.id,
+    { onDelete: "cascade" },
+  ),
   userId: text("userId")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

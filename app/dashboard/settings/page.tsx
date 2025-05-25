@@ -117,8 +117,7 @@ function SettingsContent() {
         }
 
         // Get organization data
-        const orgData = await authClient.organization.getFullOrganization();
-        const listInvites = await authClient.organization.listInvitations();
+        const listInvites = await authClient.organization.listInvitations({});
 
         console.log("listInvites", listInvites);
         if (listInvites.data) {
@@ -127,19 +126,20 @@ function SettingsContent() {
           );
         }
 
-        if (orgData.data || organizations?.[0]?.id) {
+        if (organizations?.[0]?.id) {
           const response = await authClient.organization.setActive({
-            organizationId: orgData.data?.id || organizations?.[0]?.id,
+            organizationId: organizations?.[0]?.id,
           });
 
-          setOrganization(orgData.data || response.data);
-          setMembers(orgData.data?.members || response.data?.members || []);
+          console.log("resres", response);
+          setOrganization(response.data);
+          setMembers(response.data?.members || []);
 
           // Check if current user is admin
           if (session.data?.user) {
-            const currentUserMember = (
-              orgData.data?.members || response.data?.members
-            )?.find((member) => member.userId === session.data.user.id);
+            const currentUserMember = response.data?.members?.find(
+              (member) => member.userId === session.data.user.id,
+            );
             setIsAdmin(
               currentUserMember?.role === "admin" ||
                 currentUserMember?.role === "owner",
@@ -154,7 +154,7 @@ function SettingsContent() {
     };
 
     fetchData();
-  }, []);
+  }, [organizations]);
 
   const handleTabChange = (value: string) => {
     setCurrentTab(value);
@@ -833,14 +833,16 @@ function SettingsContent() {
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col gap-6 p-6">
-        <div>
-          <div className="h-9 w-32 mb-2 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-md" />
-          <div className="h-5 w-80 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-md" />
+    <Suspense
+      fallback={
+        <div className="flex flex-col gap-6 p-6">
+          <div>
+            <div className="h-9 w-32 mb-2 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-md" />
+            <div className="h-5 w-80 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-md" />
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <SettingsContent />
     </Suspense>
   );

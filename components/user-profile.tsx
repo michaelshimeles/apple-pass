@@ -58,22 +58,22 @@ export default function UserProfile({ mini }: { mini?: boolean }) {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Billing
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <Link href="/dashboard/settings">
+          <Link href="/dashboard/settings?tab=profile">
             <DropdownMenuItem>
-              Settings
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+              Profile
+              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
             </DropdownMenuItem>
+          </Link>
+          <Link href="/dashboard/settings?tab=organization">
             <DropdownMenuItem>
-              Team
-              <DropdownMenuShortcut>⌘T</DropdownMenuShortcut>
+              Organization
+              <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </Link>
+          <Link href="/dashboard/settings?tab=billing">
+            <DropdownMenuItem>
+              Billing
+              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>
