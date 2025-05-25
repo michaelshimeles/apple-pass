@@ -1,7 +1,7 @@
 "server only";
 
 import { auth } from "@/lib/auth/auth";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { db } from "../drizzle";
 import { passes } from "../schema";
@@ -28,7 +28,6 @@ export const listAllPasses = async (userId: string) => {
         ),
       );
 
-    console.log("data", data);
     if (!data) {
       throw new Error("No passes found");
     }
