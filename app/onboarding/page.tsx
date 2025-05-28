@@ -9,6 +9,10 @@ export default async function Onboarding() {
     headers: await headers(),
   });
 
+  console.log("result", result);
+
+  if (result?.session.activeOrganizationId) redirect("/dashboard/create");
+
   // Only proceed with org check if authenticated
   if (result?.session?.userId) {
     return (

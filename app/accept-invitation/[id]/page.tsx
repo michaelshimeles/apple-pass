@@ -3,7 +3,13 @@
 import { authClient } from "@/lib/auth/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 
@@ -22,16 +28,16 @@ export default function AcceptInviation({
   useEffect(() => {
     const getParams = async () => {
       const { id } = await params;
-      
+
       console.log("id", id);
-      
+
       try {
         const response = await authClient.organization.acceptInvitation({
           invitationId: id,
         });
 
         console.log("response", response);
-        
+
         if (response.data) {
           setSuccess(true);
           setTimeout(() => {
@@ -56,15 +62,18 @@ export default function AcceptInviation({
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>
-            {loading ? "Processing Invitation..." : success ? "Welcome to the team!" : "Invitation Error"}
+            {loading
+              ? "Processing Invitation..."
+              : success
+                ? "Welcome to the team!"
+                : "Invitation Error"}
           </CardTitle>
           <CardDescription>
-            {loading 
-              ? "We're adding you to the organization" 
-              : success 
+            {loading
+              ? "We're adding you to the organization"
+              : success
                 ? "You've successfully joined the organization. Redirecting to dashboard..."
-                : "There was a problem accepting your invitation"
-            }
+                : "There was a problem accepting your invitation"}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
@@ -73,7 +82,7 @@ export default function AcceptInviation({
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           )}
-          
+
           {success && (
             <div className="flex flex-col items-center space-y-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
@@ -82,22 +91,22 @@ export default function AcceptInviation({
               </p>
             </div>
           )}
-          
+
           {error && (
             <div className="flex flex-col items-center space-y-4">
               <XCircle className="h-16 w-16 text-red-500" />
               <p className="text-sm text-red-600">{error}</p>
               <div className="space-y-2 w-full">
-                <Button 
-                  onClick={() => router.push("/dashboard")} 
+                <Button
+                  onClick={() => router.push("/dashboard")}
                   className="w-full"
                 >
                   Go to Dashboard
                 </Button>
-                <Button 
-                  onClick={() => router.push("/sign-in")} 
+                <Button
+                  onClick={() => router.push("/sign-in")}
                   variant="outline"
-                  className="w-full"
+                  className="w-full hover:text-gray-900"
                 >
                   Sign In Again
                 </Button>

@@ -60,8 +60,7 @@ interface Invitation {
   email: string;
   role: string;
   status: string;
-  expiresAt: string;
-  createdAt: string;
+  expiresAt: Date;
 }
 
 interface OrderItem {
@@ -176,15 +175,28 @@ function SettingsContent() {
           }
         }
 
-        const ordersResponse = await authClient.customer.orders.list({});
-        const { data: customerState } = await authClient.customer.state();
-
-        if (ordersResponse.data) {
-          setOrders(ordersResponse.data as unknown as OrdersResponse);
-        } else {
-          console.error("Failed to fetch orders:", ordersResponse.error);
+        // Try to fetch orders and customer state with better error handling
+        try {
+          const ordersResponse = await authClient.customer.orders.list({});
+          console.log("ordersResponse", ordersResponse);
+          
+          if (ordersResponse.data) {
+            setOrders(ordersResponse.data as unknown as OrdersResponse);
+          } else {
+            console.log("No orders found or customer not created yet");
+            setOrders(null);
+          }
+        } catch (orderError) {
+          console.log("Orders fetch failed - customer may not exist in Polar yet:", orderError);
+          setOrders(null);
         }
-        console.log("customerState", customerState);
+
+        try {
+          const { data: customerState } = await authClient.customer.state();
+          console.log("customerState", customerState);
+        } catch (customerError) {
+          console.log("Customer state fetch failed:", customerError);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -766,9 +778,9 @@ function SettingsContent() {
                                     {invitation.email}
                                   </p>
                                   <p className="text-sm text-muted-foreground">
-                                    Invited{" "}
+                                    Invitation expires on{" "}
                                     {new Date(
-                                      invitation.createdAt,
+                                      invitation.expiresAt,
                                     ).toLocaleDateString()}{" "}
                                     • Role: {invitation.role}
                                   </p>
@@ -862,8 +874,14 @@ function SettingsContent() {
               <Button
                 variant="outline"
                 onClick={async () => {
-                  await authClient.customer.portal();
+                  try {
+                    await authClient.customer.portal();
+                  } catch (error) {
+                    console.error("Failed to open customer portal:", error);
+                    // You could add a toast notification here
+                  }
                 }}
+                disabled={orders === null}
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Manage Subscription
@@ -1001,8 +1019,10 @@ function SettingsContent() {
                       No orders found
                     </h3>
                     <p className="mb-4 mt-2 text-sm text-muted-foreground">
-                      You don&apos;t have any orders yet. Your billing history
-                      will appear here.
+                      {orders === null 
+                        ? "Unable to load billing history. This may be because your account is not yet set up for billing."
+                        : "You don't have any orders yet. Your billing history will appear here."
+                      }
                     </p>
                   </div>
                 </CardContent>

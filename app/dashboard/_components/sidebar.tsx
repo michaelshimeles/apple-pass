@@ -1,18 +1,18 @@
 "use client";
 
+import UserProfile from "@/components/user-profile";
 import clsx from "clsx";
 import {
   Brush,
   GitGraph,
   HomeIcon,
-  Settings,
   LucideIcon,
   MonitorSmartphone,
+  Settings,
   Share,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import UserProfile from "@/components/user-profile";
 
 interface NavItem {
   label: string;
@@ -88,6 +88,7 @@ export default function DashboardSideBar() {
               </div>
             ))}
           </div>
+
           <div className="flex flex-col gap-2 w-full">
             <div className="px-4">
               <div

@@ -35,7 +35,7 @@ function SignInContent() {
         <CardHeader>
           <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
           <CardDescription className="text-xs md:text-sm">
-            Enter your email below to login to your account
+            Use your google account to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -217,11 +217,13 @@ function SignInContent() {
 
 export default function SignIn() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col justify-center items-center w-full h-screen">
-        <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg h-96"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex flex-col justify-center items-center w-full h-screen">
+          <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg h-96"></div>
+        </div>
+      }
+    >
       <SignInContent />
     </Suspense>
   );

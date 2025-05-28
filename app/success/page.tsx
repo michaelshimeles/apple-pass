@@ -41,11 +41,11 @@ export default function SuccessPage() {
           </div>
 
           <Button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/dashboard/create")}
             className="w-full text-white font-medium py-3"
             size="lg"
           >
-            Go to Dashboard
+            Create Pass
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
 

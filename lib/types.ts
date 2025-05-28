@@ -7,7 +7,10 @@ export const PassSchema = z.object({
 
   // Core fields
   pass_share_id: z.string().min(1, "Pass share ID is required"),
-  organization_id: z.number().int().positive("Organization ID must be a positive integer"),
+  organization_id: z
+    .number()
+    .int()
+    .positive("Organization ID must be a positive integer"),
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
 
@@ -24,8 +27,12 @@ export const PassSchema = z.object({
   text_color: z.string().optional(),
 
   // Optional images
-  logo_url: z.string().url("Must be a valid URL").optional().or(z.literal('')),
-  strip_image: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  logo_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  strip_image: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
 
   // Optional pass-specific fields
   secondary_left_label: z.string().optional(),
@@ -36,7 +43,11 @@ export const PassSchema = z.object({
   barcode_value: z.string().optional(),
   barcode_format: z.string().optional(),
 
-  website_url: z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  website_url: z
+    .string()
+    .url("Must be a valid URL")
+    .optional()
+    .or(z.literal("")),
   header_field_label: z.string().optional(),
   header_field_value: z.string().optional(),
 

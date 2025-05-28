@@ -201,7 +201,7 @@ function SignUpContent() {
                       if (returnTo) {
                         router.push(returnTo);
                       } else {
-                        router.push("/onboarding");
+                        router.push("/");
                       }
                     },
                   },
@@ -217,7 +217,11 @@ function SignUpContent() {
             <div className="text-center text-sm">
               Already have an account?{" "}
               <a
-                href={returnTo ? `/sign-in?returnTo=${encodeURIComponent(returnTo)}` : "/sign-in"}
+                href={
+                  returnTo
+                    ? `/sign-in?returnTo=${encodeURIComponent(returnTo)}`
+                    : "/sign-in"
+                }
                 className="underline"
               >
                 Sign in
@@ -232,11 +236,13 @@ function SignUpContent() {
 
 export default function SignUp() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col justify-center items-center w-full h-screen">
-        <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg h-96"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex flex-col justify-center items-center w-full h-screen">
+          <div className="max-w-md w-full bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg h-96"></div>
+        </div>
+      }
+    >
       <SignUpContent />
     </Suspense>
   );

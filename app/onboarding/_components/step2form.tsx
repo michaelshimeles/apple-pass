@@ -27,8 +27,6 @@ import { useForm } from "react-hook-form";
 import slug from "slug";
 import { toast } from "sonner";
 import * as z from "zod";
-import { Mail, PlusCircle, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 // only validate companyName here
 const formSchema = z.object({
@@ -46,21 +44,13 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [invites, setInvites] = useState<string[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { companyName: "", companySlug: "", email: "" },
   });
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = form;
+  const { handleSubmit, control, reset, watch } = form;
 
   const companyName = watch("companyName");
   const router = useRouter();
@@ -70,49 +60,16 @@ export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
     form.setValue("companySlug", slugified);
   }, [companyName, form]);
 
-  const currentEmail = watch("email");
-
-  const handleAddEmail = async () => {
-    if (!currentEmail) return;
-    // simple regex
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentEmail)) {
-      toast("Invalid email");
-      return;
-    }
-    if (invites.includes(currentEmail)) {
-      toast.error("That email’s already invited");
-      return;
-    }
-
-    setInvites((prev) => [...prev, currentEmail]);
-    setValue("email", "");
-  };
-
-  console.log("invites", invites);
-
-  const handleRemoveEmail = (email: string) =>
-    setInvites((prev) => prev.filter((e) => e !== email));
-
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     let success = false;
-    
+
     try {
       await authClient.organization.create({
         name: data?.companyName,
         slug: data?.companySlug,
         metadata: data,
       });
-
-      await Promise.all(
-        invites?.map(async (invite) => {
-          console.log("invite", invite);
-          return await authClient.organization.inviteMember({
-            email: invite,
-            role: "member", //this can also be an array for multiple roles (e.g. ["admin", "sale"])
-          });
-        }) || [],
-      );
 
       success = true;
     } catch (error) {
@@ -181,68 +138,6 @@ export function Step2({ prevStepAction }: { prevStepAction: () => void }) {
                     </FormControl>
                   </div>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-            {/* invite emails */}
-            <FormField
-              control={control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="mt-2">
-                  <FormLabel>Invite team members</FormLabel>
-                  <div className="flex space-x-2">
-                    <div className="relative flex-1">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground pointer-events-none">
-                        <Mail className="h-4 w-4" />
-                      </div>
-                      <FormControl>
-                        <Input
-                          placeholder="colleague@example.com"
-                          className="pl-10"
-                          {...field}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddEmail();
-                            }
-                          }}
-                        />
-                      </FormControl>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={handleAddEmail}
-                      disabled={!field.value}
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      <span className="sr-only">Add email</span>
-                    </Button>
-                  </div>
-                  <FormMessage>{errors.email?.message}</FormMessage>
-                  {invites.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {invites.map((email) => (
-                        <Badge
-                          key={email}
-                          variant="secondary"
-                          className="flex items-center space-x-1"
-                        >
-                          <span>{email}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveEmail(email)}
-                            className="p-0.5 rounded-full hover:bg-destructive/10"
-                          >
-                            <X className="h-3 w-3 text-destructive" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
                 </FormItem>
               )}
             />

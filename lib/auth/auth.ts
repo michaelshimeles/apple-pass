@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { betterAuth } from "better-auth";
-import { organization } from "better-auth/plugins";
+import { organization } from "better-auth/plugins"; // Keep this as 'organization'
 import { sendOrganizationInvitation } from "../email";
 import {
   polar,
@@ -12,7 +12,8 @@ import {
 import { Polar } from "@polar-sh/sdk";
 import { db } from "@/db/drizzle";
 import { subscription } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { member, organization as organizationSchema } from "@/db/schema"; // ✅ Rename these to avoid conflict
 
 const polarClient = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN,
@@ -26,10 +27,12 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",
     `${process.env.NEXT_PUBLIC_APP_URL}`,
+    "https://1e78-134-231-56-45.ngrok-free.app",
   ],
   allowedDevOrigins: [
     "http://localhost:3000",
     `${process.env.NEXT_PUBLIC_APP_URL}`,
+    "https://1e78-134-231-56-45.ngrok-free.app",
   ],
   cookieCache: {
     enabled: true,
@@ -126,12 +129,78 @@ export const auth = betterAuth({
               type === "subscription.uncanceled" ||
               type === "subscription.updated"
             ) {
-              console.log("payload data", JSON.stringify(data, null, 2));
+              console.log("🎯 Processing subscription webhook:", type);
+              console.log("📦 Payload data:", JSON.stringify(data, null, 2));
 
               try {
+                // STEP 1: Extract user ID from customer data
+                const userId = data.customer?.externalId;
+                let organizationId = null;
+
+                console.log("👤 Customer data:", {
+                  customerId: data.customerId,
+                  userId: userId,
+                  polarOrgId: data.customer?.organizationId,
+                });
+
+                // STEP 2: Map to local organization
+                if (userId) {
+                  // First try: Get user's admin organizations (they pay for subscriptions)
+                  const adminMemberships = await db
+                    .select({ organizationId: member.organizationId })
+                    .from(member)
+                    .where(
+                      and(
+                        eq(member.userId, userId),
+                        eq(member.role, "admin"), // Admins are the ones who can have subscriptions
+                      ),
+                    );
+
+                  if (adminMemberships.length > 0) {
+                    organizationId = adminMemberships[0].organizationId;
+                    console.log("✅ Found admin organization:", organizationId);
+                  } else {
+                    // Fallback: Get any organization they're a member of
+                    const anyMemberships = await db
+                      .select({ organizationId: member.organizationId })
+                      .from(member)
+                      .where(eq(member.userId, userId))
+                      .limit(1);
+
+                    if (anyMemberships.length > 0) {
+                      organizationId = anyMemberships[0].organizationId;
+                      console.log(
+                        "✅ Found member organization:",
+                        organizationId,
+                      );
+                    } else {
+                      console.log("❌ No organization found for user:", userId);
+                    }
+                  }
+                }
+
+                // STEP 3: Additional fallback - check metadata for referenceId
+                if (!organizationId && data.metadata?.referenceId) {
+                  // Check if referenceId is actually an organizationId
+                  const orgExists = await db
+                    .select({ id: organization.id })
+                    .from(organizationSchema)
+                    .where(eq(organization.id, data.metadata.referenceId))
+                    .limit(1);
+
+                  if (orgExists.length > 0) {
+                    organizationId = data.metadata.referenceId;
+                    console.log(
+                      "✅ Found organization from metadata:",
+                      organizationId,
+                    );
+                  }
+                }
+
+                // STEP 4: Build subscription data
                 const subscriptionData = {
                   id: data.id,
-                  createdAt: new Date(data?.createdAt),
+                  createdAt: new Date(data.createdAt),
                   modifiedAt: data.modifiedAt
                     ? new Date(data.modifiedAt)
                     : null,
@@ -142,8 +211,8 @@ export const auth = betterAuth({
                   currentPeriodStart: new Date(data.currentPeriodStart),
                   currentPeriodEnd: new Date(data.currentPeriodEnd),
                   cancelAtPeriodEnd: data.cancelAtPeriodEnd || false,
-                  canceledAt: data.cancelAtPeriodEnd
-                    ? new Date(data.cancelAtPeriodEnd)
+                  canceledAt: data.canceledAt
+                    ? new Date(data.canceledAt)
                     : null,
                   startedAt: new Date(data.startedAt),
                   endsAt: data.endsAt ? new Date(data.endsAt) : null,
@@ -155,18 +224,26 @@ export const auth = betterAuth({
                   customerCancellationReason:
                     data.customerCancellationReason || null,
                   customerCancellationComment:
-                    data.customerCancellationReason || null,
+                    data.customerCancellationComment || null,
                   metadata: data.metadata
                     ? JSON.stringify(data.metadata)
                     : null,
                   customFieldData: data.customFieldData
                     ? JSON.stringify(data.customFieldData)
                     : null,
-                  organizationId: data.organizationId || null,
-                  userId: data.userId || null,
+                  organizationId: organizationId, // ✅ Mapped to local org
+                  userId: userId,
                 };
 
-                // Use upsert logic - insert if not exists, update if exists
+                console.log("💾 Final subscription data:", {
+                  id: subscriptionData.id,
+                  status: subscriptionData.status,
+                  organizationId: subscriptionData.organizationId,
+                  userId: subscriptionData.userId,
+                  amount: subscriptionData.amount,
+                });
+
+                // STEP 5: Upsert subscription
                 const existingSubscription = await db
                   .select()
                   .from(subscription)
@@ -174,19 +251,32 @@ export const auth = betterAuth({
                   .limit(1);
 
                 if (existingSubscription.length > 0) {
-                  // Update existing subscription
                   await db
                     .update(subscription)
-                    .set(subscriptionData)
+                    .set({
+                      status: subscriptionData.status,
+                      currentPeriodEnd: subscriptionData.currentPeriodEnd,
+                      modifiedAt: subscriptionData.modifiedAt || new Date(),
+                      organizationId: organizationId!,
+                      userId: userId,
+                    })
                     .where(eq(subscription.id, data.id));
-                  console.log(`Updated subscription: ${data.id}`);
+                  console.log("✅ Updated subscription:", data.id);
                 } else {
-                  // Insert new subscription
+                  if (!organizationId) {
+                    console.log(
+                      "⚠️ Warning: Creating subscription without organizationId",
+                    );
+                  }
                   await db.insert(subscription).values(subscriptionData);
-                  console.log(`Created subscription: ${data.id}`);
+                  console.log("✅ Created subscription:", data.id);
                 }
               } catch (error) {
-                console.error("Error processing subscription webhook:", error);
+                console.error(
+                  "💥 Error processing subscription webhook:",
+                  error,
+                );
+                // Don't throw - let webhook succeed to avoid retries
               }
             }
           },

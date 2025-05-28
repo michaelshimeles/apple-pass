@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import DashboardTopNav from "./_components/navbar";
 import DashboardSideBar from "./_components/sidebar";
+
 export default async function DashboardLayout({
   children,
 }: {

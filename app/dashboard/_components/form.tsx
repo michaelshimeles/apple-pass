@@ -148,6 +148,7 @@ export function CreatePassForm({ organizationId }: { organizationId: string }) {
   const watched = useWatch({ control: form.control });
 
   const onSubmit = async (data: FormValues) => {
+    console.log("SHOOT");
     try {
       setLoading(true);
       const response = await fetch("/api/create-pass", {
@@ -1021,7 +1022,7 @@ export function CreatePassForm({ organizationId }: { organizationId: string }) {
                 type="button"
                 onClick={prevStep}
                 variant="outline"
-                className="w-24"
+                className="w-24 "
               >
                 Previous
               </Button>
