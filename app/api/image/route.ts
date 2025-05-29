@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const { prompt } = await req.json();
   const { image } = await generateImage({
     model: openai.image("gpt-image-1"),
-    prompt: prompt + ". The Image MUST BE 375x144, no more no less",
+    prompt,
     providerOptions: {
       openai: { quality: "high" },
     },
