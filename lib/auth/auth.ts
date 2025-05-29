@@ -20,6 +20,49 @@ const polarClient = new Polar({
   server: "sandbox",
 });
 
+async function getActiveOrganization(userId: string) {
+  // First try to get organizations where user is admin
+  const adminOrgs = await db
+    .select({
+      id: organizationSchema.id,
+      name: organizationSchema.name,
+      slug: organizationSchema.slug,
+    })
+    .from(member)
+    .innerJoin(
+      organizationSchema,
+      eq(member.organizationId, organizationSchema.id),
+    )
+    .where(and(eq(member.userId, userId), eq(member.role, "admin")))
+    .limit(1);
+
+  if (adminOrgs.length > 0) {
+    return adminOrgs[0];
+  }
+
+  // Fallback to any organization where user is a member
+  const memberOrgs = await db
+    .select({
+      id: organizationSchema.id,
+      name: organizationSchema.name,
+      slug: organizationSchema.slug,
+    })
+    .from(member)
+    .innerJoin(
+      organizationSchema,
+      eq(member.organizationId, organizationSchema.id),
+    )
+    .where(eq(member.userId, userId))
+    .limit(1);
+
+  if (memberOrgs.length > 0) {
+    return memberOrgs[0];
+  }
+
+  // If no organization found, throw error
+  throw new Error("No organization found for user");
+}
+
 export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",
@@ -38,6 +81,21 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
   }),
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          const organization = await getActiveOrganization(session.userId);
+          return {
+            data: {
+              ...session,
+              activeOrganizationId: organization.id,
+            },
+          };
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },
@@ -58,11 +116,6 @@ export const auth = betterAuth({
           teamName: data.organization.name,
           inviteLink,
         });
-      },
-      allowUserToCreateOrganization: async (user) => {
-        // const subscription = await getSubscription(user.id);
-        // return subscription.plan === "pro";
-        return user;
       },
       organizationCreation: {
         disabled: false, // Set to true to disable organization creation
