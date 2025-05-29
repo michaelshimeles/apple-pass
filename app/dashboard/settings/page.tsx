@@ -179,7 +179,7 @@ function SettingsContent() {
         try {
           const ordersResponse = await authClient.customer.orders.list({});
           console.log("ordersResponse", ordersResponse);
-          
+
           if (ordersResponse.data) {
             setOrders(ordersResponse.data as unknown as OrdersResponse);
           } else {
@@ -187,7 +187,10 @@ function SettingsContent() {
             setOrders(null);
           }
         } catch (orderError) {
-          console.log("Orders fetch failed - customer may not exist in Polar yet:", orderError);
+          console.log(
+            "Orders fetch failed - customer may not exist in Polar yet:",
+            orderError,
+          );
           setOrders(null);
         }
 
@@ -1019,10 +1022,9 @@ function SettingsContent() {
                       No orders found
                     </h3>
                     <p className="mb-4 mt-2 text-sm text-muted-foreground">
-                      {orders === null 
+                      {orders === null
                         ? "Unable to load billing history. This may be because your account is not yet set up for billing."
-                        : "You don't have any orders yet. Your billing history will appear here."
-                      }
+                        : "You don't have any orders yet. Your billing history will appear here."}
                     </p>
                   </div>
                 </CardContent>

@@ -28,14 +28,16 @@ export default async function SharePreview({
   return (
     <div className="flex flex-col items-start justify-start p-6 w-full">
       <div className="w-full">
-        <div className="flex flex-col items-start justify-center gap-2">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Share Preview
-          </h1>
-          <p className="text-muted-foreground">
-            Preview and manage your generated passes.
-          </p>
-        </div>
+        {!userPasses?.length && (
+          <div className="flex flex-col items-start justify-center gap-2">
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Share Preview
+            </h1>
+            <p className="text-muted-foreground">
+              Preview and manage your generated passes.
+            </p>
+          </div>
+        )}
         {userPasses?.length ? (
           <SharePreviewClient
             pass={pass as ApplePass}

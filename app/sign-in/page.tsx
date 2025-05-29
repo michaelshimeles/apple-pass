@@ -8,24 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
-import { Loader2, Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
-import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function SignInContent() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("returnTo");
 
@@ -33,128 +22,15 @@ function SignInContent() {
     <div className="flex flex-col justify-center items-center w-full h-screen">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
+          <CardTitle className="text-lg md:text-xl">
+            Welcome to Apple Pass
+          </CardTitle>
           <CardDescription className="text-xs md:text-sm">
             Use your google account to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                value={email}
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="#"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="password"
-                  autoComplete="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center w-full">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember"
-                  onClick={() => {
-                    setRememberMe(!rememberMe);
-                  }}
-                />
-                <Label htmlFor="remember">Remember me</Label>
-              </div>
-              <div>
-                <Link
-                  href={
-                    returnTo
-                      ? `/sign-up?returnTo=${encodeURIComponent(returnTo)}`
-                      : "/sign-up"
-                  }
-                >
-                  <p className="text-gray-900 hover:cursor-pointer hover:underline text-sm">
-                    Sign up
-                  </p>
-                </Link>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              onClick={async () => {
-                await authClient.signIn.email(
-                  {
-                    email,
-                    password,
-                  },
-                  {
-                    onRequest: (ctx) => {
-                      setLoading(true);
-                      console.log("ctx onRequest", ctx);
-                    },
-                    onResponse: (ctx) => {
-                      console.log("ctx onResponse", ctx);
-                    },
-                    onError: (ctx) => {
-                      toast.error(ctx.error.message);
-                      setLoading(false);
-                    },
-                    onSuccess: async () => {
-                      setLoading(false);
-                      if (returnTo) {
-                        router.push(returnTo);
-                      } else {
-                        router.push("/dashboard");
-                      }
-                    },
-                  },
-                );
-              }}
-            >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <p> Login </p>
-              )}
-            </Button>
-
             <div
               className={cn(
                 "w-full gap-2 flex items-center",
@@ -205,7 +81,7 @@ function SignInContent() {
                     d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0C79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
                   ></path>
                 </svg>
-                Sign in with Google
+                Login with Google
               </Button>
             </div>
           </div>
