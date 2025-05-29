@@ -899,9 +899,47 @@ function SettingsContent() {
                         {/* Header Row */}
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h4 className="font-medium text-base">
-                              {order.product?.name || "Subscription"}
-                            </h4>
+                            <div className="flex justify-center gap-2">
+                              <h4 className="font-medium text-base">
+                                {order.product?.name || "Subscription"}
+                              </h4>
+                              <div className="flex items-center gap-2">
+                                {order.status === "paid" ? (
+                                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs">
+                                    Paid
+                                  </Badge>
+                                ) : order.status === "canceled" ? (
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-xs"
+                                  >
+                                    Canceled
+                                  </Badge>
+                                ) : order.status === "refunded" ? (
+                                  <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs">
+                                    Refunded
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="text-xs">
+                                    {order.status}
+                                  </Badge>
+                                )}
+
+                                {order.subscription?.status === "canceled" && (
+                                  <span className="text-xs text-muted-foreground">
+                                    • Canceled on{" "}
+                                    {order.subscription.endedAt
+                                      ? new Date(
+                                          order.subscription.endedAt,
+                                        ).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                        })
+                                      : "N/A"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                             <div className="text-sm text-muted-foreground">
                               {new Date(order.createdAt).toLocaleDateString(
                                 "en-US",
@@ -922,59 +960,6 @@ function SettingsContent() {
                               {order.currency?.toUpperCase()}
                             </div>
                           </div>
-                        </div>
-
-                        {/* Status Row */}
-                        <div className="flex items-center justify-between pt-2">
-                          <div className="flex items-center gap-2">
-                            {order.status === "paid" ? (
-                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs">
-                                Paid
-                              </Badge>
-                            ) : order.status === "canceled" ? (
-                              <Badge variant="destructive" className="text-xs">
-                                Canceled
-                              </Badge>
-                            ) : order.status === "refunded" ? (
-                              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs">
-                                Refunded
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">
-                                {order.status}
-                              </Badge>
-                            )}
-
-                            {order.subscription?.status === "canceled" && (
-                              <span className="text-xs text-muted-foreground">
-                                • Canceled on{" "}
-                                {order.subscription.endedAt
-                                  ? new Date(
-                                      order.subscription.endedAt,
-                                    ).toLocaleDateString("en-US", {
-                                      month: "short",
-                                      day: "numeric",
-                                    })
-                                  : "N/A"}
-                              </span>
-                            )}
-                          </div>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 px-2 text-sm"
-                            asChild
-                          >
-                            <a
-                              href={`/api/invoice/${order.id}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                              Invoice
-                            </a>
-                          </Button>
                         </div>
 
                         {/* Order Items */}

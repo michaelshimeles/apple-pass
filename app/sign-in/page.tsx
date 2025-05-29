@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
@@ -87,6 +88,16 @@ function SignInContent() {
           </div>
         </CardContent>
       </Card>
+      <p className="mt-6 text-xs text-center text-gray-500 dark:text-gray-400 max-w-md">
+        By signing in, you agree to our{" "}
+        <Link href="/terms-of-service" className="underline hover:text-gray-700 dark:hover:text-gray-300">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy-policy" className="underline hover:text-gray-700 dark:hover:text-gray-300">
+          Privacy Policy
+        </Link>
+      </p>
     </div>
   );
 }

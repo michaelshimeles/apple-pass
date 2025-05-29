@@ -10,14 +10,21 @@ import {
 } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/auth-client";
 import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function PricingTable() {
-  const handleCheckout = async (slug: string) => {
+  const router = useRouter();
+  const handleCheckout = async (productId: string, slug: string) => {
+    console.log("handleCheckout called", productId, slug);
     const organizationId = (await authClient.organization.list())?.data?.[0]
       ?.id;
 
+    if (!organizationId) {
+      router.push("/onboarding");
+    }
+
     await authClient.checkout({
-      products: ["e464123f-2fb7-4d84-9a2d-d94034da1f14"],
+      products: [productId],
       slug: slug,
       referenceId: organizationId,
     });
@@ -72,7 +79,12 @@ export default function PricingTable() {
           <CardFooter>
             <Button
               className="w-full"
-              onClick={() => handleCheckout("Exodus-Labs")}
+              onClick={() =>
+                handleCheckout(
+                  process.env.NEXT_PUBLIC_STARTER_TIER!,
+                  process.env.NEXT_PUBLIC_STARTER_SLUG!,
+                )
+              }
             >
               Get Started
             </Button>
@@ -119,9 +131,14 @@ export default function PricingTable() {
           <CardFooter>
             <Button
               className="w-full"
-              onClick={() => handleCheckout("professional")}
+              onClick={() =>
+                handleCheckout(
+                  process.env.NEXT_PUBLIC_PROFESSIONAL_TIER!,
+                  process.env.NEXT_PUBLIC_PROFESSIONAL_SLUG!,
+                )
+              }
             >
-              Upgrade Now
+              Get Started
             </Button>
           </CardFooter>
         </Card>
