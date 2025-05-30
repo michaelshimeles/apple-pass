@@ -7,11 +7,16 @@ import ShareModal from "./_components/share-modal";
 import Pass from "../share/_components/pass";
 import { auth } from "@/lib/auth/auth";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
   const result = await auth.api.getSession({
     headers: await headers(), // you need to pass the headers object.
   });
+
+  if (!result?.session?.userId) {
+    redirect("/sign-in");
+  }
 
   const response = await listAllPasses(result?.session?.userId || "");
 

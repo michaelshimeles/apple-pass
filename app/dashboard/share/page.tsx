@@ -6,6 +6,7 @@ import { ApplePass } from "@/lib/types";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { SharePreviewClient } from "./client";
+import { redirect } from "next/navigation";
 
 export default async function SharePreview({
   searchParams,
@@ -16,6 +17,10 @@ export default async function SharePreview({
     headers: await headers(),
   });
 
+  if (!result?.session?.userId) {
+    redirect("/sign-in");
+  }
+
   const userPasses = await listAllPasses(result?.session.userId);
 
   // Get the initial pass ID (either from params or use the first one)
@@ -23,7 +28,7 @@ export default async function SharePreview({
   const selectedShareId = (await searchParams)?.passId;
 
   // Get the pass by share ID
-  const pass = await getPassById(selectedShareId! || initialPassShareId!);
+  const pass = await getPassById(selectedShareId || initialPassShareId!);
 
   return (
     <div className="flex flex-col items-start justify-start p-6 w-full">

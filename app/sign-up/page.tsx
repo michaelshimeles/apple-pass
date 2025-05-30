@@ -12,6 +12,7 @@ import { authClient } from "@/lib/auth/auth-client";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 
 function SignInContent() {
   const [loading, setLoading] = useState(false);
@@ -42,20 +43,34 @@ function SignInContent() {
                 className={cn("w-full gap-2")}
                 disabled={loading}
                 onClick={async () => {
-                  await authClient.signIn.social(
-                    {
-                      provider: "google",
-                      callbackURL: returnTo || "/dashboard",
-                    },
-                    {
-                      onRequest: () => {
-                        setLoading(true);
+                  try {
+                    await authClient.signIn.social(
+                      {
+                        provider: "google",
+                        callbackURL: returnTo || "/dashboard",
                       },
-                      onResponse: () => {
-                        setLoading(false);
+                      {
+                        onRequest: () => {
+                          setLoading(true);
+                        },
+                        onResponse: () => {
+                          setLoading(false);
+                        },
+                        onError: (error) => {
+                          setLoading(false);
+                          console.error("Sign-in error:", error);
+                          // Consider showing user-friendly error message
+                        },
                       },
-                    },
-                  );
+                    );
+                  } catch (error) {
+                    setLoading(false);
+                    console.error("Sign-in failed:", error);
+                    // Handle authentication errors appropriately
+                    toast.error("Oops, something went wrong", {
+                      duration: 5000,
+                    });
+                  }
                 }}
               >
                 <svg

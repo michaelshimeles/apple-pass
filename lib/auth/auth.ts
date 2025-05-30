@@ -67,12 +67,10 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:3000",
     `${process.env.NEXT_PUBLIC_APP_URL}`,
-    "https://1e78-134-231-56-45.ngrok-free.app",
   ],
   allowedDevOrigins: [
     "http://localhost:3000",
     `${process.env.NEXT_PUBLIC_APP_URL}`,
-    "https://1e78-134-231-56-45.ngrok-free.app",
   ],
   cookieCache: {
     enabled: true,
@@ -95,9 +93,6 @@ export const auth = betterAuth({
         },
       },
     },
-  },
-  emailAndPassword: {
-    enabled: true,
   },
   socialProviders: {
     google: {

@@ -31,7 +31,10 @@ import * as z from "zod";
 // only validate companyName here
 const formSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
-  companySlug: z.string(),
+  companySlug: z.string().min(1, "Company slug is required").regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    "Invalid company slug"
+  ),
   email: z
     .string()
     .optional()

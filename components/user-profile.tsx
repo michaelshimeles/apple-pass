@@ -13,8 +13,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarImage } from "./ui/avatar";
+
+interface UserInfo {
+  name?: string;
+  image?: string;
+  id: string;
+  email?: string;
+}
+
 export default function UserProfile({ mini }: { mini?: boolean }) {
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const router = useRouter();
 
   useEffect(() => {

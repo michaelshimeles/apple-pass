@@ -11,24 +11,49 @@ import {
 import { authClient } from "@/lib/auth/auth-client";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function PricingTable() {
   const router = useRouter();
   const handleCheckout = async (productId: string, slug: string) => {
-    console.log("handleCheckout called", productId, slug);
-    const organizationId = (await authClient.organization.list())?.data?.[0]
-      ?.id;
+    try {
+      const orgResponse = await authClient.organization.list();
+      const organizationId = orgResponse?.data?.[0]?.id;
 
-    if (!organizationId) {
-      router.push("/onboarding");
+      if (!organizationId) {
+        router.push("/onboarding");
+        return; // Critical: prevent checkout from proceeding
+      }
+
+      await authClient.checkout({
+        products: [productId],
+        slug: slug,
+        referenceId: organizationId,
+      });
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      // TODO: Add user-facing error notification
+      toast.error("Oops, something went wrong");
     }
-
-    await authClient.checkout({
-      products: [productId],
-      slug: slug,
-      referenceId: organizationId,
-    });
   };
+
+  const STARTER_TIER = process.env.NEXT_PUBLIC_STARTER_TIER;
+	const STARTER_SLUG = process.env.NEXT_PUBLIC_STARTER_SLUG;
+	
+	if (!STARTER_TIER || !STARTER_SLUG) {
+		throw new Error(
+			"Missing required environment variables for Starter tier"
+		);
+	}
+
+  const PROFESSIONAL_TIER = process.env.NEXT_PUBLIC_PROFESSIONAL_TIER;
+	const PROFESSIONAL_SLUG = process.env.NEXT_PUBLIC_PROFESSIONAL_SLUG;
+	
+	if (!PROFESSIONAL_TIER || !PROFESSIONAL_SLUG) {
+	  throw new Error(
+	    "Missing required environment variables for Professional tier"
+	  );
+	}
 
   return (
     <section className="flex flex-col items-center justify-center min-h-screen px-4">
@@ -81,8 +106,8 @@ export default function PricingTable() {
               className="w-full"
               onClick={() =>
                 handleCheckout(
-                  process.env.NEXT_PUBLIC_STARTER_TIER!,
-                  process.env.NEXT_PUBLIC_STARTER_SLUG!,
+                  STARTER_TIER,
+                  STARTER_SLUG,
                 )
               }
             >
@@ -133,8 +158,8 @@ export default function PricingTable() {
               className="w-full"
               onClick={() =>
                 handleCheckout(
-                  process.env.NEXT_PUBLIC_PROFESSIONAL_TIER!,
-                  process.env.NEXT_PUBLIC_PROFESSIONAL_SLUG!,
+                  PROFESSIONAL_TIER,
+                  PROFESSIONAL_SLUG,
                 )
               }
             >

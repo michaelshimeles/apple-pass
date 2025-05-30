@@ -5,11 +5,17 @@ import Link from "next/link";
 import { CreatePassForm } from "../_components/form";
 import { SubscriptionGate } from "../_components/subscription-gate";
 import { JoinOrgDialog } from "./_components/join-org-dialog";
+import { redirect } from "next/navigation";
 
 export default async function Create() {
   const result = await auth.api.getSession({
     headers: await headers(),
   });
+
+  if (!result?.session?.userId) {
+    redirect("/sign-in");
+  }
+
   return (
     <div className="flex flex-col justify-center items-start w-full p-6">
       <div className="flex flex-col items-start justify-center gap-2 mb-4">
