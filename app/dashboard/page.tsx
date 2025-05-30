@@ -1,15 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { listAllPasses } from "@/db/functions/listAllPasses";
 import { ApplePass } from "@/lib/types";
-import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import DeletePass from "./_components/delete-pass";
 import ShareModal from "./_components/share-modal";
 import Pass from "../share/_components/pass";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
-  const user = await currentUser();
-  const response = await listAllPasses(user?.id || "");
+  const result = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
+
+  if (!result?.session?.userId) {
+    redirect("/sign-in");
+  }
+
+  const response = await listAllPasses(result?.session?.userId || "");
 
   return (
     <section className="flex flex-col items-start justify-start p-6 w-full">
@@ -23,7 +32,7 @@ export default async function Dashboard() {
           </p>
         </div>
         <div className="flex gap-4 flex-wrap justify-start items-center mt-4">
-          {response?.length > 0 ? (
+          {response && response?.length > 0 ? (
             response
               ?.sort((a, b) => {
                 const dateA = a?.created_at
@@ -59,7 +68,7 @@ export default async function Dashboard() {
                 </div>
               ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center text-center p-8 border rounded-lg bg-muted/30 w-full">
+            <div className="col-span-full flex flex-col items-center justify-center h-[80vh] text-center p-8 border rounded-lg bg-muted/30 w-full">
               <h3 className="text-lg font-semibold mb-2">No passes found</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Create your first Apple Pass to get started

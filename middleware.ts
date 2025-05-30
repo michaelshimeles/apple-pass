@@ -1,18 +1,48 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/api/(.*)', '/share/pass(.*)'])
+export async function middleware(request: NextRequest) {
+  const sessionCookie = getSessionCookie(request);
+  const { pathname } = request.nextUrl;
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect()
+  // /api/payments/webhooks is a webhook endpoint that should be accessible without authentication
+  if (pathname.startsWith("/api/payments/webhooks")) {
+    return NextResponse.next();
   }
-})
+
+  // Handle invitation routes
+  if (pathname.startsWith("/accept-invitation/")) {
+    if (!sessionCookie) {
+      // Redirect to sign-in with the invitation URL as return parameter
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set("returnTo", pathname);
+      return NextResponse.redirect(signInUrl);
+    }
+    // User is authenticated, allow them to proceed to invitation page
+    return NextResponse.next();
+  }
+
+  if (sessionCookie && ["/sign-in", "/sign-up"].includes(pathname)) {
+    // Check if there's a returnTo parameter
+    const returnTo = request.nextUrl.searchParams.get("returnTo");
+    if (returnTo && returnTo.startsWith("/accept-invitation/")) {
+      return NextResponse.redirect(new URL(returnTo, request.url));
+    }
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  if (!sessionCookie && pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    "/dashboard/:path*",
+    "/sign-in",
+    "/sign-up",
+    "/accept-invitation/:path*",
   ],
-}
+};

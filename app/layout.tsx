@@ -1,10 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
-import {
-  ClerkProvider
-} from '@clerk/nextjs';
 import type { Metadata } from "next";
 import { ThemeProvider } from "../components/provider";
 import "./globals.css";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 export const metadata: Metadata = {
   title: "Apple Pass",
@@ -17,11 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider dynamic>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`font-[-apple-system,BlinkMacSystemFont]antialiased`}
-        >
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-[-apple-system,BlinkMacSystemFont]antialiased`}>
+        <PostHogProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -32,8 +28,8 @@ export default function RootLayout({
             {children}
             <Toaster />
           </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </PostHogProvider>
+      </body>
+    </html>
   );
 }

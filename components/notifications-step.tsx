@@ -170,16 +170,6 @@ export default function NotificationsStep({
           transition={{ delay: 0.9, duration: 0.5 }}
           className="bg-background border border-border rounded-xl p-4 shadow-lg max-w-xs w-full"
         >
-          <div className="flex items-start gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-xs text-white font-bold">AI</span>
-            </div>
-            <div>
-              <div className="text-sm font-medium">Lockscreen AI</div>
-              <div className="text-xs text-muted-foreground">Just now</div>
-            </div>
-          </div>
-
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -188,15 +178,6 @@ export default function NotificationsStep({
           >
             Special offer: 20% off your next purchase! Tap to redeem this
             exclusive deal.
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.5 }}
-            className="mt-3 text-xs text-primary font-medium"
-          >
-            Tap to view pass →
           </motion.div>
         </motion.div>
       </motion.div>

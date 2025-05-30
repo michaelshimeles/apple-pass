@@ -1,11 +1,10 @@
 "use client";
 
-import { motion } from "motion/react";
 import QRCode from "@/app/dashboard/_components/qr-code";
 import { ApplePass } from "@/lib/types";
+import { motion } from "motion/react";
 
 export default function Pass({ pass }: { pass: ApplePass }) {
-  console.log("Pass", pass);
   return (
     <motion.div
       className={`flex items-center justify-center`}

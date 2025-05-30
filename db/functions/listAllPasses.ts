@@ -1,22 +1,32 @@
 "server only";
 
+import { auth } from "@/lib/auth/auth";
 import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
 import { db } from "../drizzle";
 import { passes } from "../schema";
-import { auth } from "@clerk/nextjs/server";
 
 export const listAllPasses = async (userId: string) => {
-  await auth.protect();
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!userId) {
-    throw new Error("User ID is required");
+  console.log("result session", result?.session);
+
+  if (!(userId === result?.session?.userId)) {
+    return;
   }
 
   try {
     const data = await db
       .select()
       .from(passes)
-      .where(eq(passes.user_id, userId));
+      .where(
+        eq(
+          passes.organization_id,
+          String(result?.session.activeOrganizationId),
+        ),
+      );
 
     if (!data) {
       throw new Error("No passes found");

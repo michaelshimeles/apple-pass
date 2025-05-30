@@ -1,20 +1,21 @@
 import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
+import { auth } from "@/lib/auth/auth";
 import { uploadPkpassToR2 } from "@/lib/r2"; // your R2 upload function
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Template } from "@walletpass/pass-js";
 import { nanoid } from "nanoid";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
-import { organizations } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
-  await auth.protect();
-  const user = await currentUser();
+  const info = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
 
-  if (!user?.id) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!info?.session?.userId) {
+    redirect("/sign-in");
   }
 
   const {
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
     barcode_value,
     barcode_format,
     website_url,
+    organization_id,
   } = await req.json();
 
   if (!name || !description) {
@@ -95,10 +97,10 @@ export async function POST(req: NextRequest) {
     // Add images to template
     await template.images.add("logo", logoImageBuffer, "1x");
     await template.images.add("icon", logoImageBuffer, "1x");
-    
+
     // Add strip image in both 1x and 2x densities
     await template.images.add("strip", stripImageBuffer, "1x");
-    
+
     // Load cert and key from base64 env vars
     const cert = Buffer.from(process.env.PASS_CERT_PEM!, "base64").toString();
     const key = Buffer.from(process.env.PASS_KEY_PEM!, "base64").toString();
@@ -178,20 +180,6 @@ export async function POST(req: NextRequest) {
 
     const passShareId = nanoid(12).toLowerCase();
 
-    const result = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.admin_user_id, user.id));
-
-    // after fetching:
-    const [org] = result;
-    if (!org) {
-      return NextResponse.json(
-        { message: "Organization not found" },
-        { status: 400 },
-      );
-    }
-
     // Save to DB
     await db.insert(passes).values({
       name,
@@ -199,7 +187,7 @@ export async function POST(req: NextRequest) {
       slug,
       serial_number: serial,
       file_url: fileUrl,
-      user_id: user.id,
+      user_id: info.session.userId,
       authentication_token: authenticationToken,
       text_color: text_color,
       background_color: background_color,
@@ -215,7 +203,7 @@ export async function POST(req: NextRequest) {
       barcode_value: barcode_value,
       barcode_format: barcode_format,
       pass_share_id: passShareId,
-      organization_id: org.id,
+      organization_id: organization_id,
     });
 
     return new NextResponse(JSON.stringify({ url: fileUrl }), {

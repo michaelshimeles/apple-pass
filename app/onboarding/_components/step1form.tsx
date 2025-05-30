@@ -2,10 +2,6 @@
 
 import React from "react";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { User, Building2, Briefcase, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,11 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { BarChart3, Briefcase, Building2, User } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
 import { storeOnboardingInfo } from "./action";
-import { useUser } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
-
 // Define the form schema with Zod
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -50,17 +47,12 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface Step1Props {
-  onNext: () => void;
+  onNextAction: () => void;
+  userId: string;
 }
 
-export function Step1({ onNext }: Step1Props) {
-  const { user } = useUser();
-
-  if (!user?.id) {
-    redirect("/sign-in");
-  }
+export function Step1({ onNextAction, userId }: Step1Props) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-
   // Initialize React Hook Form
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -76,19 +68,17 @@ export function Step1({ onNext }: Step1Props) {
     setIsSubmitting(true);
 
     try {
-      const result = await storeOnboardingInfo({
+      await storeOnboardingInfo({
         name: data?.name,
-        user_id: user?.id,
         position: data?.position,
         company_url: data?.companyUrl,
         total_visitors: data?.visitors,
+        user_id: userId,
       });
 
       toast.success("Information submitted successfully!");
-      console.log("result:", result);
 
-      // Reset form
-      onNext();
+      onNextAction();
       form.reset();
     } catch {
       toast.error("Something went wrong");

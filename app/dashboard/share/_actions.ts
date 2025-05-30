@@ -2,37 +2,35 @@
 
 import { db } from "@/db/drizzle";
 import { passes } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
 
 interface UpdatePassNameProps {
   passShareId: string;
   name: string;
 }
 
-/**
- * Updates the name of a pass in the database
- * @param passShareId The unique share ID of the pass to update
- * @param name The new name for the pass
- */
-export async function updatePassName({ passShareId, name }: UpdatePassNameProps) {
-  const { userId } = await auth();
+export async function updatePassName({
+  passShareId,
+  name,
+}: UpdatePassNameProps) {
+  const result = await auth.api.getSession({
+    headers: await headers(), // you need to pass the headers object.
+  });
 
-  if (!userId) {
-    return {
-      success: false,
-      error: "Not authenticated",
-    };
+  if (!result?.session.userId) {
+    throw new Error("Not authenticated");
   }
 
   try {
     // Update the pass name in the database
     const updatedPass = await db
       .update(passes)
-      .set({ 
+      .set({
         name,
-        updated_at: new Date() 
+        updated_at: new Date(),
       })
       .where(eq(passes.pass_share_id, passShareId))
       .returning();

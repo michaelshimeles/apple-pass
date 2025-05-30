@@ -1,6 +1,6 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
 export default function Home() {
   return (
     <section className="flex flex-col items-center justify-center min-h-screen">

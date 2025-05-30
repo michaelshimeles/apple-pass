@@ -1,12 +1,13 @@
-import { PricingTable } from '@clerk/nextjs'
+import { activeSubscription } from "@/lib/helper/active-subscription";
+import PricingTable from "./_component/pricing-table";
+import { redirect } from "next/navigation";
 
-export default function PricingPage() {
-    return (
-        <section className="flex flex-col items-center justify-center min-h-screen">
-            <h1 className="text-3xl font-semibold tracking-tight mb-4">Subscribe to get started</h1>
-            <div className="flex w-full max-w-5xl gap-2 px-6 mt-[1rem]">
-                <PricingTable />
-            </div>
-        </section>
-    )
+export default async function PricingPage() {
+  const subscription = await activeSubscription();
+
+  if (subscription) {
+    redirect("/dashboard");
+  }
+
+  return <PricingTable />;
 }

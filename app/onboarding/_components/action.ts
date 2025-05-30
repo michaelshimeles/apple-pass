@@ -1,47 +1,9 @@
 "use server";
 import { db } from "@/db/drizzle";
-import { onboarding_info, organizations } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
-
-interface Org {
-  name: string;
-  invites: string[] | null;
-}
-
-export async function createOrg({ name }: Org) {
-  const userId = (await auth()).userId;
-
-  if (!userId) {
-    throw Error("Not authenticated");
-  }
-
-  try {
-    const data = await db
-      .insert(organizations)
-      .values({
-        name,
-        admin_user_id: userId,
-      })
-      .returning();
-
-    await db
-      .update(onboarding_info)
-      .set({ organization_id: data?.[0]?.id })
-      .where(eq(onboarding_info?.user_id, userId));
-    // Handle invites
-
-    return {
-      statusSuccess: true,
-      createdOrg: data,
-    };
-  } catch (error) {
-    return {
-      statusSuccess: false,
-      error,
-    };
-  }
-}
+import { onboarding_info } from "@/db/schema";
+import { auth } from "@/lib/auth/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 interface Info {
   name: string;
@@ -58,18 +20,19 @@ export async function storeOnboardingInfo({
   position,
   total_visitors,
 }: Info) {
-  const userId = (await auth()).userId;
+  const result = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!userId) {
-    throw Error("Not authenticated");
+  if (!result?.session?.userId) {
+    redirect("/sign-in");
   }
-
   try {
     const data = await db
       .insert(onboarding_info)
       .values({
         name,
-        user_id,
+        user_id: user_id ?? result.session.userId,
         company_url,
         position,
         total_visitors,

@@ -9,7 +9,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { UserButton } from "@clerk/nextjs";
 import {
   BookOpen,
   Brush,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
+import UserProfile from "@/components/user-profile";
 
 export default function DashboardTopNav({ children }: { children: ReactNode }) {
   return (
@@ -74,6 +74,7 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
           </SheetContent>
         </Dialog>
         <div className="flex justify-center items-center gap-2 ml-auto">
+          <UserProfile mini={true} />
           <Link href="/tutorial">
             <Button size="icon" variant="outline">
               <BookOpen />
@@ -84,8 +85,6 @@ export default function DashboardTopNav({ children }: { children: ReactNode }) {
               Create Pass
             </Button>
           </Link>
-          <UserButton />
-          {/* <OrganizationSwitcher /> */}
         </div>
       </header>
       {children}
