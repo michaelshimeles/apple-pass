@@ -29,6 +29,7 @@ export default function UserProfile({ mini }: { mini?: boolean }) {
     const fetchUserData = async () => {
       try {
         const result = await authClient.getSession();
+        
 
         setUserInfo(result.data?.user);
       } catch (error) {

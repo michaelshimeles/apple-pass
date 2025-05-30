@@ -29,14 +29,12 @@ export default function AcceptInviation({
     const getParams = async () => {
       const { id } = await params;
 
-      console.log("id", id);
 
       try {
         const response = await authClient.organization.acceptInvitation({
           invitationId: id,
         });
 
-        console.log("response", response);
 
         if (response.data) {
           setSuccess(true);

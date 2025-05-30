@@ -11,12 +11,9 @@ export async function GET() {
     .from(pass_registrations)
     .where(eq(pass_registrations.pass_id, passId));
 
-  console.log("Expected token:", registrations);
   const tokens = registrations.map(
     (r: { push_token: unknown }) => r.push_token,
   );
-
-  console.log("registrations", registrations);
   if (tokens.length === 0) {
     return new Response("No tokens found", { status: 404 });
   }
